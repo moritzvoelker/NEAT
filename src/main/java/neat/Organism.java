@@ -16,6 +16,26 @@ public class Organism {
     }
 
     public void mutateConnection() {
+        int in = (int) (Math.random() * (inputNodes.size() + hiddenNodes.size()));
+        int out = (int) (Math.random() * (hiddenNodes.size() + outputNodes.size()));
+
+        Node inNode;
+        if (in < inputNodes.size()) {
+            inNode = inputNodes.get(in);
+        } else {
+            inNode = hiddenNodes.get(in - inputNodes.size());
+        }
+
+        Node outNode;
+        if (out < hiddenNodes.size()) {
+            outNode = hiddenNodes.get(out);
+        } else {
+            outNode = outputNodes.get(out - hiddenNodes.size());
+        }
+
+        connections.add(new Connection(inNode, outNode, Math.random() * 2 - 1, globalInnovationNumber++));
+        // TODO: 11.04.2020 check if innovation is new
+        // TODO: 11.04.2020 forbid cycles and self pointing connections
     }
 
     public void mutateNode() {
