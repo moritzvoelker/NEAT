@@ -32,6 +32,13 @@ public class Organism {
     }
 
     public double[] getOutput() {
+        double[] ret = new double[outputNodes.size()];
+
+        for (int i = 0; i < ret.length; i++) {
+            ret[i] = outputNodes.get(i).getValue();
+        }
+
+        return ret;
     }
 
     static Organism crossover(Organism father, Organism mother) {
