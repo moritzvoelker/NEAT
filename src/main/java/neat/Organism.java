@@ -22,6 +22,13 @@ public class Organism {
     }
 
     public void setInput(double[] input) throws IllegalArgumentException {
+        if (input.length != inputNodes.size()) {
+            throw new IllegalArgumentException("Input number doesn't match input node count.");
+        }
+
+        for (int i = 0; i < inputNodes.size(); i++) {
+            ((InputNode) inputNodes.get(i)).setValue(input[i]);
+        }
     }
 
     public double[] getOutput() {
