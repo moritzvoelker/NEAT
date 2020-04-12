@@ -32,6 +32,13 @@ public class Neat {
     }
 
     public List<double[]> getOutput() {
+        List<double[]> output = new ArrayList<>(populationSize);
+
+        for (Organism organism: population) {
+            output.add(organism.getOutput());
+        }
+
+        return output;
     }
 
     public void nextGeneration() {
