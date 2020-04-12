@@ -39,6 +39,16 @@ public class Organism {
     }
 
     public void mutateNode() {
+        Connection connection = connections.get((int) (Math.random() * connections.size()));
+
+        connection.setEnabled(false);
+        hiddenNodes.add(new SquashNode(new LinkedList<Connection>(), globalInnovationNumber++));
+        connections.add(new Connection(connection.getIn(), hiddenNodes.get(hiddenNodes.size() - 1), connection.getWeight(), globalInnovationNumber++));
+        connections.add(new Connection(hiddenNodes.get(hiddenNodes.size() - 1), connection.getOut(), 1.0, globalInnovationNumber++));
+        hiddenNodes.get(hiddenNodes.size() - 1).addInput(connections.get(connections.size() - 2));
+        connection.getOut().addInput(connections.get(connections.size() - 1));
+
+        // TODO: 11.04.2020 check if innovation is new
     }
 
     public void setInput(double[] input) throws IllegalArgumentException {
