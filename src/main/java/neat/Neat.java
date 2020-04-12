@@ -26,6 +26,9 @@ public class Neat {
     }
 
     public void setInput(List<double[]> input) throws IllegalArgumentException {
+        for (int i = 0; i < populationSize; i++) {
+            population.get(i).setInput(input.get(i));
+        }
     }
 
     public List<double[]> getOutput() {
