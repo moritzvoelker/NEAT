@@ -42,6 +42,7 @@ public class Neat {
     }
 
     public void nextGeneration() {
+        // TODO: 11.04.2020 sort nodes and connections after mutations
     }
 
     private void mutate() {
