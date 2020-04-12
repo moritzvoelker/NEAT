@@ -4,6 +4,7 @@ import java.util.LinkedList;
 import java.util.List;
 
 public class Organism {
+    // TODO: 11.04.2020 unstatic innovation number
     protected static int globalInnovationNumber;
     public static List<Connection> currentMutations;
 
