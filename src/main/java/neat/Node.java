@@ -34,5 +34,15 @@ public abstract class Node {
 
     @Override
     public boolean equals(Object obj) {
+        if (obj instanceof Node && ((Node) obj).in.size() == in.size()) {
+            for (int i = 0; i < in.size(); i++) {
+                if (!in.contains(((Node) obj).in.get(i))) {
+                    return false;
+                }
+            }
+            return true;
+        } else {
+            return false;
+        }
     }
 }
