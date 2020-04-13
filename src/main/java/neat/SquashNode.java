@@ -4,8 +4,12 @@ import java.util.List;
 
 public class SquashNode extends Node {
 
-    public SquashNode(List<Connection> in, int innovationNumber) {
-        super(in, innovationNumber);
+    public SquashNode(NodeType nodeType) {
+        super(nodeType);
+    }
+
+    public SquashNode(NodeType nodeType, int innovationNumber) {
+        super(nodeType, innovationNumber);
     }
 
     @Override

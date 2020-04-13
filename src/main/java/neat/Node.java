@@ -1,5 +1,6 @@
 package neat;
 
+import java.util.LinkedList;
 import java.util.List;
 
 public abstract class Node {
@@ -7,19 +8,38 @@ public abstract class Node {
     private List<Connection> in;
     protected double value;
     private boolean calculated;
+    private NodeType nodeType;
 
-    public Node(List<Connection> in, int innovationNumber) {
-        this.in = in;
+    public Node(NodeType nodeType) {
+        this.in = new LinkedList<>();
+        this.innovationNumber = -1;
+        this.value = 0.0;
+        this.calculated = false;
+        this.nodeType = nodeType;
+    }
+
+    public Node(NodeType nodeType, int innovationNumber) {
+        this.in = new LinkedList<>();
         this.innovationNumber = innovationNumber;
         this.value = 0.0;
         this.calculated = false;
+        this.nodeType = nodeType;
+    }
+
+    public boolean isDependentOn(Node node) {
+        if (this.equals(node)) {
+            return true;
+        } else {
+            for (Connection connection: in) {
+                if (connection.isDependentOn(node)) {
+                    return true;
+                }
+            }
+            return false;
+        }
     }
 
     protected abstract double calculateValue();
-
-    public int getInnovationNumber() {
-        return innovationNumber;
-    }
 
     public double getValue() {
         if (!calculated) {
@@ -32,17 +52,28 @@ public abstract class Node {
         in.add(input);
     }
 
+    public List<Connection> getIn() {
+        return in;
+    }
+
+    public NodeType getNodeType() {
+        return nodeType;
+    }
+
+    public void setNodeType(NodeType nodeType) {
+        this.nodeType = nodeType;
+    }
+
+    public int getInnovationNumber() {
+        return innovationNumber;
+    }
+
+    public void setInnovationNumber(int innovationNumber) {
+        this.innovationNumber = innovationNumber;
+    }
+
     @Override
     public boolean equals(Object obj) {
-        if (obj instanceof Node && ((Node) obj).in.size() == in.size()) {
-            for (int i = 0; i < in.size(); i++) {
-                if (!in.contains(((Node) obj).in.get(i))) {
-                    return false;
-                }
-            }
-            return true;
-        } else {
-            return false;
-        }
+        return obj instanceof Node && innovationNumber == ((Node) obj).getInnovationNumber();
     }
 }
