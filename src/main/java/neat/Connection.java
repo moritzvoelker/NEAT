@@ -10,36 +10,36 @@ public class Connection {
 
 
 
-    public Connection(Node in, Node out, double weight, int innovationNumber) {
+    public Connection(Node in, Node out, double weight) {
         this.in = in;
         this.out = out;
         this.weight = weight;
-        this.innovationNumber = innovationNumber;
+        this.innovationNumber = -1;
         this.enabled = true;
     }
 
-    public Connection(Node in, Node out, double weight, int innovationNumber, boolean enabled) {
+    public Connection(Node in, Node out, double weight, boolean enabled) {
         this.in = in;
         this.out = out;
         this.weight = weight;
-        this.innovationNumber = innovationNumber;
+        this.innovationNumber = -1;
         this.enabled = enabled;
     }
 
-    public Connection(Connection connection) {
-        this.in = connection.in;
-        this.out = connection.out;
+    public Connection(Connection connection, Node in, Node out) {
+        this.in = in;
+        this.out = out;
         this.weight = connection.weight;
         this.innovationNumber = connection.innovationNumber;
-        this.enabled = connection.enabled;
+        this.enabled = true;
+    }
+
+    public boolean isDependentOn(Node node) {
+        return in.isDependentOn(node);
     }
 
     public double getValue() {
         return in.getValue() * weight;
-    }
-
-    public void setEnabled(boolean enabled) {
-        this.enabled = enabled;
     }
 
     public Node getIn() {
@@ -64,6 +64,14 @@ public class Connection {
 
     public void setInnovationNumber(int innovationNumber) {
         this.innovationNumber = innovationNumber;
+    }
+
+    public boolean isEnabled() {
+        return enabled;
+    }
+
+    public void setEnabled(boolean enabled) {
+        this.enabled = enabled;
     }
 
     @Override
