@@ -32,6 +32,36 @@ public class Neat {
         return output;
     }
 
+    public void firstGeneration() {
+        firstGeneration(configuration);
+    }
+
+    public void firstGeneration(NeatConfiguration configuration) {
+        this.configuration = configuration;
+        List<Connection> addedConnections = new LinkedList<>();
+        species = new LinkedList<>();
+        globalInnovationNumber = configuration.getInputCount() + configuration.getOutputCount();
+
+        for (int k = 0; k < configuration.getPopulationSize(); k++) {
+            Organism organism = new Organism();
+            for (int i = 0; i < configuration.getInputCount(); i++) {
+                organism.getInputNodes().add(new InputNode());
+                organism.getInputNodes().get(organism.getInputNodes().size() - 1).setInnovationNumber(i);
+            }
+            for(int i = 0; i < configuration.getOutputCount(); i++) {
+                Node out = new SquashNode(NodeType.Output);
+                organism.getOutputNodes().add(out);
+                out.setInnovationNumber(i + configuration.getInputCount());
+
+                Connection connection = new Connection(organism.getInputNodes().get((int)(Math.random() * configuration.getInputCount())), out, Math.random() * 2 - 1);
+
+                globalInnovationNumber = organism.getConnections().get(organism.getConnections().size() - 1).setInnovationNumber(globalInnovationNumber, addedConnections);
+                organism.getConnections().add(connection);
+            }
+            speciate(organism);
+        }
+    }
+
     public void nextGeneration() {
         List<Connection> currentMutations;
     }
