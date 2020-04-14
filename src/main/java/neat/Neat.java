@@ -2,12 +2,13 @@ package neat;
 
 import java.util.ArrayList;
 import java.util.Comparator;
+import java.util.LinkedList;
 import java.util.List;
 
 public class Neat {
     private NeatConfiguration configuration;
 
-    private List<Organism> population;
+    private List<Species> species;
     private int globalInnovationNumber;
 
     public Neat(NeatConfiguration configuration) {
@@ -15,16 +16,17 @@ public class Neat {
     }
 
     public void setInput(List<double[]> input) throws IllegalArgumentException {
-        for (int i = 0; i < configuration.getPopulationSize(); i++) {
-            population.get(i).setInput(input.get(i));
+        for (Species currentSpecies : species){
+            currentSpecies.setInput(input.subList(0, currentSpecies.getMembers().size()));
+            input.subList(0, currentSpecies.getMembers().size()).clear();
         }
     }
 
     public List<double[]> getOutput() {
         List<double[]> output = new ArrayList<>(configuration.getPopulationSize());
 
-        for (Organism organism : population) {
-            output.add(organism.getOutput());
+        for (Species currentSpecies: species) {
+            output.addAll(currentSpecies.getOutput());
         }
 
         return output;
@@ -50,7 +52,7 @@ public class Neat {
         organism.getHiddenNodes().sort(Comparator.comparingInt(Node::getInnovationNumber));
     }
 
-    public List<Organism> getPopulation() {
-        return population;
+    public List<Species> getSpecies() {
+        return species;
     }
 }
