@@ -52,6 +52,16 @@ public class Neat {
         organism.getHiddenNodes().sort(Comparator.comparingInt(Node::getInnovationNumber));
     }
 
+    private void speciate(Organism organism){
+        for (Species currentSpecies : species) {
+            if (organism.isMember(currentSpecies, configuration)) {
+                currentSpecies.getMembers().add(organism);
+                return;
+            }
+        }
+        species.add(new Species(organism));
+    }
+
     public List<Species> getSpecies() {
         return species;
     }

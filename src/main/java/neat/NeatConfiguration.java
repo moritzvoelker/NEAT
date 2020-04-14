@@ -10,6 +10,9 @@ public class NeatConfiguration {
     private double mutationRateEnablement;
     private double stepSize = 0.1;
     private double disableRate = 0.75;
+    private double c1;
+    private double c2;
+    private double c3;
     private int inputCount;
     private int outputCount;
 
@@ -99,6 +102,33 @@ public class NeatConfiguration {
         return this;
     }
 
+    public double getC1() {
+        return c1;
+    }
+
+    public NeatConfiguration setC1(double c1) {
+        this.c1 = c1;
+        return this;
+    }
+
+    public double getC2() {
+        return c2;
+    }
+
+    public NeatConfiguration setC2(double c2) {
+        this.c2 = c2;
+        return this;
+    }
+
+    public double getC3() {
+        return c3;
+    }
+
+    public NeatConfiguration setC3(double c3) {
+        this.c3 = c3;
+        return this;
+    }
+
     public int getInputCount() {
         return inputCount;
     }
@@ -116,4 +146,5 @@ public class NeatConfiguration {
         this.outputCount = outputCount;
         return this;
     }
+
 }

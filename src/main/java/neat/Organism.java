@@ -60,21 +60,14 @@ public class Organism {
             return currentInnovationNumber;
         }
 
-        for (i = 0; i < currentMutations.size(); i++) {
-            if (connection.equals(currentMutations.get(i))) {
-                connection.setInnovationNumber(currentMutations.get(i).getInnovationNumber());
-                break;
-            }
-        }
-        if (i == currentMutations.size() - 1) {
-            connection.setInnovationNumber(currentInnovationNumber++);
-            currentMutations.add(connection);
-        }
+        currentInnovationNumber = connection.setInnovationNumber(currentInnovationNumber, currentMutations);
 
         connections.add(connection);
 
         return currentInnovationNumber;
     }
+
+
 
     public int mutateNode(int currentInnovationNumber, List<Connection> currentMutations) {
         Connection connection = connections.get((int) (Math.random() * connections.size()));
@@ -273,6 +266,62 @@ public class Organism {
 
     public boolean hasNode(Node node) {
         return inputNodes.contains(node) || hiddenNodes.contains(node) || outputNodes.contains(node);
+    }
+
+    public boolean isMember(Species species, NeatConfiguration config) {
+        return this.calculateCompatibilityDistance(species.getRepresentative(), config) < config.getSpeciationThreshhold();
+    }
+
+    public double calculateCompatibilityDistance(Organism organism, NeatConfiguration config) {
+        int excess = 0, disjoint = 0, joined = 0;
+        double weightDifference = 0.0;
+
+        int size;
+
+        if (organism.getConnections().size() > connections.size()){
+            size = organism.getConnections().size();
+        } else {
+            size = connections.size();
+        }
+
+        if (size < 20) {
+            size = 1;
+        }
+
+        int i = 0, j = 0;
+        Connection fatherConnection = connections.get(i);
+        Connection motherConnection = organism.getConnections().get(j);
+        while (i < connections.size() || j < organism.getConnections().size()){
+            if (fatherConnection.getInnovationNumber() == motherConnection.getInnovationNumber()){
+                joined++;
+                weightDifference += Math.abs(fatherConnection.getWeight() - motherConnection.getWeight());
+            } else if (fatherConnection.getInnovationNumber() < motherConnection.getInnovationNumber()){
+                if (j == organism.getConnections().size()) {
+                    excess++;
+                } else {
+                    disjoint++;
+                }
+                if (++i < connections.size()) {
+                    fatherConnection = connections.get(i);
+                } else {
+                    fatherConnection = new Connection(null, null, 0.0);
+                    fatherConnection.setInnovationNumber(Integer.MAX_VALUE);
+                }
+            } else {
+                if (i == connections.size()) {
+                    excess++;
+                } else {
+                    disjoint++;
+                }
+                if (++j < organism.getConnections().size()) {
+                    motherConnection = organism.getConnections().get(j);
+                } else {
+                    motherConnection = new Connection(null, null, 0.0);
+                    motherConnection.setInnovationNumber(Integer.MAX_VALUE);
+                }
+            }
+        }
+        return config.getC1() * excess / size + config.getC2() * disjoint / size + config.getC3() * weightDifference / joined;
     }
 
     public int getFitness() {
