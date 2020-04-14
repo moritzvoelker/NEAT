@@ -1,5 +1,7 @@
 package neat;
 
+import java.util.List;
+
 public class Connection {
     private Node in;
     private Node out;
@@ -56,6 +58,21 @@ public class Connection {
 
     public void setInnovationNumber(int innovationNumber) {
         this.innovationNumber = innovationNumber;
+    }
+
+    public int setInnovationNumber(int currentInnovationNumber, List<Connection> currentMutations) {
+        int i;
+        for (i = 0; i < currentMutations.size(); i++) {
+            if (equals(currentMutations.get(i))) {
+                innovationNumber = currentMutations.get(i).getInnovationNumber();
+                break;
+            }
+        }
+        if (i == currentMutations.size() - 1) {
+            innovationNumber = currentInnovationNumber++;
+            currentMutations.add(this);
+        }
+        return currentInnovationNumber;
     }
 
     public boolean isEnabled() {
