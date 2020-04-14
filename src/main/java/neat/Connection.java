@@ -18,14 +18,6 @@ public class Connection {
         this.enabled = true;
     }
 
-    public Connection(Node in, Node out, double weight, boolean enabled) {
-        this.in = in;
-        this.out = out;
-        this.weight = weight;
-        this.innovationNumber = -1;
-        this.enabled = enabled;
-    }
-
     public Connection(Connection connection, Node in, Node out) {
         this.in = in;
         this.out = out;

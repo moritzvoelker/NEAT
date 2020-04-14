@@ -32,7 +32,6 @@ public class Neat {
 
     public void nextGeneration() {
         List<Connection> currentMutations;
-        // TODO: 11.04.2020 sort nodes and connections after mutations
     }
 
     private void mutate(Organism organism, List<Connection> currentMutations) {

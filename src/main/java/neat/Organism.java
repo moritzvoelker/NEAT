@@ -1,6 +1,5 @@
 package neat;
 
-import java.util.LinkedList;
 import java.util.List;
 
 public class Organism {
@@ -146,87 +145,127 @@ public class Organism {
 
         Organism child = new Organism();
 
-        // TODO: 13.04.2020 while condition and exception with j too big
-
         int i = 0, j = 0;
-        while (i < father.getConnections().size() || j < mother.getConnections().size()) {
-            Connection fatherConnection = father.getConnections().get(i);
-            Connection motherConnection = mother.getConnections().get(j);
+        Connection fatherConnection = father.getConnections().get(i);
+        Connection motherConnection = mother.getConnections().get(j);
+        boolean equalParents = father.getFitness() == mother.getFitness();
+        while (i < father.getConnections().size() || (equalParents && j < mother.getConnections().size())) {
+            boolean joined = fatherConnection.getInnovationNumber() == motherConnection.getInnovationNumber();
+
             Node in = null;
             Node out = null;
-            if (motherConnection.getInnovationNumber() < fatherConnection.getInnovationNumber() && father.getFitness() != mother.getFitness()) {
-                j++;
-                continue;
-            }
-            if (!child.hasNode(fatherConnection.getIn())) {
-                if (fatherConnection.getIn().getNodeType().equals(NodeType.Input)) {
-                    in = new InputNode(fatherConnection.getIn().getInnovationNumber());
-                    child.getInputNodes().add((InputNode) in);
+
+            Connection currentConnection;
+
+            if (motherConnection.getInnovationNumber() < fatherConnection.getInnovationNumber()) {
+                if (equalParents) {
+                    currentConnection = motherConnection;
                 } else {
-                    in = new SquashNode(NodeType.Hidden, fatherConnection.getIn().getInnovationNumber());
-                    child.getHiddenNodes().add(in);
+                    if (++j == mother.getConnections().size()) {
+                        motherConnection = new Connection(null, null, 0.0);
+                        motherConnection.setInnovationNumber(Integer.MAX_VALUE);
+                    } else {
+                        motherConnection = mother.getConnections().get(j);
+                    }
+                    continue;
                 }
             } else {
-                for (Node node : child.getInputNodes()) {
-                    if (node.equals(fatherConnection.getIn())) {
+                currentConnection = fatherConnection;
+            }
+
+
+            for (Node node : child.getInputNodes()) {
+                if (node.equals(currentConnection.getIn())) {
+                    in = node;
+                    break;
+                }
+            }
+            if (in == null) {
+                for (Node node : child.getHiddenNodes()) {
+                    if (node.equals(currentConnection.getIn())) {
                         in = node;
                         break;
                     }
                 }
-                if (in != null) {
-                    for (Node node : child.getHiddenNodes()) {
-                        if (node.equals(fatherConnection.getIn())) {
-                            in = node;
-                            break;
-                        }
-                    }
+            }
+            if (in == null) {
+                if (currentConnection.getIn().getNodeType().equals(NodeType.Input)) {
+                    in = new InputNode(currentConnection.getIn().getInnovationNumber());
+                    child.getInputNodes().add((InputNode) in);
+                } else {
+                    in = new SquashNode(NodeType.Hidden, currentConnection.getIn().getInnovationNumber());
+                    child.getHiddenNodes().add(in);
                 }
             }
-            if (!child.hasNode(fatherConnection.getOut())) {
-                if (fatherConnection.getOut().getNodeType().equals(NodeType.Hidden)) {
-                    out = new SquashNode(NodeType.Hidden, fatherConnection.getOut().getInnovationNumber());
-                    child.getHiddenNodes().add(out);
-                } else {
-                    out = new SquashNode(NodeType.Output, fatherConnection.getOut().getInnovationNumber());
-                    child.getOutputNodes().add(out);
+
+            for (Node node : child.getHiddenNodes()) {
+                if (node.equals(currentConnection.getOut())) {
+                    out = node;
+                    break;
                 }
-            } else {
-                for (Node node : child.getHiddenNodes()) {
-                    if (node.equals(fatherConnection.getOut())) {
+            }
+            if (out == null) {
+                for (Node node : child.getOutputNodes()) {
+                    if (node.equals(currentConnection.getOut())) {
                         out = node;
                         break;
                     }
                 }
-                if (in != null) {
-                    for (Node node : child.getOutputNodes()) {
-                        if (node.equals(fatherConnection.getOut())) {
-                            out = node;
-                            break;
-                        }
-                    }
+            }
+            if (out == null) {
+                if (currentConnection.getOut().getNodeType().equals(NodeType.Hidden)) {
+                    out = new SquashNode(NodeType.Hidden, currentConnection.getOut().getInnovationNumber());
+                    child.getHiddenNodes().add(out);
+                } else {
+                    out = new SquashNode(NodeType.Output, currentConnection.getOut().getInnovationNumber());
+                    child.getOutputNodes().add(out);
                 }
             }
 
-            if (fatherConnection.getInnovationNumber() == motherConnection.getInnovationNumber()) {
+            if (joined) {
+                double weight;
                 if (Math.random() < 0.5) {
-                    child.getConnections().add(new Connection(fatherConnection, in, out));
+                    weight = fatherConnection.getWeight();
                 } else {
-                    child.getConnections().add(new Connection(motherConnection, in, out));
+                    weight = motherConnection.getWeight();
                 }
-
+                child.getConnections().add(new Connection(in, out, weight));
+                Connection newConnection = child.getConnections().get(child.getConnections().size() - 1);
                 if (!fatherConnection.isEnabled() && !motherConnection.isEnabled()) {
-                    child.getConnections().get(child.getConnections().size() - 1).setEnabled(false);
+                    newConnection.setEnabled(false);
                 } else if (((fatherConnection.isEnabled() && !motherConnection.isEnabled()) || (!fatherConnection.isEnabled() && motherConnection.isEnabled())) && Math.random() < configuration.getDisableRate()) {
-                    child.getConnections().get(child.getConnections().size() - 1).setEnabled(false);
+                    newConnection.setEnabled(false);
                 }
-                i++;
-                j++;
-            } else if (fatherConnection.getInnovationNumber() < motherConnection.getInnovationNumber()) {
-                child.getConnections().add(new Connection(fatherConnection, in, out));
-                i++;
+                newConnection.setInnovationNumber(currentConnection.getInnovationNumber());
+                if (++i == father.getConnections().size()) {
+                    fatherConnection = new Connection(null, null, 0.0);
+                    fatherConnection.setInnovationNumber(Integer.MAX_VALUE);
+                } else {
+                    fatherConnection = father.getConnections().get(i);
+                }
+                if (++j == mother.getConnections().size()) {
+                    motherConnection = new Connection(null, null, 0.0);
+                    motherConnection.setInnovationNumber(Integer.MAX_VALUE);
+                } else {
+                    motherConnection = mother.getConnections().get(j);
+                }
             } else {
-                child.getConnections().add(new Connection(motherConnection, in, out));
-                j++;
+                child.getConnections().add(new Connection(currentConnection, in, out));
+                if (fatherConnection.getInnovationNumber() < motherConnection.getInnovationNumber()) {
+                    if (++i == father.getConnections().size()) {
+                        fatherConnection = new Connection(null, null, 0.0);
+                        fatherConnection.setInnovationNumber(Integer.MAX_VALUE);
+                    } else {
+                        fatherConnection = father.getConnections().get(i);
+                    }
+                } else {
+                    if (++j == mother.getConnections().size()) {
+                        motherConnection = new Connection(null, null, 0.0);
+                        motherConnection.setInnovationNumber(Integer.MAX_VALUE);
+                    } else {
+                        motherConnection = mother.getConnections().get(j);
+                    }
+                }
             }
         }
         return child;
