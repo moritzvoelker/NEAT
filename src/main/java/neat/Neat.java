@@ -61,7 +61,36 @@ public class Neat {
     }
 
     public void nextGeneration() {
-        List<Connection> currentMutations;
+        List<Connection> currentMutations = new LinkedList<>();
+        List<Organism> newPopulation = new ArrayList<>(configuration.getPopulationSize());
+        int[] speciesSizes = new int[species.size()];
+
+        double overallFitness = 0.0;
+        for (Species currentSpecies : species) {
+            overallFitness += currentSpecies.calculateOverallFitness();
+        }
+
+        int i = 0;
+        int currentPopulationSize = 0;
+        for (Species currentSpecies : species) {
+            currentPopulationSize += speciesSizes[i] = (int)(configuration.getPopulationSize() * (currentSpecies.getOverallFitness() / overallFitness));
+            i++;
+        }
+
+        for (i = 0; i < configuration.getPopulationSize() - currentPopulationSize; i++) {
+            speciesSizes[i % species.size()]++;
+        }
+
+        i = 0;
+        for (Species currentSpecies : species) {
+            newPopulation.addAll(currentSpecies.produceOffspring(speciesSizes[i]));
+            i++;
+        }
+
+        for (Organism organism : newPopulation) {
+            mutate(organism, currentMutations);
+            specify(organism);
+        }
     }
 
     private void mutate(Organism organism, List<Connection> currentMutations) {

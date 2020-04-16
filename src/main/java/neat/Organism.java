@@ -8,7 +8,8 @@ public class Organism {
     private List<Node> hiddenNodes;
     private List<Node> outputNodes;
     private List<Connection> connections;
-    private int fitness;
+    private double fitness = -1.0;
+
 
     public void mutateWeights(double mutationRate, double perturbRate, double stepSize) {
         for (Connection connection : connections) {
@@ -324,11 +325,11 @@ public class Organism {
         return config.getC1() * excess / size + config.getC2() * disjoint / size + config.getC3() * weightDifference / joined;
     }
 
-    public int getFitness() {
+    public double getFitness() {
         return fitness;
     }
 
-    public void setFitness(int fitness) {
+    public void setFitness(double fitness) {
         this.fitness = fitness;
     }
 

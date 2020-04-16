@@ -1,30 +1,70 @@
 package neat;
 
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.LinkedList;
 import java.util.List;
 
 public class Species {
     private Organism representative;
     private List<Organism> members;
-    private int overallFitness;
+    private double overallFitness;
 
     public Species(Organism representative) {
         this.representative = representative;
         members = new LinkedList<>();
         members.add(representative);
-        this.overallFitness = 0;
+        this.overallFitness = 0.0;
     }
 
-    public void calculateOverallFitness() {
-        overallFitness = 0;
+    public double calculateOverallFitness() throws IllegalStateException {
+        overallFitness = 0.0;
         for (Organism organism : members) {
-            overallFitness += organism.getFitness();
+            if (organism.getFitness() >= 0.0)
+                overallFitness += organism.getFitness();
+            else {
+                overallFitness = -1.0;
+                throw new IllegalStateException("the fitness of organism " + organism.toString() + " from species " + this.toString() + " has not been set");
+            }
         }
-        overallFitness /= members.size();
+        return overallFitness /= members.size();
     }
 
-    public List<Organism> produceOffspring() {
+    public List<Organism> produceOffspring(int numberOfChildren, NeatConfiguration configuration) {
+        /* 1.: Organismen abtöten
+        *  2.: Fortpflanzen
+        * */
+        List<Organism> children = new ArrayList<>(numberOfChildren);
+        Organism father;
+        Organism mother;
+
+        members.sort(Comparator.comparingDouble(Organism::getFitness));
+        members = members.subList(0, (int) (members.size() * configuration.getSurvivalRate()));
+
+        children.add(members.get(0));
+        numberOfChildren--;
+        for (int i = 0; i < numberOfChildren; i++) {
+            if (Math.random() < configuration.getMutateOnlyRate()) {
+                double random = Math.random() * overallFitness;
+                double comulativeFitness = 0.0;
+                for (Organism organism : members) {
+                    comulativeFitness += organism.getFitness();
+                    if (comulativeFitness > random) {
+                        father = organism;
+                        break;
+                    }
+                }
+                children.add(father.mutate);
+            }
+        }
+
+        // TODO: 16.04.2020 Mating of different Organisms, Mutation of organisms,
+
+
+
+
+
+
         return null;
     }
 
@@ -58,7 +98,7 @@ public class Species {
         this.members = members;
     }
 
-    public int getOverallFitness() {
+    public double getOverallFitness() {
         return overallFitness;
     }
 }

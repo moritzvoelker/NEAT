@@ -10,6 +10,9 @@ public class NeatConfiguration {
     private double mutationRateEnablement;
     private double stepSize = 0.1;
     private double disableRate = 0.75;
+    private double mateInterspeciesRate = 0.2;
+    private double mutateOnlyRate = 0.2; // => mateRate = 0.8
+    private double survivalRate = 0.5;
     private double c1;
     private double c2;
     private double c3;
@@ -99,6 +102,33 @@ public class NeatConfiguration {
 
     public NeatConfiguration setMutationRateEnablement(double mutationRateEnablement) {
         this.mutationRateEnablement = mutationRateEnablement;
+        return this;
+    }
+
+    public double getMateInterspeciesRate() {
+        return mateInterspeciesRate;
+    }
+
+    public NeatConfiguration setMateInterspeciesRate(double mateInterspeciesRate) {
+        this.mateInterspeciesRate = mateInterspeciesRate;
+        return this;
+    }
+
+    public double getMutateOnlyRate() {
+        return mutateOnlyRate;
+    }
+
+    public NeatConfiguration setMutateOnlyRate(double mutateOnlyRate) {
+        this.mutateOnlyRate = mutateOnlyRate;
+        return this;
+    }
+
+    public double getSurvivalRate() {
+        return survivalRate;
+    }
+
+    public NeatConfiguration setSurvivalRate(double survivalRate) {
+        this.survivalRate = survivalRate;
         return this;
     }
 
