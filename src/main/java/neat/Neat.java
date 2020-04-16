@@ -45,20 +45,18 @@ public class Neat {
         for (int k = 0; k < configuration.getPopulationSize(); k++) {
             Organism organism = new Organism();
             for (int i = 0; i < configuration.getInputCount(); i++) {
-                organism.getInputNodes().add(new InputNode());
-                organism.getInputNodes().get(organism.getInputNodes().size() - 1).setInnovationNumber(i);
+                organism.getInputNodes().add((InputNode) NodeFactory.create("", NodeType.Input, i));
             }
             for(int i = 0; i < configuration.getOutputCount(); i++) {
-                Node out = new SquashNode(NodeType.Output);
+                Node out = NodeFactory.create("", NodeType.Output, i + configuration.getInputCount());
                 organism.getOutputNodes().add(out);
-                out.setInnovationNumber(i + configuration.getInputCount());
 
                 Connection connection = new Connection(organism.getInputNodes().get((int)(Math.random() * configuration.getInputCount())), out, Math.random() * 2 - 1);
 
                 globalInnovationNumber = organism.getConnections().get(organism.getConnections().size() - 1).setInnovationNumber(globalInnovationNumber, addedConnections);
                 organism.getConnections().add(connection);
             }
-            speciate(organism);
+            specify(organism);
         }
     }
 
@@ -82,7 +80,7 @@ public class Neat {
         organism.getHiddenNodes().sort(Comparator.comparingInt(Node::getInnovationNumber));
     }
 
-    private void speciate(Organism organism){
+    private void specify(Organism organism){
         for (Species currentSpecies : species) {
             if (organism.isMember(currentSpecies, configuration)) {
                 currentSpecies.getMembers().add(organism);

@@ -74,7 +74,7 @@ public class Organism {
 
         connection.setEnabled(false);
 
-        Node node = new SquashNode(NodeType.Hidden);
+        Node node = NodeFactory.create("", NodeType.Hidden);
         Connection in = new Connection(connection.getIn(), node, connection.getWeight());
         Connection out = new Connection(hiddenNodes.get(hiddenNodes.size() - 1), connection.getOut(), 1.0);
 
@@ -183,10 +183,10 @@ public class Organism {
             }
             if (in == null) {
                 if (currentConnection.getIn().getNodeType().equals(NodeType.Input)) {
-                    in = new InputNode(currentConnection.getIn().getInnovationNumber());
+                    in = NodeFactory.create("", NodeType.Input, currentConnection.getIn().getInnovationNumber());
                     child.getInputNodes().add((InputNode) in);
                 } else {
-                    in = new SquashNode(NodeType.Hidden, currentConnection.getIn().getInnovationNumber());
+                    in = NodeFactory.create("", NodeType.Hidden, currentConnection.getIn().getInnovationNumber());
                     child.getHiddenNodes().add(in);
                 }
             }
@@ -207,10 +207,10 @@ public class Organism {
             }
             if (out == null) {
                 if (currentConnection.getOut().getNodeType().equals(NodeType.Hidden)) {
-                    out = new SquashNode(NodeType.Hidden, currentConnection.getOut().getInnovationNumber());
+                    out = NodeFactory.create("", NodeType.Hidden, currentConnection.getOut().getInnovationNumber());
                     child.getHiddenNodes().add(out);
                 } else {
-                    out = new SquashNode(NodeType.Output, currentConnection.getOut().getInnovationNumber());
+                    out = NodeFactory.create("", NodeType.Output, currentConnection.getOut().getInnovationNumber());
                     child.getOutputNodes().add(out);
                 }
             }
