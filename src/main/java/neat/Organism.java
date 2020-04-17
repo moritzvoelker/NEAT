@@ -1,5 +1,6 @@
 package neat;
 
+import java.util.Comparator;
 import java.util.List;
 
 public class Organism {
@@ -10,6 +11,23 @@ public class Organism {
     private List<Connection> connections;
     private double fitness = -1.0;
 
+    public int mutate(List<Connection> currentMutations, int innovationNumber, NeatConfiguration configuration) {
+        mutateWeights(configuration.getMutationRateWeight(), configuration.getPerturbRate(), configuration.getStepSize());
+        if (Math.random() < configuration.getMutationRateConnection()) {
+            innovationNumber = mutateConnection(innovationNumber, currentMutations);
+        }
+        if (Math.random() < configuration.getMutationRateNode()) {
+            innovationNumber = mutateNode(innovationNumber, currentMutations);
+        }
+        if (Math.random() < configuration.getMutationRateEnablement()) {
+            mutateEnablement();
+        }
+
+        getConnections().sort(Comparator.comparingInt(Connection::getInnovationNumber));
+        getHiddenNodes().sort(Comparator.comparingInt(Node::getInnovationNumber));
+
+        return innovationNumber;
+    }
 
     public void mutateWeights(double mutationRate, double perturbRate, double stepSize) {
         for (Connection connection : connections) {

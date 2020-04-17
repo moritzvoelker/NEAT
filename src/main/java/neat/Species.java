@@ -30,18 +30,19 @@ public class Species {
         return overallFitness /= members.size();
     }
 
-    public List<Organism> produceOffspring(int numberOfChildren, NeatConfiguration configuration) {
-        /* 1.: Organismen abtöten
-        *  2.: Fortpflanzen
-        * */
-        List<Organism> children = new ArrayList<>(numberOfChildren);
-        Organism father;
-        Organism mother;
+    // TODO: 17.04.2020 Maybe package private?
+    public int produceOffspring(List<Organism> newPopulation, List<Connection> currentMutations, int numberOfChildren, int innovationNumber, NeatConfiguration configuration) {
+        if (numberOfChildren == 0) {
+            return innovationNumber;
+        }
+
+        Organism father = null;
+        Organism mother = null;
 
         members.sort(Comparator.comparingDouble(Organism::getFitness));
         members = members.subList(0, (int) (members.size() * configuration.getSurvivalRate()));
 
-        children.add(members.get(0));
+        newPopulation.add(members.get(0));
         numberOfChildren--;
         for (int i = 0; i < numberOfChildren; i++) {
             if (Math.random() < configuration.getMutateOnlyRate()) {
@@ -54,18 +55,35 @@ public class Species {
                         break;
                     }
                 }
-                children.add(father.mutate);
+                innovationNumber = father.mutate(currentMutations, innovationNumber, configuration);
+                newPopulation.add(father);
+            } else {
+                double randomFather = Math.random() * overallFitness;
+                double randomMother = Math.random() * overallFitness;
+                double comulativeFitness = 0.0;
+                for (Organism organism : members) {
+                    comulativeFitness += organism.getFitness();
+                    if (comulativeFitness > randomFather) {
+                        father = organism;
+                        continue;
+                    }
+                    if (comulativeFitness > randomMother) {
+                        mother = organism;
+                    }
+                    if (father != null && mother != null) {
+                        break;
+                    }
+                }
+                Organism child = Organism.crossover(father, mother, configuration);
+                innovationNumber = child.mutate(currentMutations, innovationNumber, configuration);
+                newPopulation.add(child);
             }
         }
 
-        // TODO: 16.04.2020 Mating of different Organisms, Mutation of organisms,
+        representative = members.get((int)(Math.random() * members.size()));
+        members.clear();
 
-
-
-
-
-
-        return null;
+        return innovationNumber;
     }
 
     public void setInput(List<double[]> input){

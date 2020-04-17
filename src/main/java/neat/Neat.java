@@ -1,7 +1,6 @@
 package neat;
 
 import java.util.ArrayList;
-import java.util.Comparator;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -83,30 +82,13 @@ public class Neat {
 
         i = 0;
         for (Species currentSpecies : species) {
-            newPopulation.addAll(currentSpecies.produceOffspring(speciesSizes[i]));
+            currentSpecies.produceOffspring(newPopulation, currentMutations, speciesSizes[i], globalInnovationNumber, configuration);
             i++;
         }
 
         for (Organism organism : newPopulation) {
-            mutate(organism, currentMutations);
             specify(organism);
         }
-    }
-
-    private void mutate(Organism organism, List<Connection> currentMutations) {
-        organism.mutateWeights(configuration.getMutationRateWeight(), configuration.getPerturbRate(), configuration.getStepSize());
-        if (Math.random() < configuration.getMutationRateConnection()) {
-            globalInnovationNumber = organism.mutateConnection(globalInnovationNumber, currentMutations);
-        }
-        if (Math.random() < configuration.getMutationRateNode()) {
-            globalInnovationNumber = organism.mutateNode(globalInnovationNumber, currentMutations);
-        }
-        if (Math.random() < configuration.getMutationRateEnablement()) {
-            organism.mutateEnablement();
-        }
-
-        organism.getConnections().sort(Comparator.comparingInt(Connection::getInnovationNumber));
-        organism.getHiddenNodes().sort(Comparator.comparingInt(Node::getInnovationNumber));
     }
 
     private void specify(Organism organism){
