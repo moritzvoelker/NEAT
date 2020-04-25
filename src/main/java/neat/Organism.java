@@ -249,14 +249,15 @@ public class Organism {
                 } else {
                     weight = motherConnection.getWeight();
                 }
-                child.getConnections().add(new Connection(in, out, weight));
-                Connection newConnection = child.getConnections().get(child.getConnections().size() - 1);
+
+                Connection newConnection = new Connection(in, out, weight);
                 if (!fatherConnection.isEnabled() && !motherConnection.isEnabled()) {
                     newConnection.setEnabled(false);
                 } else if (((fatherConnection.isEnabled() && !motherConnection.isEnabled()) || (!fatherConnection.isEnabled() && motherConnection.isEnabled())) && Math.random() < configuration.getDisableRate()) {
                     newConnection.setEnabled(false);
                 }
                 newConnection.setInnovationNumber(currentConnection.getInnovationNumber());
+                child.getConnections().add(newConnection);
                 if (++i == father.getConnections().size()) {
                     fatherConnection = new Connection(null, null, 0.0);
                     fatherConnection.setInnovationNumber(Integer.MAX_VALUE);

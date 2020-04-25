@@ -27,8 +27,9 @@ public class Species {
                 throw new IllegalStateException("the fitness of organism " + organism.toString() + " from species " + this.toString() + " has not been set");
             }
         }
+        averageFitness /= members.size();
         // TODO: 25.04.2020 How da fuq???
-        return averageFitness / members.size();
+        return averageFitness;
     }
 
     // TODO: 17.04.2020 Maybe package private?
@@ -41,7 +42,15 @@ public class Species {
         Organism father = null;
         Organism mother = null;
 
-        members.sort(Comparator.comparingDouble(Organism::getFitness));
+        members.sort((organism1, organism2) -> {
+            if (organism1.getFitness() > organism2.getFitness()) {
+                return -1;
+            } else if (organism1.getFitness() < organism2.getFitness()) {
+                return 1;
+            } else {
+                return 0;
+            }
+        });
         members = members.subList(0, (int) (members.size() * configuration.getSurvivalRate()));
         calculateAverageFitness();
 
@@ -76,6 +85,9 @@ public class Species {
                     if (father != null && mother != null) {
                         break;
                     }
+                }
+                if (mother == null) {
+                    mother = members.get(0);
                 }
                 Organism child = Organism.crossover(father, mother, configuration);
                 innovationNumber = child.mutate(currentMutations, innovationNumber, configuration);

@@ -2,7 +2,7 @@ package neat;
 
 public class NeatConfiguration {
     private int populationSize = 100;
-    private double speciationThreshhold = 3.0;
+    private double speciationThreshhold = 1.0;
     private double mutationRateNode = 0.03;
     private double mutationRateConnection = 0.05;
     private double mutationRateWeight = 0.8;

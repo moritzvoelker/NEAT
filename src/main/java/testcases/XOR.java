@@ -10,6 +10,7 @@ import java.util.Scanner;
 
 public class XOR {
 
+    // TODO: 26.04.2020 Champion gets deleted, Fitness does not grow above 2.0, After a few generations only 1 Species 
     public static void main(String[] args) {
         NeatConfiguration configuration = new NeatConfiguration(2, 1);
         Neat neat = new Neat(configuration);
@@ -24,11 +25,7 @@ public class XOR {
             generations = scanner.nextInt();
             for (int i = 0; i < generations; i++) {
                 System.out.println(i);
-                if (works(neat.getChamp()) && !hasAlreadyWorked) {
-                    hasAlreadyWorked = true;
-                    System.out.println("Found working organism.");
-                    break;
-                }
+
 
                 List<double[]> inputs = new ArrayList<>(configuration.getPopulationSize());
                 double[][] possibleInputs = new double[][]{
@@ -51,6 +48,12 @@ public class XOR {
                 }
 
                 neat.setFitness(fitness);
+                System.out.println("Fitness of Champion: " + neat.getChamp().getFitness());
+                if (works(neat.getChamp()) && !hasAlreadyWorked) {
+                    hasAlreadyWorked = true;
+                    System.out.println("Found working organism.");
+                    break;
+                }
                 neat.nextGeneration();
             }
         } while (generations >= 0);

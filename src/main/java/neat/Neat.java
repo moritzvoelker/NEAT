@@ -77,10 +77,8 @@ public class Neat {
         List<Organism> newPopulation = new ArrayList<>(configuration.getPopulationSize());
         int[] speciesSizes = new int[species.size()];
 
-        double overallFitness = 0.0;
-        for (Species currentSpecies : species) {
-            overallFitness += currentSpecies.calculateAverageFitness();
-        }
+        double overallFitness = species.stream().mapToDouble(Species::calculateAverageFitness).sum();
+
 
         int i = 0;
         int currentPopulationSize = 0;
@@ -95,7 +93,7 @@ public class Neat {
 
         i = 0;
         for (Species currentSpecies : species) {
-            currentSpecies.produceOffspring(newPopulation, currentMutations, speciesSizes[i], globalInnovationNumber, configuration);
+            globalInnovationNumber = currentSpecies.produceOffspring(newPopulation, currentMutations, speciesSizes[i], globalInnovationNumber, configuration);
             i++;
         }
 
