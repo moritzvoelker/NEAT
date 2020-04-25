@@ -8,30 +8,32 @@ import java.util.List;
 public class Species {
     private Organism representative;
     private List<Organism> members;
-    private double overallFitness;
+    private double averageFitness;
 
     public Species(Organism representative) {
         this.representative = representative;
         members = new LinkedList<>();
         members.add(representative);
-        this.overallFitness = 0.0;
+        this.averageFitness = 0.0;
     }
 
-    public double calculateOverallFitness() throws IllegalStateException {
-        overallFitness = 0.0;
+    public double calculateAverageFitness() throws IllegalStateException {
+        averageFitness = 0.0;
         for (Organism organism : members) {
             if (organism.getFitness() >= 0.0)
-                overallFitness += organism.getFitness();
+                averageFitness += organism.getFitness();
             else {
-                overallFitness = -1.0;
+                averageFitness = -1.0;
                 throw new IllegalStateException("the fitness of organism " + organism.toString() + " from species " + this.toString() + " has not been set");
             }
         }
-        return overallFitness /= members.size();
+        // TODO: 25.04.2020 How da fuq???
+        return averageFitness / members.size();
     }
 
     // TODO: 17.04.2020 Maybe package private?
-    public int produceOffspring(List<Organism> newPopulation, List<Connection> currentMutations, int numberOfChildren, int innovationNumber, NeatConfiguration configuration) {
+    // TODO: 23.04.2020 Think of an elegant solution for when fitness not properly set, at the moment NullPointerException
+    public int produceOffspring(List<Organism> newPopulation, List<Connection> currentMutations, int numberOfChildren, int innovationNumber, NeatConfiguration configuration) throws NullPointerException {
         if (numberOfChildren == 0) {
             return innovationNumber;
         }
@@ -41,12 +43,13 @@ public class Species {
 
         members.sort(Comparator.comparingDouble(Organism::getFitness));
         members = members.subList(0, (int) (members.size() * configuration.getSurvivalRate()));
+        calculateAverageFitness();
 
         newPopulation.add(members.get(0));
         numberOfChildren--;
         for (int i = 0; i < numberOfChildren; i++) {
             if (Math.random() < configuration.getMutateOnlyRate()) {
-                double random = Math.random() * overallFitness;
+                double random = Math.random() * averageFitness * members.size();
                 double comulativeFitness = 0.0;
                 for (Organism organism : members) {
                     comulativeFitness += organism.getFitness();
@@ -58,16 +61,16 @@ public class Species {
                 innovationNumber = father.mutate(currentMutations, innovationNumber, configuration);
                 newPopulation.add(father);
             } else {
-                double randomFather = Math.random() * overallFitness;
-                double randomMother = Math.random() * overallFitness;
+                double randomFather = Math.random() * averageFitness * members.size();
+                double randomMother = Math.random() * averageFitness * members.size();
                 double comulativeFitness = 0.0;
                 for (Organism organism : members) {
                     comulativeFitness += organism.getFitness();
-                    if (comulativeFitness > randomFather) {
+                    if (comulativeFitness > randomFather && father == null) {
                         father = organism;
                         continue;
                     }
-                    if (comulativeFitness > randomMother) {
+                    if (comulativeFitness > randomMother && mother == null) {
                         mother = organism;
                     }
                     if (father != null && mother != null) {
@@ -88,6 +91,12 @@ public class Species {
 
     public void setInput(List<double[]> input){
         for (int i = 0; i < members.size(); i++) {
+            for (Node node: members.get(i).getHiddenNodes()) {
+                node.resetCalculated();
+            }
+            for (Node node: members.get(i).getOutputNodes()) {
+                node.resetCalculated();
+            }
             members.get(i).setInput(input.get(i));
         }
     }
@@ -98,6 +107,22 @@ public class Species {
             output.add(organism.getOutput());
         }
         return output;
+    }
+
+    public void setFitness(double[] fitness, int offset) {
+        for (int i = 0; i < members.size(); i++) {
+            members.get(i).setFitness(fitness[offset + i]);
+        }
+    }
+
+    public Organism getChamp() {
+        Organism champ = members.get(0);
+        for (int i = 1; i < members.size(); i++) {
+            if (members.get(i).getFitness() > champ.getFitness()) {
+                champ = members.get(i);
+            }
+        }
+        return champ;
     }
 
     public Organism getRepresentative() {
@@ -116,7 +141,7 @@ public class Species {
         this.members = members;
     }
 
-    public double getOverallFitness() {
-        return overallFitness;
+    public double getAverageFitness() {
+        return averageFitness;
     }
 }

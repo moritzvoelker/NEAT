@@ -5,13 +5,13 @@ public class NodeFactory {
         if (nodeType == NodeType.Input) {
             return new InputNode();
         }
-        return new LinearNode(nodeType);
+        return new SquashNode(nodeType);
     }
 
     public static Node create(String type, NodeType nodeType, int innovationNumber) {
         if (nodeType == NodeType.Input) {
             return new InputNode(innovationNumber);
         }
-        return new LinearNode(nodeType, innovationNumber);
+        return new SquashNode(nodeType, innovationNumber);
     }
 }

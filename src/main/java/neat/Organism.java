@@ -1,6 +1,7 @@
 package neat;
 
 import java.util.Comparator;
+import java.util.LinkedList;
 import java.util.List;
 
 public class Organism {
@@ -9,7 +10,15 @@ public class Organism {
     private List<Node> hiddenNodes;
     private List<Node> outputNodes;
     private List<Connection> connections;
-    private double fitness = -1.0;
+    private double fitness;
+
+    Organism() {
+        inputNodes = new LinkedList<>();
+        hiddenNodes = new LinkedList<>();
+        outputNodes = new LinkedList<>();
+        connections = new LinkedList<>();
+        fitness = -1.0;
+    }
 
     public int mutate(List<Connection> currentMutations, int innovationNumber, NeatConfiguration configuration) {
         mutateWeights(configuration.getMutationRateWeight(), configuration.getPerturbRate(), configuration.getStepSize());
@@ -79,13 +88,14 @@ public class Organism {
             return currentInnovationNumber;
         }
 
+        connection.getOut().addInput(connection);
+
         currentInnovationNumber = connection.setInnovationNumber(currentInnovationNumber, currentMutations);
 
         connections.add(connection);
 
         return currentInnovationNumber;
     }
-
 
 
     public int mutateNode(int currentInnovationNumber, List<Connection> currentMutations) {
@@ -95,7 +105,7 @@ public class Organism {
 
         Node node = NodeFactory.create("", NodeType.Hidden);
         Connection in = new Connection(connection.getIn(), node, connection.getWeight());
-        Connection out = new Connection(hiddenNodes.get(hiddenNodes.size() - 1), connection.getOut(), 1.0);
+        Connection out = new Connection(node, connection.getOut(), 1.0);
 
         hiddenNodes.add(node);
         connections.add(in);
@@ -113,7 +123,7 @@ public class Organism {
             }
         }
 
-        if (i == currentMutations.size() - 1) {
+        if (i == currentMutations.size()) {
             node.setInnovationNumber(currentInnovationNumber++);
             in.setInnovationNumber(currentInnovationNumber++);
             out.setInnovationNumber(currentInnovationNumber++);
@@ -130,7 +140,7 @@ public class Organism {
 
     public void setInput(double[] input) throws IllegalArgumentException {
         if (input.length != inputNodes.size()) {
-            throw new IllegalArgumentException("Input number doesn't match input node count.");
+            throw new IllegalArgumentException("Input number doesn't match input node count. Expected: " + inputNodes.size() + "; provided: " + input.length);
         }
 
         for (int i = 0; i < inputNodes.size(); i++) {
@@ -156,6 +166,9 @@ public class Organism {
         }
 
         Organism child = new Organism();
+        for (int i = 0; i < configuration.getInputCount(); i++) {
+            child.getInputNodes().add((InputNode) NodeFactory.create("", NodeType.Input, i));
+        }
 
         int i = 0, j = 0;
         Connection fatherConnection = father.getConnections().get(i);
@@ -201,13 +214,8 @@ public class Organism {
                 }
             }
             if (in == null) {
-                if (currentConnection.getIn().getNodeType().equals(NodeType.Input)) {
-                    in = NodeFactory.create("", NodeType.Input, currentConnection.getIn().getInnovationNumber());
-                    child.getInputNodes().add((InputNode) in);
-                } else {
-                    in = NodeFactory.create("", NodeType.Hidden, currentConnection.getIn().getInnovationNumber());
-                    child.getHiddenNodes().add(in);
-                }
+                in = NodeFactory.create("", NodeType.Hidden, currentConnection.getIn().getInnovationNumber());
+                child.getHiddenNodes().add(in);
             }
 
             for (Node node : child.getHiddenNodes()) {
@@ -297,7 +305,7 @@ public class Organism {
 
         int size;
 
-        if (organism.getConnections().size() > connections.size()){
+        if (organism.getConnections().size() > connections.size()) {
             size = organism.getConnections().size();
         } else {
             size = connections.size();
@@ -310,11 +318,13 @@ public class Organism {
         int i = 0, j = 0;
         Connection fatherConnection = connections.get(i);
         Connection motherConnection = organism.getConnections().get(j);
-        while (i < connections.size() || j < organism.getConnections().size()){
-            if (fatherConnection.getInnovationNumber() == motherConnection.getInnovationNumber()){
+        while (i < connections.size() || j < organism.getConnections().size()) {
+            if (fatherConnection.getInnovationNumber() == motherConnection.getInnovationNumber()) {
                 joined++;
                 weightDifference += Math.abs(fatherConnection.getWeight() - motherConnection.getWeight());
-            } else if (fatherConnection.getInnovationNumber() < motherConnection.getInnovationNumber()){
+                i++;
+                j++;
+            } else if (fatherConnection.getInnovationNumber() < motherConnection.getInnovationNumber()) {
                 if (j == organism.getConnections().size()) {
                     excess++;
                 } else {

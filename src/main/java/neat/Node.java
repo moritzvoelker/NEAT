@@ -44,6 +44,7 @@ public abstract class Node {
     public double getValue() {
         if (!calculated) {
             value = calculateValue();
+            calculated = true;
         }
         return value;
     }
@@ -75,5 +76,9 @@ public abstract class Node {
     @Override
     public boolean equals(Object obj) {
         return obj instanceof Node && innovationNumber == ((Node) obj).getInnovationNumber();
+    }
+
+    public void resetCalculated() {
+        calculated = false;
     }
 }
