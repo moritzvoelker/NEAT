@@ -1,7 +1,5 @@
 package neat;
 
-import java.util.List;
-
 public class SquashNode extends Node {
 
     public SquashNode(NodeType nodeType) {
@@ -14,7 +12,7 @@ public class SquashNode extends Node {
 
     @Override
     protected double calculateValue() {
-        return 0;
-        // TODO: 11.04.2020 implement sqashing
+        double comultativeValue = getIn().stream().filter(Connection::isEnabled).mapToDouble(Connection::getValue).sum();
+        return 1 / (1 + Math.pow(Math.E, -4.9 * comultativeValue));
     }
 }
