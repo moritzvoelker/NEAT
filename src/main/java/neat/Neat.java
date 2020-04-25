@@ -1,8 +1,6 @@
 package neat;
 
-import java.util.ArrayList;
-import java.util.LinkedList;
-import java.util.List;
+import java.util.*;
 
 public class Neat {
     private NeatConfiguration configuration;
@@ -14,9 +12,14 @@ public class Neat {
         this.configuration = configuration;
     }
 
+    // TODO: 23.04.2020 Offset instead of clearing?
     public void setInput(List<double[]> input) throws IllegalArgumentException {
         for (Species currentSpecies : species){
-            currentSpecies.setInput(input.subList(0, currentSpecies.getMembers().size()));
+            try {
+                currentSpecies.setInput(input.subList(0, currentSpecies.getMembers().size()));
+            } catch (IndexOutOfBoundsException e) {
+                e.printStackTrace();
+            }
             input.subList(0, currentSpecies.getMembers().size()).clear();
         }
     }
@@ -29,6 +32,14 @@ public class Neat {
         }
 
         return output;
+    }
+
+    public void setFitness(double[] fitness) {
+        int offset = 0;
+        for (Species currentSpecies : species){
+            currentSpecies.setFitness(fitness, offset);
+            offset += currentSpecies.getMembers().size();
+        }
     }
 
     public void firstGeneration() {
@@ -51,14 +62,16 @@ public class Neat {
                 organism.getOutputNodes().add(out);
 
                 Connection connection = new Connection(organism.getInputNodes().get((int)(Math.random() * configuration.getInputCount())), out, Math.random() * 2 - 1);
+                out.getIn().add(connection);
+                globalInnovationNumber = connection.setInnovationNumber(globalInnovationNumber, addedConnections);
 
-                globalInnovationNumber = organism.getConnections().get(organism.getConnections().size() - 1).setInnovationNumber(globalInnovationNumber, addedConnections);
                 organism.getConnections().add(connection);
             }
             specify(organism);
         }
     }
 
+    // TODO: 23.04.2020 If there is no improvement in a species for a certain time, EXTERMINATE
     public void nextGeneration() {
         List<Connection> currentMutations = new LinkedList<>();
         List<Organism> newPopulation = new ArrayList<>(configuration.getPopulationSize());
@@ -66,13 +79,13 @@ public class Neat {
 
         double overallFitness = 0.0;
         for (Species currentSpecies : species) {
-            overallFitness += currentSpecies.calculateOverallFitness();
+            overallFitness += currentSpecies.calculateAverageFitness();
         }
 
         int i = 0;
         int currentPopulationSize = 0;
         for (Species currentSpecies : species) {
-            currentPopulationSize += speciesSizes[i] = (int)(configuration.getPopulationSize() * (currentSpecies.getOverallFitness() / overallFitness));
+            currentPopulationSize += speciesSizes[i] = (int)(configuration.getPopulationSize() * (currentSpecies.getAverageFitness() / overallFitness));
             i++;
         }
 
@@ -89,6 +102,12 @@ public class Neat {
         for (Organism organism : newPopulation) {
             specify(organism);
         }
+
+        for (int j = species.size() - 1; j >= 0; j--) {
+            if (species.get(j).getMembers().isEmpty()) {
+                species.remove(species.get(j));
+            }
+        }
     }
 
     private void specify(Organism organism){
@@ -103,5 +122,15 @@ public class Neat {
 
     public List<Species> getSpecies() {
         return species;
+    }
+
+    public Organism getChamp() {
+        Organism champ = species.get(0).getChamp();
+        for (int i = 1; i < species.size(); i++) {
+            if (species.get(i).getChamp().getFitness() > champ.getFitness()) {
+                champ = species.get(i).getChamp();
+            }
+        }
+        return champ;
     }
 }
