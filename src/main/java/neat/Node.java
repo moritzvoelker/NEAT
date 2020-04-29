@@ -2,6 +2,7 @@ package neat;
 
 import java.util.LinkedList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 public abstract class Node {
     private int innovationNumber;
@@ -39,11 +40,11 @@ public abstract class Node {
         }
     }
 
-    protected abstract double calculateValue();
+    protected abstract double calculateValue(List<Connection> connections);
 
     public double getValue() {
         if (!calculated) {
-            value = calculateValue();
+            value = calculateValue(getIn().stream().filter(Connection::isEnabled).collect(Collectors.toList()));
             calculated = true;
         }
         return value;

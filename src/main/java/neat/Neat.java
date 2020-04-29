@@ -1,6 +1,7 @@
 package neat;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
 public class Neat {
     private NeatConfiguration configuration;
@@ -14,7 +15,7 @@ public class Neat {
 
     // TODO: 23.04.2020 Offset instead of clearing?
     public void setInput(List<double[]> input) throws IllegalArgumentException {
-        for (Species currentSpecies : species){
+        for (Species currentSpecies : species) {
             try {
                 currentSpecies.setInput(input.subList(0, currentSpecies.getMembers().size()));
             } catch (IndexOutOfBoundsException e) {
@@ -27,7 +28,7 @@ public class Neat {
     public List<double[]> getOutput() {
         List<double[]> output = new ArrayList<>(configuration.getPopulationSize());
 
-        for (Species currentSpecies: species) {
+        for (Species currentSpecies : species) {
             output.addAll(currentSpecies.getOutput());
         }
 
@@ -36,7 +37,7 @@ public class Neat {
 
     public void setFitness(double[] fitness) {
         int offset = 0;
-        for (Species currentSpecies : species){
+        for (Species currentSpecies : species) {
             currentSpecies.setFitness(fitness, offset);
             offset += currentSpecies.getMembers().size();
         }
@@ -57,11 +58,11 @@ public class Neat {
             for (int i = 0; i < configuration.getInputCount(); i++) {
                 organism.getInputNodes().add((InputNode) NodeFactory.create("", NodeType.Input, i));
             }
-            for(int i = 0; i < configuration.getOutputCount(); i++) {
+            for (int i = 0; i < configuration.getOutputCount(); i++) {
                 Node out = NodeFactory.create("", NodeType.Output, i + configuration.getInputCount());
                 organism.getOutputNodes().add(out);
 
-                Connection connection = new Connection(organism.getInputNodes().get((int)(Math.random() * configuration.getInputCount())), out, Math.random() * 2 - 1);
+                Connection connection = new Connection(organism.getInputNodes().get((int) (Math.random() * configuration.getInputCount())), out, Math.random() * 2 - 1);
                 out.getIn().add(connection);
                 globalInnovationNumber = connection.setInnovationNumber(globalInnovationNumber, addedConnections);
 
@@ -71,19 +72,19 @@ public class Neat {
         }
     }
 
-    // TODO: 23.04.2020 If there is no improvement in a species for a certain time, EXTERMINATE
     public void nextGeneration() {
         List<Connection> currentMutations = new LinkedList<>();
         List<Organism> newPopulation = new ArrayList<>(configuration.getPopulationSize());
+        Organism champ = getChamp();
+        species = species.stream().filter(species1 -> !species1.hasNotImprovedRecently(configuration) || species1.getMembers().get(0) == champ).collect(Collectors.toList());
+
+        double overallFitness = species.stream().mapToDouble(Species::getAverageFitness).sum();
         int[] speciesSizes = new int[species.size()];
-
-        double overallFitness = species.stream().mapToDouble(Species::calculateAverageFitness).sum();
-
 
         int i = 0;
         int currentPopulationSize = 0;
         for (Species currentSpecies : species) {
-            currentPopulationSize += speciesSizes[i] = (int)(configuration.getPopulationSize() * (currentSpecies.getAverageFitness() / overallFitness));
+            currentPopulationSize += speciesSizes[i] = (int) (configuration.getPopulationSize() * (currentSpecies.getAverageFitness() / overallFitness));
             i++;
         }
 
@@ -108,7 +109,7 @@ public class Neat {
         }
     }
 
-    private void specify(Organism organism){
+    private void specify(Organism organism) {
         for (Species currentSpecies : species) {
             if (organism.isMember(currentSpecies, configuration)) {
                 currentSpecies.getMembers().add(organism);

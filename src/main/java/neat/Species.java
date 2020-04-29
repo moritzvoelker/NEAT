@@ -1,20 +1,22 @@
 package neat;
 
 import java.util.ArrayList;
-import java.util.Comparator;
 import java.util.LinkedList;
 import java.util.List;
 
 public class Species {
+    int generationsSinceInprovement;
     private Organism representative;
     private List<Organism> members;
     private double averageFitness;
+    private double oldAverageFitness;
 
     public Species(Organism representative) {
         this.representative = representative;
         members = new LinkedList<>();
         members.add(representative);
         this.averageFitness = 0.0;
+        this.oldAverageFitness = 0.0;
     }
 
     public double calculateAverageFitness() throws IllegalStateException {
@@ -51,7 +53,8 @@ public class Species {
                 return 0;
             }
         });
-        members = members.subList(0, (int) (members.size() * configuration.getSurvivalRate()));
+
+        members = members.subList(0, (int) (members.size() * configuration.getSurvivalRate()) + 1);
         calculateAverageFitness();
 
         newPopulation.add(members.get(0));
@@ -63,7 +66,7 @@ public class Species {
                 for (Organism organism : members) {
                     comulativeFitness += organism.getFitness();
                     if (comulativeFitness > random) {
-                        father = organism;
+                        father = new Organism(organism);
                         break;
                     }
                 }
@@ -72,14 +75,14 @@ public class Species {
             } else {
                 double randomFather = Math.random() * averageFitness * members.size();
                 double randomMother = Math.random() * averageFitness * members.size();
-                double comulativeFitness = 0.0;
+                double cumulativeFitness = 0.0;
                 for (Organism organism : members) {
-                    comulativeFitness += organism.getFitness();
-                    if (comulativeFitness > randomFather && father == null) {
+                    cumulativeFitness += organism.getFitness();
+                    if (cumulativeFitness > randomFather && father == null) {
                         father = organism;
                         continue;
                     }
-                    if (comulativeFitness > randomMother && mother == null) {
+                    if (cumulativeFitness > randomMother && mother == null) {
                         mother = organism;
                     }
                     if (father != null && mother != null) {
@@ -101,14 +104,21 @@ public class Species {
         return innovationNumber;
     }
 
+    public boolean hasNotImprovedRecently(NeatConfiguration configuration) {
+        calculateAverageFitness();
+        if (oldAverageFitness >= averageFitness) {
+            generationsSinceInprovement++;
+        } else {
+            generationsSinceInprovement = 0;
+            oldAverageFitness = averageFitness;
+        }
+
+        return generationsSinceInprovement == configuration.getPurgeAge();
+    }
+
     public void setInput(List<double[]> input){
         for (int i = 0; i < members.size(); i++) {
-            for (Node node: members.get(i).getHiddenNodes()) {
-                node.resetCalculated();
-            }
-            for (Node node: members.get(i).getOutputNodes()) {
-                node.resetCalculated();
-            }
+
             members.get(i).setInput(input.get(i));
         }
     }

@@ -1,5 +1,7 @@
 package neat;
 
+import java.util.List;
+
 public class InputNode extends Node {
 
     public InputNode() {
@@ -20,7 +22,7 @@ public class InputNode extends Node {
     }
 
     @Override
-    protected double calculateValue() {
+    protected double calculateValue(List<Connection> connections) {
         return value;
     }
 }

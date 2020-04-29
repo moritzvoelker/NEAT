@@ -1,8 +1,10 @@
 package neat;
 
 public class NeatConfiguration {
-    private int populationSize = 100;
-    private double speciationThreshhold = 1.0;
+    private int populationSize = 150;
+    // TODO: 29.04.2020 Reneame purgeAge
+    private int purgeAge = 15;
+    private double speciationThreshhold = 3.0;
     private double mutationRateNode = 0.03;
     private double mutationRateConnection = 0.05;
     private double mutationRateWeight = 0.8;
@@ -11,7 +13,7 @@ public class NeatConfiguration {
     private double stepSize = 0.1;
     private double disableRate = 0.75;
     private double mateInterspeciesRate = 0.2;
-    private double mutateOnlyRate = 0.2; // => mateRate = 0.8
+    private double mutateOnlyRate = 0.25; // => mateRate = 0.75
     private double survivalRate = 0.5;
     private double c1 = 1.0;
     private double c2 = 1.0;
@@ -30,6 +32,15 @@ public class NeatConfiguration {
 
     public NeatConfiguration setPopulationSize(int populationSize) {
         this.populationSize = populationSize;
+        return this;
+    }
+
+    public int getPurgeAge() {
+        return purgeAge;
+    }
+
+    public NeatConfiguration setPurgeAge(int purgeAge) {
+        this.purgeAge = purgeAge;
         return this;
     }
 

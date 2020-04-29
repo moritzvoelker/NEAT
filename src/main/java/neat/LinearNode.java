@@ -1,5 +1,7 @@
 package neat;
 
+import java.util.List;
+
 public class LinearNode extends Node {
     public LinearNode(NodeType nodeType) {
         super(nodeType);
@@ -10,7 +12,7 @@ public class LinearNode extends Node {
     }
 
     @Override
-    protected double calculateValue() {
-        return getIn().stream().mapToDouble(Connection::getValue).sum();
+    protected double calculateValue(List<Connection> connections) {
+        return connections.stream().mapToDouble(Connection::getValue).sum();
     }
 }

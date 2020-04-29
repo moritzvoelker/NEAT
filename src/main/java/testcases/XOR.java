@@ -14,16 +14,17 @@ public class XOR {
     public static void main(String[] args) {
         NeatConfiguration configuration = new NeatConfiguration(2, 1);
         Neat neat = new Neat(configuration);
-        neat.firstGeneration();
+        neat.firstGeneration();;
 
-        int generations;
+        int generations = 0;
         Scanner scanner = new Scanner(System.in);
         boolean hasAlreadyWorked = false;
-
+        int i = 0;
         do {
             System.out.println("How many generations?");
-            generations = scanner.nextInt();
-            for (int i = 0; i < generations; i++) {
+            generations += scanner.nextInt();
+
+            for (; i < generations; i++) {
                 System.out.println(i);
 
 
@@ -51,7 +52,7 @@ public class XOR {
                 System.out.println("Fitness of Champion: " + neat.getChamp().getFitness());
                 if (works(neat.getChamp()) && !hasAlreadyWorked) {
                     hasAlreadyWorked = true;
-                    System.out.println("Found working organism.");
+                    System.out.println("\u001B[31m Found working organism. \u001B[0m");
                     break;
                 }
                 neat.nextGeneration();

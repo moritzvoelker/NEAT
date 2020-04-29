@@ -20,6 +20,24 @@ public class Organism {
         fitness = -1.0;
     }
 
+    Organism(Organism organism) {
+        inputNodes = new LinkedList<>();
+        hiddenNodes = new LinkedList<>();
+        outputNodes = new LinkedList<>();
+        connections = new LinkedList<>();
+        fitness = -1.0;
+
+        organism.getInputNodes().forEach(inputNode -> {
+            inputNodes.add((InputNode) NodeFactory.create("", NodeType.Input, inputNode.getInnovationNumber()));
+        });
+        organism.getOutputNodes().forEach(outputNode -> {
+            outputNodes.add(NodeFactory.create("", NodeType.Output, outputNode.getInnovationNumber()));
+        });
+
+        organism.getConnections().forEach(this::cloneConnection);
+
+    }
+
     public int mutate(List<Connection> currentMutations, int innovationNumber, NeatConfiguration configuration) {
         mutateWeights(configuration.getMutationRateWeight(), configuration.getPerturbRate(), configuration.getStepSize());
         if (Math.random() < configuration.getMutationRateConnection()) {
@@ -143,6 +161,13 @@ public class Organism {
             throw new IllegalArgumentException("Input number doesn't match input node count. Expected: " + inputNodes.size() + "; provided: " + input.length);
         }
 
+        for (Node node: hiddenNodes) {
+            node.resetCalculated();
+        }
+        for (Node node: outputNodes) {
+            node.resetCalculated();
+        }
+
         for (int i = 0; i < inputNodes.size(); i++) {
             inputNodes.get(i).setValue(input[i]);
         }
@@ -158,6 +183,56 @@ public class Organism {
         return ret;
     }
 
+    public Connection cloneConnection(Connection connection) {
+        Node in = null;
+        Node out = null;
+
+        if (connection.getIn().getNodeType().equals(NodeType.Input)) {
+            for (Node node : getInputNodes()) {
+                if (node.equals(connection.getIn())) {
+                    in = node;
+                    break;
+                }
+            }
+        } else {
+            for (Node node : getHiddenNodes()) {
+                if (node.equals(connection.getIn())) {
+                    in = node;
+                    break;
+                }
+            }
+        }
+        if (in == null) {
+            in = NodeFactory.create("", NodeType.Hidden, connection.getIn().getInnovationNumber());
+            getHiddenNodes().add(in);
+        }
+
+        if (connection.getOut().getNodeType().equals(NodeType.Hidden)) {
+            for (Node node : getHiddenNodes()) {
+                if (node.equals(connection.getOut())) {
+                    out = node;
+                    break;
+                }
+            }
+        } else {
+            for (Node node : getOutputNodes()) {
+                if (node.equals(connection.getOut())) {
+                    out = node;
+                    break;
+                }
+            }
+        }
+        if (out == null) {
+            out = NodeFactory.create("", NodeType.Hidden, connection.getOut().getInnovationNumber());
+            getHiddenNodes().add(out);
+        }
+
+        Connection newConnection = new Connection(connection, in, out);
+        connections.add(newConnection);
+        out.addInput(newConnection);
+        return newConnection;
+    }
+
     static Organism crossover(Organism father, Organism mother, NeatConfiguration configuration) {
         if (father.getFitness() < mother.getFitness()) {
             Organism temp = father;
@@ -170,16 +245,16 @@ public class Organism {
             child.getInputNodes().add((InputNode) NodeFactory.create("", NodeType.Input, i));
         }
 
+        for (int i = 0; i < configuration.getOutputCount(); i++) {
+            child.getOutputNodes().add(NodeFactory.create("", NodeType.Output, i + configuration.getInputCount()));
+        }
+
         int i = 0, j = 0;
         Connection fatherConnection = father.getConnections().get(i);
         Connection motherConnection = mother.getConnections().get(j);
         boolean equalParents = father.getFitness() == mother.getFitness();
         while (i < father.getConnections().size() || (equalParents && j < mother.getConnections().size())) {
             boolean joined = fatherConnection.getInnovationNumber() == motherConnection.getInnovationNumber();
-
-            Node in = null;
-            Node out = null;
-
             Connection currentConnection;
 
             if (motherConnection.getInnovationNumber() < fatherConnection.getInnovationNumber()) {
@@ -198,49 +273,7 @@ public class Organism {
                 currentConnection = fatherConnection;
             }
 
-
-            for (Node node : child.getInputNodes()) {
-                if (node.equals(currentConnection.getIn())) {
-                    in = node;
-                    break;
-                }
-            }
-            if (in == null) {
-                for (Node node : child.getHiddenNodes()) {
-                    if (node.equals(currentConnection.getIn())) {
-                        in = node;
-                        break;
-                    }
-                }
-            }
-            if (in == null) {
-                in = NodeFactory.create("", NodeType.Hidden, currentConnection.getIn().getInnovationNumber());
-                child.getHiddenNodes().add(in);
-            }
-
-            for (Node node : child.getHiddenNodes()) {
-                if (node.equals(currentConnection.getOut())) {
-                    out = node;
-                    break;
-                }
-            }
-            if (out == null) {
-                for (Node node : child.getOutputNodes()) {
-                    if (node.equals(currentConnection.getOut())) {
-                        out = node;
-                        break;
-                    }
-                }
-            }
-            if (out == null) {
-                if (currentConnection.getOut().getNodeType().equals(NodeType.Hidden)) {
-                    out = NodeFactory.create("", NodeType.Hidden, currentConnection.getOut().getInnovationNumber());
-                    child.getHiddenNodes().add(out);
-                } else {
-                    out = NodeFactory.create("", NodeType.Output, currentConnection.getOut().getInnovationNumber());
-                    child.getOutputNodes().add(out);
-                }
-            }
+            Connection newConnection = child.cloneConnection(currentConnection);
 
             if (joined) {
                 double weight;
@@ -250,14 +283,12 @@ public class Organism {
                     weight = motherConnection.getWeight();
                 }
 
-                Connection newConnection = new Connection(in, out, weight);
+                newConnection.setWeight(weight);
                 if (!fatherConnection.isEnabled() && !motherConnection.isEnabled()) {
                     newConnection.setEnabled(false);
                 } else if (((fatherConnection.isEnabled() && !motherConnection.isEnabled()) || (!fatherConnection.isEnabled() && motherConnection.isEnabled())) && Math.random() < configuration.getDisableRate()) {
                     newConnection.setEnabled(false);
                 }
-                newConnection.setInnovationNumber(currentConnection.getInnovationNumber());
-                child.getConnections().add(newConnection);
                 if (++i == father.getConnections().size()) {
                     fatherConnection = new Connection(null, null, 0.0);
                     fatherConnection.setInnovationNumber(Integer.MAX_VALUE);
@@ -271,7 +302,7 @@ public class Organism {
                     motherConnection = mother.getConnections().get(j);
                 }
             } else {
-                child.getConnections().add(new Connection(currentConnection, in, out));
+                child.cloneConnection(currentConnection);
                 if (fatherConnection.getInnovationNumber() < motherConnection.getInnovationNumber()) {
                     if (++i == father.getConnections().size()) {
                         fatherConnection = new Connection(null, null, 0.0);
@@ -323,8 +354,20 @@ public class Organism {
             if (fatherConnection.getInnovationNumber() == motherConnection.getInnovationNumber()) {
                 joined++;
                 weightDifference += Math.abs(fatherConnection.getWeight() - motherConnection.getWeight());
-                i++;
-                j++;
+
+                if (++i < connections.size()) {
+                    fatherConnection = connections.get(i);
+                } else {
+                    fatherConnection = new Connection(null, null, 0.0);
+                    fatherConnection.setInnovationNumber(Integer.MAX_VALUE);
+                }
+
+                if (++j < organism.getConnections().size()) {
+                    motherConnection = organism.getConnections().get(j);
+                } else {
+                    motherConnection = new Connection(null, null, 0.0);
+                    motherConnection.setInnovationNumber(Integer.MAX_VALUE);
+                }
             } else if (fatherConnection.getInnovationNumber() < motherConnection.getInnovationNumber()) {
                 if (j == organism.getConnections().size()) {
                     excess++;
