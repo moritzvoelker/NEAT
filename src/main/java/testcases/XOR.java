@@ -18,11 +18,16 @@ public class XOR {
 
         int generations = 0;
         Scanner scanner = new Scanner(System.in);
+        int scannerOutput = 0;
         boolean hasAlreadyWorked = false;
         int i = 0;
         do {
             System.out.println("How many generations?");
-            generations += scanner.nextInt();
+            scannerOutput = scanner.nextInt();
+            generations += scannerOutput;
+            if (scannerOutput < 0) {
+                i = generations;
+            }
 
             for (; i < generations; i++) {
                 System.out.println(i);
@@ -57,7 +62,7 @@ public class XOR {
                 }
                 neat.nextGeneration();
             }
-        } while (generations >= 0);
+        } while (scannerOutput >= 0);
     }
 
     private static double calculateFitness(double[] input, double[] output) {
