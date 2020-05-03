@@ -91,4 +91,9 @@ public class Connection {
             return false;
         }
     }
+
+    @Override
+    public int hashCode() {
+        return Integer.parseInt(Integer.toString(in.getInnovationNumber()) +  out.getInnovationNumber());
+    }
 }

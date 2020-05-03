@@ -16,7 +16,7 @@ public class Organism {
         inputNodes = new LinkedList<>();
         hiddenNodes = new LinkedList<>();
         outputNodes = new LinkedList<>();
-        connections = new LinkedList<>();
+        connections = new TestList<>();
         fitness = -1.0;
     }
 
@@ -24,7 +24,7 @@ public class Organism {
         inputNodes = new LinkedList<>();
         hiddenNodes = new LinkedList<>();
         outputNodes = new LinkedList<>();
-        connections = new LinkedList<>();
+        connections = new TestList<>();
         fitness = -1.0;
 
         organism.getInputNodes().forEach(inputNode -> {
@@ -100,7 +100,7 @@ public class Organism {
                 connection = new Connection(inNode, outNode, Math.random() * 2 - 1);
             }
 
-        } while (connections.contains(connection) && i++ < 100);
+        } while (connections.contains(connection) && ++i < 100);
 
         if (i == 100) {
             return currentInnovationNumber;
@@ -126,8 +126,6 @@ public class Organism {
         Connection out = new Connection(node, connection.getOut(), 1.0);
 
         hiddenNodes.add(node);
-        connections.add(in);
-        connections.add(out);
         node.addInput(in);
         connection.getOut().addInput(out);
 
@@ -147,6 +145,17 @@ public class Organism {
             out.setInnovationNumber(currentInnovationNumber++);
             currentMutations.add(connection);
         }
+
+        if (connections.contains(in)) {
+            System.out.println("Double in connection");
+        }
+        if (connections.contains(out)) {
+            System.out.println("Double out connection");
+        }
+
+
+        connections.add(in);
+        connections.add(out);
 
         return currentInnovationNumber;
     }
@@ -183,6 +192,7 @@ public class Organism {
         return ret;
     }
 
+    // TODO: 01.05.2020 Find out why some connections are doubled
     public Connection cloneConnection(Connection connection) {
         Node in = null;
         Node out = null;
@@ -228,6 +238,9 @@ public class Organism {
         }
 
         Connection newConnection = new Connection(connection, in, out);
+        if (connections.contains(newConnection)) {
+            System.out.println("Double connection");
+        }
         connections.add(newConnection);
         out.addInput(newConnection);
         return newConnection;
@@ -273,22 +286,30 @@ public class Organism {
                 currentConnection = fatherConnection;
             }
 
-            Connection newConnection = child.cloneConnection(currentConnection);
+
+            boolean alreadyExisting = child.getConnections().contains(currentConnection);
+            Connection newConnection = null;
+            if (!alreadyExisting) {
+                 newConnection = child.cloneConnection(currentConnection);
+            }
 
             if (joined) {
-                double weight;
-                if (Math.random() < 0.5) {
-                    weight = fatherConnection.getWeight();
-                } else {
-                    weight = motherConnection.getWeight();
+                if (!alreadyExisting) {
+                    double weight;
+                    if (Math.random() < 0.5) {
+                        weight = fatherConnection.getWeight();
+                    } else {
+                        weight = motherConnection.getWeight();
+                    }
+
+                    newConnection.setWeight(weight);
+                    if (!fatherConnection.isEnabled() && !motherConnection.isEnabled()) {
+                        newConnection.setEnabled(false);
+                    } else if (((fatherConnection.isEnabled() && !motherConnection.isEnabled()) || (!fatherConnection.isEnabled() && motherConnection.isEnabled())) && Math.random() < configuration.getDisableRate()) {
+                        newConnection.setEnabled(false);
+                    }
                 }
 
-                newConnection.setWeight(weight);
-                if (!fatherConnection.isEnabled() && !motherConnection.isEnabled()) {
-                    newConnection.setEnabled(false);
-                } else if (((fatherConnection.isEnabled() && !motherConnection.isEnabled()) || (!fatherConnection.isEnabled() && motherConnection.isEnabled())) && Math.random() < configuration.getDisableRate()) {
-                    newConnection.setEnabled(false);
-                }
                 if (++i == father.getConnections().size()) {
                     fatherConnection = new Connection(null, null, 0.0);
                     fatherConnection.setInnovationNumber(Integer.MAX_VALUE);
@@ -302,7 +323,6 @@ public class Organism {
                     motherConnection = mother.getConnections().get(j);
                 }
             } else {
-                child.cloneConnection(currentConnection);
                 if (fatherConnection.getInnovationNumber() < motherConnection.getInnovationNumber()) {
                     if (++i == father.getConnections().size()) {
                         fatherConnection = new Connection(null, null, 0.0);
