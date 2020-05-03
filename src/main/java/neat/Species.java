@@ -71,7 +71,27 @@ public class Species {
                         break;
                     }
                 }
+
+                List<Connection> buffer = new LinkedList<>();
+                for (Connection connection : father.getConnections()) {
+                    if (buffer.contains(connection)) {
+                        System.out.println("Duplicate at MutationOnly 0");
+                        break;
+                    }
+                    buffer.add(connection);
+                }
+                buffer.clear();
+
                 innovationNumber = father.mutate(currentMutations, innovationNumber, configuration);
+
+                for (Connection connection : father.getConnections()) {
+                    if (buffer.contains(connection)) {
+                        System.out.println("Duplicate at MutationOnly 1");
+                        break;
+                    }
+                    buffer.add(connection);
+                }
+
                 newPopulation.add(father);
             } else {
                 double randomFather = Math.random() * averageFitness * members.size();
@@ -94,12 +114,50 @@ public class Species {
                     mother = members.get(0);
                 }
                 Organism child = Organism.crossover(father, mother, configuration);
+
+                List<Connection> buffer = new LinkedList<>();
+                for (Connection connection : father.getConnections()) {
+                    if (buffer.contains(connection)) {
+                        System.out.println("Duplicate at Mating father");
+                        break;
+                    }
+                    buffer.add(connection);
+                }
+                buffer.clear();
+
+                for (Connection connection : mother.getConnections()) {
+                    if (buffer.contains(connection)) {
+                        System.out.println("Duplicate at Mating mother");
+                        break;
+                    }
+                    buffer.add(connection);
+                }
+                buffer.clear();
+
+                for (Connection connection : child.getConnections()) {
+                    if (buffer.contains(connection)) {
+                        System.out.println("Duplicate at Mating 0");
+                        break;
+                    }
+                    buffer.add(connection);
+                }
+                buffer.clear();
+
                 innovationNumber = child.mutate(currentMutations, innovationNumber, configuration);
+
+                for (Connection connection : child.getConnections()) {
+                    if (buffer.contains(connection)) {
+                        System.out.println("Duplicate at Mating 1");
+                        break;
+                    }
+                    buffer.add(connection);
+                }
+
                 newPopulation.add(child);
             }
         }
 
-        representative = members.get((int)(Math.random() * members.size()));
+        representative = members.get((int) (Math.random() * members.size()));
         members.clear();
 
         return innovationNumber;

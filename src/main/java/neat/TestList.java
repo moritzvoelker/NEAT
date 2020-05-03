@@ -19,4 +19,13 @@ public class TestList<T> extends LinkedList<T> {
         }
         return contains;
     }
+
+    @Override
+    public boolean remove(Object o) {
+        if (size() == 1) {
+            System.out.println("Removing though we should not");
+        }
+        return super.remove(o);
+    }
+
 }

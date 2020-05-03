@@ -43,6 +43,7 @@ public class Organism {
         if (Math.random() < configuration.getMutationRateConnection()) {
             innovationNumber = mutateConnection(innovationNumber, currentMutations);
         }
+
         if (Math.random() < configuration.getMutationRateNode()) {
             innovationNumber = mutateNode(innovationNumber, currentMutations);
         }
@@ -110,6 +111,16 @@ public class Organism {
 
         currentInnovationNumber = connection.setInnovationNumber(currentInnovationNumber, currentMutations);
 
+        List<Connection> buffer = new LinkedList<>();
+        for (Connection curr : connections) {
+            if (buffer.contains(curr)) {
+                System.out.println("Duplicate at MutateConnection");
+                break;
+            }
+            buffer.add(curr);
+        }
+        buffer.clear();
+
         connections.add(connection);
 
         return currentInnovationNumber;
@@ -145,6 +156,16 @@ public class Organism {
             out.setInnovationNumber(currentInnovationNumber++);
             currentMutations.add(connection);
         }
+
+        List<Connection> buffer = new LinkedList<>();
+        for (Connection curr : connections) {
+            if (buffer.contains(curr)) {
+                System.out.println("Duplicate at MutateNode");
+                break;
+            }
+            buffer.add(curr);
+        }
+        buffer.clear();
 
         if (connections.contains(in)) {
             System.out.println("Double in connection");
