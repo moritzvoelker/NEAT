@@ -5,6 +5,7 @@ import neat.NeatConfiguration;
 import neat.Organism;
 
 import java.util.ArrayList;
+import java.util.InputMismatchException;
 import java.util.List;
 import java.util.Scanner;
 
@@ -23,7 +24,15 @@ public class XOR {
         int i = 0;
         do {
             System.out.println("How many generations?");
-            scannerOutput = scanner.nextInt();
+            boolean inputNotSet = true;
+            while (inputNotSet) {
+                try {
+                    scannerOutput = Integer.parseInt(scanner.nextLine());
+                    inputNotSet = false;
+                } catch (NumberFormatException e) {
+                    System.out.println("\u001B[31mInvalid input\u001B[0m");
+                }
+            }
             generations += scannerOutput;
             if (scannerOutput < 0) {
                 i = generations;
@@ -57,7 +66,7 @@ public class XOR {
                 System.out.println("Fitness of Champion: " + neat.getChamp().getFitness());
                 if (works(neat.getChamp()) && !hasAlreadyWorked) {
                     hasAlreadyWorked = true;
-                    System.out.println("\u001B[31m Found working organism. \u001B[0m");
+                    System.out.println("\u001B[32mFound working organism.\u001B[0m");
                     break;
                 }
                 neat.nextGeneration();
