@@ -63,6 +63,7 @@ public class Neat {
                 organism.getOutputNodes().add(out);
 
                 Connection connection = new Connection(organism.getInputNodes().get((int) (Math.random() * configuration.getInputCount())), out, Math.random() * 2 - 1);
+
                 out.getIn().add(connection);
                 globalInnovationNumber = connection.setInnovationNumber(globalInnovationNumber, addedConnections);
 
@@ -76,7 +77,10 @@ public class Neat {
         List<Connection> currentMutations = new LinkedList<>();
         List<Organism> newPopulation = new ArrayList<>(configuration.getPopulationSize());
         Organism champ = getChamp();
-        species = species.stream().filter(species1 -> !species1.hasNotImprovedRecently(configuration) || species1.getMembers().get(0) == champ).collect(Collectors.toList());
+        int speciesOfChamp = 0;
+
+        // TODO: 03.05.2020 getChamp() is expensive. Find a way to save it since we need it later
+        species = species.stream().filter(species1 -> !species1.hasNotImprovedRecently(configuration) || species1.getChamp() == champ).collect(Collectors.toList());
 
         double overallFitness = species.stream().mapToDouble(Species::getAverageFitness).sum();
         int[] speciesSizes = new int[species.size()];
@@ -85,11 +89,20 @@ public class Neat {
         int currentPopulationSize = 0;
         for (Species currentSpecies : species) {
             currentPopulationSize += speciesSizes[i] = (int) (configuration.getPopulationSize() * (currentSpecies.getAverageFitness() / overallFitness));
+            if (currentSpecies.getChamp().equals(champ)) {
+                speciesOfChamp = i;
+            }
             i++;
+        }
+
+        if (configuration.getPopulationSize() - currentPopulationSize > 0) {
+            speciesSizes[speciesOfChamp]++;
+            currentPopulationSize++;
         }
 
         for (i = 0; i < configuration.getPopulationSize() - currentPopulationSize; i++) {
             speciesSizes[i % species.size()]++;
+
         }
 
         i = 0;
@@ -123,6 +136,7 @@ public class Neat {
         return species;
     }
 
+    // TODO: 03.05.2020 Only works if fitness was set via setFitness(). --> dependent on state
     public Organism getChamp() {
         Organism champ = species.get(0).getChamp();
         for (int i = 1; i < species.size(); i++) {

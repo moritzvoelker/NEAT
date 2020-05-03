@@ -38,6 +38,7 @@ public class Species {
     // TODO: 23.04.2020 Think of an elegant solution for when fitness not properly set, at the moment NullPointerException
     public int produceOffspring(List<Organism> newPopulation, List<Connection> currentMutations, int numberOfChildren, int innovationNumber, NeatConfiguration configuration) throws NullPointerException {
         if (numberOfChildren == 0) {
+            members.clear();
             return innovationNumber;
         }
 
@@ -116,16 +117,15 @@ public class Species {
         return generationsSinceInprovement == configuration.getPurgeAge();
     }
 
-    public void setInput(List<double[]> input){
+    public void setInput(List<double[]> input) {
         for (int i = 0; i < members.size(); i++) {
-
             members.get(i).setInput(input.get(i));
         }
     }
 
     public List<double[]> getOutput() {
         List<double[]> output = new ArrayList<>(members.size());
-        for (Organism organism : members){
+        for (Organism organism : members) {
             output.add(organism.getOutput());
         }
         return output;
@@ -139,9 +139,9 @@ public class Species {
 
     public Organism getChamp() {
         Organism champ = members.get(0);
-        for (int i = 1; i < members.size(); i++) {
-            if (members.get(i).getFitness() > champ.getFitness()) {
-                champ = members.get(i);
+        for (Organism organism : members) {
+            if (organism.getFitness() > champ.getFitness()) {
+                champ = organism;
             }
         }
         return champ;
