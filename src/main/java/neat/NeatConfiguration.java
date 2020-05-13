@@ -2,8 +2,8 @@ package neat;
 
 public class NeatConfiguration {
     private int populationSize = 150;
-    // TODO: 29.04.2020 Reneame purgeAge
-    private int purgeAge = 15;
+    private int purgeAge = 20;
+    private int maxGenerationsWithoutImprovement = 15;
     private double speciationThreshhold = 3.0;
     private double mutationRateNode = 0.03;
     private double mutationRateConnection = 0.05;
@@ -20,6 +20,7 @@ public class NeatConfiguration {
     private double c3 = 0.4;
     private int inputCount;
     private int outputCount;
+    private boolean biasNodeEnabled = true;
 
     public NeatConfiguration(int inputCount, int outputCount) {
         this.inputCount = inputCount;
@@ -41,6 +42,15 @@ public class NeatConfiguration {
 
     public NeatConfiguration setPurgeAge(int purgeAge) {
         this.purgeAge = purgeAge;
+        return this;
+    }
+
+    public int getMaxGenerationsWithoutImprovement() {
+        return maxGenerationsWithoutImprovement;
+    }
+
+    public NeatConfiguration setMaxGenerationsWithoutImprovement(int maxGenerationsWithoutImprovement) {
+        this.maxGenerationsWithoutImprovement = maxGenerationsWithoutImprovement;
         return this;
     }
 
@@ -188,4 +198,12 @@ public class NeatConfiguration {
         return this;
     }
 
+    public boolean isBiasNodeEnabled() {
+        return biasNodeEnabled;
+    }
+
+    public NeatConfiguration setBiasNodeEnabled(boolean biasNodeEnabled) {
+        this.biasNodeEnabled = biasNodeEnabled;
+        return this;
+    }
 }

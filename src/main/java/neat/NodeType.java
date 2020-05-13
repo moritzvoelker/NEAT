@@ -1,5 +1,5 @@
 package neat;
 
 public enum NodeType {
-    Input, Hidden, Output
+    Input, Hidden, Output, Bias
 }

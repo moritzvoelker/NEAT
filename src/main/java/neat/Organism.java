@@ -10,29 +10,36 @@ public class Organism {
     private List<Node> hiddenNodes;
     private List<Node> outputNodes;
     private List<Connection> connections;
+    private BiasNode bias;
     private double fitness;
 
-    Organism() {
+    Organism(boolean biasNodeEnabled) {
         inputNodes = new LinkedList<>();
         hiddenNodes = new LinkedList<>();
         outputNodes = new LinkedList<>();
         connections = new TestList<>();
         fitness = -1.0;
+        if (biasNodeEnabled) {
+            bias = new BiasNode();
+        } else {
+            bias = null;
+        }
     }
 
-    Organism(Organism organism) {
+    Organism(Organism organism, boolean biasNodeEnabled) {
         inputNodes = new LinkedList<>();
         hiddenNodes = new LinkedList<>();
         outputNodes = new LinkedList<>();
         connections = new TestList<>();
         fitness = -1.0;
+        if (biasNodeEnabled) {
+            bias = new BiasNode();
+        } else {
+            bias = null;
+        }
 
-        organism.getInputNodes().forEach(inputNode -> {
-            inputNodes.add((InputNode) NodeFactory.create("", NodeType.Input, inputNode.getInnovationNumber()));
-        });
-        organism.getOutputNodes().forEach(outputNode -> {
-            outputNodes.add(NodeFactory.create("", NodeType.Output, outputNode.getInnovationNumber()));
-        });
+        organism.getInputNodes().forEach(inputNode -> inputNodes.add((InputNode) NodeFactory.create("", NodeType.Input, inputNode.getInnovationNumber())));
+        organism.getOutputNodes().forEach(outputNode -> outputNodes.add(NodeFactory.create("", NodeType.Output, outputNode.getInnovationNumber())));
 
         organism.getConnections().forEach(this::cloneConnection);
 
@@ -73,6 +80,7 @@ public class Organism {
         Connection connection;
 
         int i = 0;
+        boolean quit;
         do {
             int in = (int) (Math.random() * (inputNodes.size() + hiddenNodes.size()));
             int out = (int) (Math.random() * (hiddenNodes.size() + outputNodes.size()));
@@ -89,7 +97,7 @@ public class Organism {
             do {
                 if (out < hiddenNodes.size()) {
                     outNode = hiddenNodes.get(out);
-                } else {
+                } else { // TODO: 14.05.2020 Breaks here... Bug came after we added Bias
                     outNode = outputNodes.get(out - hiddenNodes.size());
                 }
                 out++;
@@ -160,23 +168,16 @@ public class Organism {
             currentMutations.add(connection);
         }
 
-        List<Connection> buffer = new LinkedList<>();
-        for (Connection curr : connections) {
-            if (buffer.contains(curr)) {
-                System.out.println("Duplicate at MutateNode");
-                break;
+        if (bias != null) {
+            connection = new Connection(bias, node, Math.random() * 2 - 1);
+            node.getIn().add(connection);
+            if (i == currentMutations.size()) {
+                connection.setInnovationNumber(currentInnovationNumber++);
+            } else {
+                connection.setInnovationNumber(node.getInnovationNumber() + 3);
             }
-            buffer.add(curr);
+            connections.add(connection);
         }
-        buffer.clear();
-
-        if (connections.contains(in)) {
-            System.out.println("Double in connection");
-        }
-        if (connections.contains(out)) {
-            System.out.println("Double out connection");
-        }
-
 
         connections.add(in);
         connections.add(out);
@@ -276,7 +277,7 @@ public class Organism {
             mother = temp;
         }
 
-        Organism child = new Organism();
+        Organism child = new Organism(configuration.isBiasNodeEnabled());
         for (int i = 0; i < configuration.getInputCount(); i++) {
             child.getInputNodes().add((InputNode) NodeFactory.create("", NodeType.Input, i));
         }
@@ -367,6 +368,7 @@ public class Organism {
     }
 
     public boolean hasNode(Node node) {
+        //noinspection SuspiciousMethodCalls
         return inputNodes.contains(node) || hiddenNodes.contains(node) || outputNodes.contains(node);
     }
 
@@ -378,13 +380,7 @@ public class Organism {
         int excess = 0, disjoint = 0, joined = 0;
         double weightDifference = 0.0;
 
-        int size;
-
-        if (organism.getConnections().size() > connections.size()) {
-            size = organism.getConnections().size();
-        } else {
-            size = connections.size();
-        }
+        int size = Math.max(organism.getConnections().size(), connections.size());
 
         if (size < 20) {
             size = 1;
@@ -478,5 +474,9 @@ public class Organism {
 
     public void setConnections(List<Connection> connections) {
         this.connections = connections;
+    }
+
+    public BiasNode getBias() {
+        return bias;
     }
 }

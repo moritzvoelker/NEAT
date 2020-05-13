@@ -11,11 +11,10 @@ import java.util.Scanner;
 
 public class XOR {
 
-    // TODO: 26.04.2020 Champion gets deleted, Fitness does not grow above 2.0, After a few generations only 1 Species 
     public static void main(String[] args) {
         NeatConfiguration configuration = new NeatConfiguration(2, 1);
         Neat neat = new Neat(configuration);
-        neat.firstGeneration();;
+        neat.firstGeneration();
 
         int generations = 0;
         Scanner scanner = new Scanner(System.in);
@@ -58,8 +57,12 @@ public class XOR {
                     neat.setInput(inputs);
                     List<double[]> outputs = neat.getOutput();
                     for (int k = 0; k < configuration.getPopulationSize(); k++) {
-                        fitness[k] += calculateFitness(possibleInputs[j], outputs.get(k));
+                        fitness[k] += calculateDifference(possibleInputs[j], outputs.get(k));
                     }
+                }
+
+                for (int k = 0; k < configuration.getPopulationSize(); k++) {
+                    fitness[k] = Math.pow(4.0 - fitness[k], 2);
                 }
 
                 neat.setFitness(fitness);
@@ -74,11 +77,19 @@ public class XOR {
         } while (scannerOutput >= 0);
     }
 
+    private static double calculateDifference(double[] input, double[]output) {
+        if (input[0] == input[1]) {
+            return output[0];
+        } else {
+            return 1.0 - output[0];
+        }
+    }
+
     private static double calculateFitness(double[] input, double[] output) {
         if (input[0] == input[1]) {
             return Math.pow(1.0 - output[0], 2);
         } else {
-            return Math.pow(0.0 - output[0], 2);
+            return Math.pow(output[0], 2);
         }
     }
 

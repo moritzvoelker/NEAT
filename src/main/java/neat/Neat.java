@@ -7,7 +7,9 @@ public class Neat {
     private NeatConfiguration configuration;
 
     private List<Species> species;
-    private int globalInnovationNumber;
+    private int globalInnovationNumber = 1;
+    private int generationsSinceLastImprovement;
+    private Organism lastChamp = null;
 
     public Neat(NeatConfiguration configuration) {
         this.configuration = configuration;
@@ -49,25 +51,47 @@ public class Neat {
 
     public void firstGeneration(NeatConfiguration configuration) {
         this.configuration = configuration;
-        List<Connection> addedConnections = new LinkedList<>();
-        species = new LinkedList<>();
-        globalInnovationNumber = configuration.getInputCount() + configuration.getOutputCount();
 
-        for (int k = 0; k < configuration.getPopulationSize(); k++) {
-            Organism organism = new Organism();
+        species = new LinkedList<>();
+        globalInnovationNumber = configuration.getInputCount() + configuration.getOutputCount() + 1;
+
+        generateOrganisms(configuration, configuration.getPopulationSize());
+
+        generationsSinceLastImprovement = 0;
+    }
+
+    private void generateOrganisms(NeatConfiguration configuration, int numberOfOrganisms) {
+        List<Connection> addedConnections = new LinkedList<>();
+        for (int k = 0; k < numberOfOrganisms; k++) {
+            Organism organism = new Organism(configuration.isBiasNodeEnabled());
             for (int i = 0; i < configuration.getInputCount(); i++) {
-                organism.getInputNodes().add((InputNode) NodeFactory.create("", NodeType.Input, i));
+                organism.getInputNodes().add((InputNode) NodeFactory.create("", NodeType.Input, i + 1));
             }
             for (int i = 0; i < configuration.getOutputCount(); i++) {
-                Node out = NodeFactory.create("", NodeType.Output, i + configuration.getInputCount());
+                Node out = NodeFactory.create("", NodeType.Output, i + configuration.getInputCount() + 1);
+                Node in = organism.getInputNodes().get((int) (Math.random() * configuration.getInputCount()));
                 organism.getOutputNodes().add(out);
 
-                Connection connection = new Connection(organism.getInputNodes().get((int) (Math.random() * configuration.getInputCount())), out, Math.random() * 2 - 1);
+                Connection connection = new Connection(in, out, Math.random() * 2 - 1);
+                Connection biasConnection = new Connection(organism.getBias(), out, Math.random() * 2 - 1);
 
                 out.getIn().add(connection);
+                out.getIn().add(biasConnection);
+                in.getIn().add(connection); // Sorry... Abusing the InputConnection-List to look up which InputNodes already have connections.
+
                 globalInnovationNumber = connection.setInnovationNumber(globalInnovationNumber, addedConnections);
+                globalInnovationNumber = biasConnection.setInnovationNumber(globalInnovationNumber, addedConnections);
 
                 organism.getConnections().add(connection);
+            }
+            for (InputNode node : organism.getInputNodes()) {
+                if (node.getIn().isEmpty()) {
+                    Node out = organism.getOutputNodes().get((int) (Math.random() * configuration.getOutputCount()));
+                    Connection connection = new Connection(node, out, Math.random() * 2 - 1);
+                    out.getIn().add(connection);
+                } else {
+                    node.getIn().clear();
+                }
             }
             specify(organism);
         }
@@ -79,23 +103,53 @@ public class Neat {
         Organism champ = getChamp();
         int speciesOfChamp = 0;
 
-        // TODO: 03.05.2020 getChamp() is expensive. Find a way to save it since we need it later
-        species = species.stream().filter(species1 -> !species1.hasNotImprovedRecently(configuration) || species1.getChamp() == champ).collect(Collectors.toList());
+        // TODO: 13.05.2020 Deletes all species sometimes --> Bug
+        species = species.stream().filter(species1 -> {
+            if (species1.generationsSinceLastImprovement() >= configuration.getMaxGenerationsWithoutImprovement()) {
+                if (species1.getChamp().equals(champ)) {
+                    newPopulation.add(champ);
+                }
+                return false;
+            }
+            return true;
+        }).collect(Collectors.toList());
+
+        if (champ.equals(lastChamp)) {
+            if (++generationsSinceLastImprovement > configuration.getPurgeAge() && species.size() > 1) {
+                if (species.get(1).getAverageFitness() > species.get(0).getAverageFitness()) {
+                    species.set(0, species.set(1, species.get(0)));
+                }
+                for (int i = 2; i < species.size(); i++) {
+                    if (species.get(i).getAverageFitness() > species.get(0).getAverageFitness()) {
+                        species.set(1, species.set(0, species.get(i)));
+                    } else if (species.get(i).getAverageFitness() > species.get(1).getAverageFitness()) {
+                        species.set(1, species.get(i));
+                    }
+                }
+                species = species.subList(0, 2);
+                if (newPopulation.size() == 0 && !species.get(0).getMembers().contains(champ) && !species.get(1).getMembers().contains(champ)) {
+                    newPopulation.add(champ);
+                }
+            }
+        } else {
+            generationsSinceLastImprovement = 0;
+            lastChamp = champ;
+        }
 
         double overallFitness = species.stream().mapToDouble(Species::getAverageFitness).sum();
         int[] speciesSizes = new int[species.size()];
 
         int i = 0;
-        int currentPopulationSize = 0;
+        int currentPopulationSize = newPopulation.size();
         for (Species currentSpecies : species) {
-            currentPopulationSize += speciesSizes[i] = (int) (configuration.getPopulationSize() * (currentSpecies.getAverageFitness() / overallFitness));
+            currentPopulationSize += speciesSizes[i] = (int) ((configuration.getPopulationSize() - newPopulation.size()) * (currentSpecies.getAverageFitness() / overallFitness));
             if (currentSpecies.getChamp().equals(champ)) {
                 speciesOfChamp = i;
             }
             i++;
         }
 
-        if (configuration.getPopulationSize() - currentPopulationSize > 0) {
+        if (newPopulation.size() == 0 && configuration.getPopulationSize() > currentPopulationSize) {
             speciesSizes[speciesOfChamp]++;
             currentPopulationSize++;
         }
@@ -135,7 +189,7 @@ public class Neat {
         return species;
     }
 
-    // TODO: 03.05.2020 Only works if fitness was set via setFitness(). --> dependent on state
+
     public Organism getChamp() {
         Organism champ = species.get(0).getChamp();
         for (int i = 1; i < species.size(); i++) {

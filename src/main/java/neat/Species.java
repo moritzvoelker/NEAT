@@ -30,7 +30,6 @@ public class Species {
             }
         }
         averageFitness /= members.size();
-        // TODO: 25.04.2020 How da fuq???
         return averageFitness;
     }
 
@@ -46,13 +45,7 @@ public class Species {
         Organism mother = null;
 
         members.sort((organism1, organism2) -> {
-            if (organism1.getFitness() > organism2.getFitness()) {
-                return -1;
-            } else if (organism1.getFitness() < organism2.getFitness()) {
-                return 1;
-            } else {
-                return 0;
-            }
+            return Double.compare(organism2.getFitness(), organism1.getFitness());
         });
 
         members = members.subList(0, (int) (members.size() * configuration.getSurvivalRate()) + 1);
@@ -67,7 +60,7 @@ public class Species {
                 for (Organism organism : members) {
                     comulativeFitness += organism.getFitness();
                     if (comulativeFitness > random) {
-                        father = new Organism(organism);
+                        father = new Organism(organism, configuration.isBiasNodeEnabled());
                         break;
                     }
                 }
@@ -163,7 +156,7 @@ public class Species {
         return innovationNumber;
     }
 
-    public boolean hasNotImprovedRecently(NeatConfiguration configuration) {
+    public int generationsSinceLastImprovement() {
         calculateAverageFitness();
         if (oldAverageFitness >= averageFitness) {
             generationsSinceInprovement++;
@@ -172,7 +165,7 @@ public class Species {
             oldAverageFitness = averageFitness;
         }
 
-        return generationsSinceInprovement == configuration.getPurgeAge();
+        return generationsSinceInprovement;
     }
 
     public void setInput(List<double[]> input) {
