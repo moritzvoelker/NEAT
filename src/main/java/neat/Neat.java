@@ -102,7 +102,6 @@ public class Neat {
 
         for (i = 0; i < configuration.getPopulationSize() - currentPopulationSize; i++) {
             speciesSizes[i % species.size()]++;
-
         }
 
         i = 0;

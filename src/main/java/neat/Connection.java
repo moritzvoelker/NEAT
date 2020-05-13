@@ -25,7 +25,7 @@ public class Connection {
         this.out = out;
         this.weight = connection.weight;
         this.innovationNumber = connection.innovationNumber;
-        this.enabled = true;
+        this.enabled = connection.isEnabled();
     }
 
     public boolean isDependentOn(Node node) {
@@ -86,7 +86,7 @@ public class Connection {
     @Override
     public boolean equals(Object obj) {
         if (obj instanceof Connection) {
-            return in.getInnovationNumber() == ((Connection) obj).getIn().getInnovationNumber() && out.getInnovationNumber() == ((Connection) obj).getOut().getInnovationNumber() && isEnabled() == ((Connection) obj).isEnabled();
+            return in.getInnovationNumber() == ((Connection) obj).getIn().getInnovationNumber() && out.getInnovationNumber() == ((Connection) obj).getOut().getInnovationNumber();
         } else {
             return false;
         }

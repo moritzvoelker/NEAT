@@ -1,5 +1,6 @@
 package neat;
 
+// TODO: 13.05.2020 Actually doing something with type!
 public class NodeFactory {
     public static Node create(String type, NodeType nodeType) {
         if (nodeType == NodeType.Input) {

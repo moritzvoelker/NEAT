@@ -101,25 +101,28 @@ public class Organism {
                 connection = new Connection(inNode, outNode, Math.random() * 2 - 1);
             }
 
-        } while (connections.contains(connection) && ++i < 100);
+            quit = true;
+            for (Connection toCompare : connections) {
+                if (toCompare.equals(connection)) {
+                    if (!toCompare.isEnabled()) {
+                        toCompare.setEnabled(true);
+                        i = 100;
+                    } else {
+                        quit = false;
+                    }
+                    break;
+                }
+            }
 
-        if (i == 100) {
+        } while (!quit && ++i < 100);
+
+        if (i >= 100) {
             return currentInnovationNumber;
         }
 
         connection.getOut().addInput(connection);
 
         currentInnovationNumber = connection.setInnovationNumber(currentInnovationNumber, currentMutations);
-
-        List<Connection> buffer = new LinkedList<>();
-        for (Connection curr : connections) {
-            if (buffer.contains(curr)) {
-                System.out.println("Duplicate at MutateConnection");
-                break;
-            }
-            buffer.add(curr);
-        }
-        buffer.clear();
 
         connections.add(connection);
 
@@ -142,7 +145,7 @@ public class Organism {
 
         int i;
         for (i = 0; i < currentMutations.size(); i++) {
-            if (connection.equals(currentMutations.get(i))) {
+            if (connection.equals(currentMutations.get(i)) && !currentMutations.get(i).isEnabled()) {
                 node.setInnovationNumber(currentMutations.get(i).getOut().getIn().get(currentMutations.get(i).getOut().getIn().size() - 1).getIn().getInnovationNumber());
                 in.setInnovationNumber(node.getInnovationNumber() + 1);
                 out.setInnovationNumber(node.getInnovationNumber() + 2);
@@ -213,7 +216,6 @@ public class Organism {
         return ret;
     }
 
-    // TODO: 01.05.2020 Find out why some connections are doubled
     public Connection cloneConnection(Connection connection) {
         Node in = null;
         Node out = null;
