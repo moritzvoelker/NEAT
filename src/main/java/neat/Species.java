@@ -5,7 +5,7 @@ import java.util.LinkedList;
 import java.util.List;
 
 public class Species {
-    int generationsSinceInprovement;
+    private int generationsSinceInprovement;
     private Organism representative;
     private List<Organism> members;
     private double averageFitness;
@@ -169,5 +169,9 @@ public class Species {
 
     public double getAverageFitness() {
         return averageFitness;
+    }
+
+    public void setGenerationsSinceInprovement(int generationsSinceInprovement) {
+        this.generationsSinceInprovement = generationsSinceInprovement;
     }
 }

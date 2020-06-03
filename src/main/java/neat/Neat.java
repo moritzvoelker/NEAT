@@ -107,15 +107,7 @@ public class Neat {
         int speciesOfChamp = 0;
 
         // TODO: 13.05.2020 Deletes all species sometimes --> Bug
-        species = species.stream().filter(species1 -> {
-            if (species1.generationsSinceLastImprovement() >= configuration.getMaxGenerationsWithoutImprovement()) {
-                if (species1.getChamp().equals(champ)) {
-                    newPopulation.add(champ);
-                }
-                return false;
-            }
-            return true;
-        }).collect(Collectors.toList());
+
 
         if (champ.equals(lastChamp)) {
             if (++generationsSinceLastImprovement > configuration.getPurgeAge() && species.size() > 1) {
@@ -130,13 +122,26 @@ public class Neat {
                     }
                 }
                 species = species.subList(0, 2);
-                if (newPopulation.size() == 0 && !species.get(0).getMembers().contains(champ) && !species.get(1).getMembers().contains(champ)) {
+                if (!species.get(0).getMembers().contains(champ) && !species.get(1).getMembers().contains(champ)) {
                     newPopulation.add(champ);
                 }
+                species.get(0).setGenerationsSinceInprovement(0);
+                species.get(1).setGenerationsSinceInprovement(1);
             }
         } else {
             generationsSinceLastImprovement = 0;
             lastChamp = champ;
+        }
+        if (species.size() > 2) {
+            species = species.stream().filter(species1 -> {
+                if (species1.generationsSinceLastImprovement() >= configuration.getMaxGenerationsWithoutImprovement()) {
+                    if (species1.getChamp().equals(champ)) {
+                        newPopulation.add(champ);
+                    }
+                    return false;
+                }
+                return true;
+            }).collect(Collectors.toList());
         }
 
         double overallFitness = species.stream().mapToDouble(Species::getAverageFitness).sum();
