@@ -43,16 +43,24 @@ public class Species {
 
         Organism father = null;
         Organism mother = null;
+        Organism child = null;
 
-        members.sort((organism1, organism2) -> {
-            return Double.compare(organism2.getFitness(), organism1.getFitness());
-        });
+        members.sort((organism1, organism2) -> Double.compare(organism2.getFitness(), organism1.getFitness()));
 
         members = members.subList(0, (int) (members.size() * configuration.getSurvivalRate()) + 1);
         calculateAverageFitness();
 
-        newPopulation.add(members.get(0));
+        newPopulation.add(new Organism(members.get(0), configuration.isBiasNodeEnabled()));
         numberOfChildren--;
+
+        List<Organism> toCompare = new LinkedList<>();
+        for (Organism tmp : members) {
+            if (toCompare.contains(tmp)) {
+                System.out.println("Duplicate Organisms");
+            }
+            toCompare.add(tmp);
+        }
+
         for (int i = 0; i < numberOfChildren; i++) {
             if (Math.random() < configuration.getMutateOnlyRate()) {
                 double random = Math.random() * averageFitness * members.size();
@@ -60,32 +68,11 @@ public class Species {
                 for (Organism organism : members) {
                     comulativeFitness += organism.getFitness();
                     if (comulativeFitness > random) {
-                        father = new Organism(organism, configuration.isBiasNodeEnabled());
+                        child = new Organism(organism, configuration.isBiasNodeEnabled());
                         break;
                     }
                 }
 
-                List<Connection> buffer = new LinkedList<>();
-                for (Connection connection : father.getConnections()) {
-                    if (buffer.contains(connection)) {
-                        System.out.println("Duplicate at MutationOnly 0");
-                        break;
-                    }
-                    buffer.add(connection);
-                }
-                buffer.clear();
-
-                innovationNumber = father.mutate(currentMutations, innovationNumber, configuration);
-
-                for (Connection connection : father.getConnections()) {
-                    if (buffer.contains(connection)) {
-                        System.out.println("Duplicate at MutationOnly 1");
-                        break;
-                    }
-                    buffer.add(connection);
-                }
-
-                newPopulation.add(father);
             } else {
                 double randomFather = Math.random() * averageFitness * members.size();
                 double randomMother = Math.random() * averageFitness * members.size();
@@ -106,48 +93,14 @@ public class Species {
                 if (mother == null) {
                     mother = members.get(0);
                 }
-                Organism child = Organism.crossover(father, mother, configuration);
+                child = Organism.crossover(father, mother, configuration);
 
-                List<Connection> buffer = new LinkedList<>();
-                for (Connection connection : father.getConnections()) {
-                    if (buffer.contains(connection)) {
-                        System.out.println("Duplicate at Mating father");
-                        break;
-                    }
-                    buffer.add(connection);
-                }
-                buffer.clear();
 
-                for (Connection connection : mother.getConnections()) {
-                    if (buffer.contains(connection)) {
-                        System.out.println("Duplicate at Mating mother");
-                        break;
-                    }
-                    buffer.add(connection);
-                }
-                buffer.clear();
 
-                for (Connection connection : child.getConnections()) {
-                    if (buffer.contains(connection)) {
-                        System.out.println("Duplicate at Mating 0");
-                        break;
-                    }
-                    buffer.add(connection);
-                }
-                buffer.clear();
-
-                innovationNumber = child.mutate(currentMutations, innovationNumber, configuration);
-
-                for (Connection connection : child.getConnections()) {
-                    if (buffer.contains(connection)) {
-                        System.out.println("Duplicate at Mating 1");
-                        break;
-                    }
-                    buffer.add(connection);
-                }
-
-                newPopulation.add(child);
             }
+            innovationNumber = child.mutate(currentMutations, innovationNumber, configuration);
+            newPopulation.add(child);
+            child = null;
         }
 
         representative = members.get((int) (Math.random() * members.size()));

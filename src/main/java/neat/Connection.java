@@ -28,6 +28,14 @@ public class Connection {
         this.enabled = connection.isEnabled();
     }
 
+    public Connection(Connection connection) {
+        this.in = NodeFactory.create("", connection.getIn().getNodeType(), connection.getIn().getInnovationNumber());
+        this.out = NodeFactory.create("", connection.getOut().getNodeType(), connection.getOut().getInnovationNumber());
+        this.weight = connection.weight;
+        this.innovationNumber = connection.innovationNumber;
+        this.enabled = connection.isEnabled();
+    }
+
     public boolean isDependentOn(Node node) {
         return in.isDependentOn(node);
     }

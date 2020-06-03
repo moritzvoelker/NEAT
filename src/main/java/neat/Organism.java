@@ -26,13 +26,14 @@ public class Organism {
         }
     }
 
+    // TODO: 03.06.2020 Brauchen biasNodeEnabled hier vllt. nicht. Ist in organism bereits enthalten
     Organism(Organism organism, boolean biasNodeEnabled) {
         inputNodes = new LinkedList<>();
         hiddenNodes = new LinkedList<>();
         outputNodes = new LinkedList<>();
         connections = new TestList<>();
         fitness = -1.0;
-        if (biasNodeEnabled) {
+        if (biasNodeEnabled) { // if (organism.getBias() != null) {
             bias = new BiasNode();
         } else {
             bias = null;
@@ -131,13 +132,13 @@ public class Organism {
         connection.getOut().addInput(connection);
 
         currentInnovationNumber = connection.setInnovationNumber(currentInnovationNumber, currentMutations);
-
-        connections.add(connection);
+        // TODO: 03.06.2020 Erstmalige Lösung... Entweder so oder nur 1 von beiden in einer Generation
+        connections.add(new Connection(connection));
 
         return currentInnovationNumber;
     }
 
-
+    // TODO: 03.06.2020 InnovationNumber von Knoten in currentMutations wird irgendwie verändert (siehe Console)
     public int mutateNode(int currentInnovationNumber, List<Connection> currentMutations) {
         Connection connection = connections.get((int) (Math.random() * connections.size()));
 
@@ -149,6 +150,7 @@ public class Organism {
 
         hiddenNodes.add(node);
         node.addInput(in);
+        // The Problem was that connection == currentMutations.get(i); Evtl: MutateConnection fügt Connection hinzu, gleiche Connection wird durch mutateNode ausgewählt. --> Problem
         connection.getOut().addInput(out);
 
         int i;
@@ -168,7 +170,10 @@ public class Organism {
             currentMutations.add(connection);
         }
 
-        if (bias != null) {
+        connections.add(in);
+        connections.add(out);
+
+        if (bias != null && !in.getIn().equals(bias)) {
             connection = new Connection(bias, node, Math.random() * 2 - 1);
             node.getIn().add(connection);
             if (i == currentMutations.size()) {
@@ -178,9 +183,6 @@ public class Organism {
             }
             connections.add(connection);
         }
-
-        connections.add(in);
-        connections.add(out);
 
         return currentInnovationNumber;
     }
@@ -262,9 +264,6 @@ public class Organism {
         }
 
         Connection newConnection = new Connection(connection, in, out);
-        if (connections.contains(newConnection)) {
-            System.out.println("Double connection");
-        }
         connections.add(newConnection);
         out.addInput(newConnection);
         return newConnection;

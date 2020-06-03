@@ -55,12 +55,12 @@ public class Neat {
         species = new LinkedList<>();
         globalInnovationNumber = configuration.getInputCount() + configuration.getOutputCount() + 1;
 
-        generateOrganisms(configuration, configuration.getPopulationSize());
+        generateOrganisms(configuration.getPopulationSize());
 
         generationsSinceLastImprovement = 0;
     }
 
-    private void generateOrganisms(NeatConfiguration configuration, int numberOfOrganisms) {
+    private void generateOrganisms(int numberOfOrganisms) {
         List<Connection> addedConnections = new LinkedList<>();
         for (int k = 0; k < numberOfOrganisms; k++) {
             Organism organism = new Organism(configuration.isBiasNodeEnabled());
