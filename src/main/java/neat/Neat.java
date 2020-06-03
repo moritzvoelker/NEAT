@@ -73,14 +73,17 @@ public class Neat {
                 organism.getOutputNodes().add(out);
 
                 Connection connection = new Connection(in, out, Math.random() * 2 - 1);
-                Connection biasConnection = new Connection(organism.getBias(), out, Math.random() * 2 - 1);
-
                 out.getIn().add(connection);
-                out.getIn().add(biasConnection);
+                if (configuration.isBiasNodeEnabled()) {
+                    Connection biasConnection = new Connection(organism.getBias(), out, Math.random() * 2 - 1);
+                    out.getIn().add(biasConnection);
+                    globalInnovationNumber = biasConnection.setInnovationNumber(globalInnovationNumber, addedConnections);
+                }
+
+
                 in.getIn().add(connection); // Sorry... Abusing the InputConnection-List to look up which InputNodes already have connections.
 
                 globalInnovationNumber = connection.setInnovationNumber(globalInnovationNumber, addedConnections);
-                globalInnovationNumber = biasConnection.setInnovationNumber(globalInnovationNumber, addedConnections);
 
                 organism.getConnections().add(connection);
             }

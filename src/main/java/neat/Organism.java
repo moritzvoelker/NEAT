@@ -223,7 +223,9 @@ public class Organism {
         Node in = null;
         Node out = null;
 
-        if (connection.getIn().getNodeType().equals(NodeType.Input)) {
+        if (connection.getIn().getNodeType().equals(NodeType.Bias)) {
+            in = bias;
+        } else if (connection.getIn().getNodeType().equals(NodeType.Input)) {
             for (Node node : getInputNodes()) {
                 if (node.equals(connection.getIn())) {
                     in = node;
@@ -278,11 +280,11 @@ public class Organism {
 
         Organism child = new Organism(configuration.isBiasNodeEnabled());
         for (int i = 0; i < configuration.getInputCount(); i++) {
-            child.getInputNodes().add((InputNode) NodeFactory.create("", NodeType.Input, i));
+            child.getInputNodes().add((InputNode) NodeFactory.create("", NodeType.Input, i + 1));
         }
 
         for (int i = 0; i < configuration.getOutputCount(); i++) {
-            child.getOutputNodes().add(NodeFactory.create("", NodeType.Output, i + configuration.getInputCount()));
+            child.getOutputNodes().add(NodeFactory.create("", NodeType.Output, i + configuration.getInputCount() + 1));
         }
 
         int i = 0, j = 0;
@@ -368,7 +370,7 @@ public class Organism {
 
     public boolean hasNode(Node node) {
         //noinspection SuspiciousMethodCalls
-        return inputNodes.contains(node) || hiddenNodes.contains(node) || outputNodes.contains(node);
+        return node.equals(bias) || inputNodes.contains(node) || hiddenNodes.contains(node) || outputNodes.contains(node);
     }
 
     public boolean isMember(Species species, NeatConfiguration config) {
