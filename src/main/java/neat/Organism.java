@@ -138,6 +138,8 @@ public class Organism {
         return currentInnovationNumber;
     }
 
+
+    static int count = 0;
     // TODO: 03.06.2020 InnovationNumber von Knoten in currentMutations wird irgendwie verändert (siehe Console)
     public int mutateNode(int currentInnovationNumber, List<Connection> currentMutations, NeatConfiguration configuration) {
         Connection connection = connections.get((int) (Math.random() * connections.size()));

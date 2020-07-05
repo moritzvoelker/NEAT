@@ -53,6 +53,8 @@ public class Neat {
         this.configuration = configuration;
 
         species = new LinkedList<>();
+        lastChamp = null;
+
         globalInnovationNumber = configuration.getInputCount() + configuration.getOutputCount() + 1;
 
         generateOrganisms(configuration.getPopulationSize());
@@ -102,13 +104,18 @@ public class Neat {
         }
     }
 
+    // TODO: 05.06.2020 Interspecies mating
+    // TODO: 05.06.2020 Sometimes evolution gets trapped and doesn't get to the goal in a 1000 generations. Why?
+
     public void nextGeneration() {
         List<Connection> currentMutations = new LinkedList<>();
         List<Organism> newPopulation = new ArrayList<>(configuration.getPopulationSize());
         Organism champ = getChamp();
         int speciesOfChamp = 0;
 
-        // TODO: 13.05.2020 Deletes all species sometimes --> Bug
+        if (species.size() == 1) {
+            System.out.println("To few species");
+        }
 
 
         if (champ.equals(lastChamp)) {
@@ -127,13 +134,13 @@ public class Neat {
                 if (!species.get(0).getMembers().contains(champ) && !species.get(1).getMembers().contains(champ)) {
                     newPopulation.add(champ);
                 }
-                species.get(0).setGenerationsSinceInprovement(0);
-                species.get(1).setGenerationsSinceInprovement(1);
+                species.forEach(species1 -> species1.setGenerationsSinceInprovement(0));
             }
         } else {
             generationsSinceLastImprovement = 0;
             lastChamp = champ;
         }
+
         if (species.size() > 2) {
             species = species.stream().filter(species1 -> {
                 if (species1.generationsSinceLastImprovement() >= configuration.getMaxGenerationsWithoutImprovement()) {
