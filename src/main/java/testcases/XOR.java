@@ -5,7 +5,6 @@ import neat.NeatConfiguration;
 import neat.Organism;
 
 import java.util.ArrayList;
-import java.util.InputMismatchException;
 import java.util.List;
 import java.util.Scanner;
 
@@ -13,6 +12,8 @@ public class XOR {
 
     public static void main(String[] args) {
         NeatConfiguration configuration = new NeatConfiguration(2, 1);
+//        configuration.setMutationRateNode(0.05);
+//        configuration.setMutationRateConnection(0.1);
         Neat neat = new Neat(configuration);
         neat.firstGeneration();
 
@@ -31,6 +32,13 @@ public class XOR {
                 } catch (NumberFormatException e) {
                     System.out.println("\u001B[31mInvalid input\u001B[0m");
                 }
+            }
+            if (scannerOutput == -2) {
+                neat.firstGeneration();
+                generations = 0;
+                i = 0;
+                hasAlreadyWorked = false;
+                continue;
             }
             generations += scannerOutput;
             if (scannerOutput < 0) {
@@ -74,7 +82,7 @@ public class XOR {
                 }
                 neat.nextGeneration();
             }
-        } while (scannerOutput >= 0);
+        } while (scannerOutput != -1);
     }
 
     private static double calculateDifference(double[] input, double[]output) {

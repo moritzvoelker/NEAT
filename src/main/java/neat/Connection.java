@@ -29,8 +29,8 @@ public class Connection {
     }
 
     public Connection(Connection connection) {
-        this.in = NodeFactory.create("", connection.getIn().getNodeType(), connection.getIn().getInnovationNumber());
-        this.out = NodeFactory.create("", connection.getOut().getNodeType(), connection.getOut().getInnovationNumber());
+        this.in = connection.getIn();
+        this.out = connection.getOut();
         this.weight = connection.weight;
         this.innovationNumber = connection.innovationNumber;
         this.enabled = connection.isEnabled();

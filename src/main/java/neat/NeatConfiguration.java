@@ -2,8 +2,8 @@ package neat;
 
 public class NeatConfiguration {
     private int populationSize = 150;
-    private int purgeAge = 20;
-    private int maxGenerationsWithoutImprovement = 15;
+    private int purgeAge = 15;
+    private int maxGenerationsWithoutImprovement = 20;
     private double speciationThreshhold = 3.0;
     private double mutationRateNode = 0.03;
     private double mutationRateConnection = 0.05;
@@ -40,7 +40,10 @@ public class NeatConfiguration {
         return purgeAge;
     }
 
-    public NeatConfiguration setPurgeAge(int purgeAge) {
+    public NeatConfiguration setPurgeAge(int purgeAge) throws IllegalStateException {
+        if (purgeAge > maxGenerationsWithoutImprovement) {
+            throw new IllegalStateException("purgeAge has to be smaller than maxGenerationsWithoutImprovement");
+        }
         this.purgeAge = purgeAge;
         return this;
     }
@@ -49,7 +52,10 @@ public class NeatConfiguration {
         return maxGenerationsWithoutImprovement;
     }
 
-    public NeatConfiguration setMaxGenerationsWithoutImprovement(int maxGenerationsWithoutImprovement) {
+    public NeatConfiguration setMaxGenerationsWithoutImprovement(int maxGenerationsWithoutImprovement) throws IllegalStateException {
+        if (purgeAge > maxGenerationsWithoutImprovement) {
+            throw new IllegalStateException("purgeAge has to be smaller than maxGenerationsWithoutImprovement");
+        }
         this.maxGenerationsWithoutImprovement = maxGenerationsWithoutImprovement;
         return this;
     }
