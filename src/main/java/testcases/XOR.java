@@ -51,6 +51,14 @@ public class XOR {
                 i = generations;
             }
 
+            if (scannerOutput == -3) {
+                neat.firstGeneration();
+                generations = 1000;
+                i = 0;
+                hasAlreadyWorked = false;
+
+            }
+
             for (; i < generations; i++) {
                 System.out.println(i);
 

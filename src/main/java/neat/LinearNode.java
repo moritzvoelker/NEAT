@@ -3,12 +3,9 @@ package neat;
 import java.util.List;
 
 public class LinearNode extends Node {
-    public LinearNode(NodeType nodeType) {
-        super(nodeType);
-    }
 
-    public LinearNode(NodeType nodeType, int innovationNumber) {
-        super(nodeType, innovationNumber);
+    public LinearNode(NodePurpose nodePurpose, int innovationNumber) {
+        super(nodePurpose, innovationNumber);
     }
 
     @Override

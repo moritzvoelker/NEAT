@@ -4,12 +4,8 @@ import java.util.List;
 
 public class InputNode extends Node {
 
-    public InputNode() {
-        super(NodeType.Input);
-    }
-
     public InputNode(int innovationNumber) {
-        super(NodeType.Input, innovationNumber);
+        super(NodePurpose.Input, innovationNumber);
     }
 
     public void setValue(double value) {

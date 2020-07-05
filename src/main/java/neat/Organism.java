@@ -13,47 +13,50 @@ public class Organism {
     private BiasNode bias;
     private double fitness;
 
-    public Organism(boolean biasNodeEnabled) {
+    private NeatConfiguration configuration;
+
+    public Organism(NeatConfiguration configuration) {
+        this.configuration = configuration;
         inputNodes = new LinkedList<>();
         hiddenNodes = new LinkedList<>();
         outputNodes = new LinkedList<>();
         connections = new TestList<>();
         fitness = -1.0;
-        if (biasNodeEnabled) {
+        if (configuration.isBiasNodeEnabled()) {
             bias = new BiasNode();
         } else {
             bias = null;
         }
     }
 
-    // TODO: 03.06.2020 Brauchen biasNodeEnabled hier vllt. nicht. Ist in organism bereits enthalten
-    public Organism(Organism organism, boolean biasNodeEnabled) {
+    public Organism(Organism organism) {
+        configuration = organism.configuration;
         inputNodes = new LinkedList<>();
         hiddenNodes = new LinkedList<>();
         outputNodes = new LinkedList<>();
         connections = new TestList<>();
         fitness = -1.0;
-        if (biasNodeEnabled) { // if (organism.getBias() != null) {
+        if (organism.getBias() != null) { // if (organism.getBias() != null) {
             bias = new BiasNode();
         } else {
             bias = null;
         }
 
-        organism.getInputNodes().forEach(inputNode -> inputNodes.add((InputNode) NodeFactory.create("", NodeType.Input, inputNode.getInnovationNumber())));
-        organism.getOutputNodes().forEach(outputNode -> outputNodes.add(NodeFactory.create("", NodeType.Output, outputNode.getInnovationNumber())));
+        organism.getInputNodes().forEach(inputNode -> inputNodes.add((InputNode) NodeFactory.create(configuration.getCreateStrategy(), NodePurpose.Input, inputNode.getInnovationNumber())));
+        organism.getOutputNodes().forEach(outputNode -> outputNodes.add(NodeFactory.create(configuration.getCreateStrategy(), NodePurpose.Output, outputNode.getInnovationNumber())));
 
         organism.getConnections().forEach(this::cloneConnection);
 
     }
 
-    public int mutate(List<Connection> currentMutations, int innovationNumber, NeatConfiguration configuration) {
-        mutateWeights(configuration.getMutationRateWeight(), configuration.getPerturbRate(), configuration);
+    public int mutate(List<Connection> currentMutations, int innovationNumber) {
+        mutateWeights();
         if (Math.random() < configuration.getMutationRateConnection()) {
-            innovationNumber = mutateConnection(innovationNumber, currentMutations, configuration);
+            innovationNumber = mutateConnection(innovationNumber, currentMutations);
         }
 
         if (Math.random() < configuration.getMutationRateNode()) {
-            innovationNumber = mutateNode(innovationNumber, currentMutations, configuration);
+            innovationNumber = mutateNode(innovationNumber, currentMutations);
         }
         if (Math.random() < configuration.getMutationRateEnablement()) {
             mutateEnablement();
@@ -65,10 +68,10 @@ public class Organism {
         return innovationNumber;
     }
 
-    public void mutateWeights(double mutationRate, double perturbRate, NeatConfiguration configuration) {
+    public void mutateWeights() {
         for (Connection connection : connections) {
-            if (Math.random() < mutationRate) {
-                if (Math.random() < perturbRate) {
+            if (Math.random() < configuration.getMutationRateWeight()) {
+                if (Math.random() < configuration.getPerturbRate()) {
                     connection.setWeight(connection.getWeight() + (Math.random() * configuration.getMaxConnectionAbsoluteValue() * 2 - configuration.getMaxConnectionAbsoluteValue()) * configuration.getStepSize());
                 } else {
                     connection.setWeight(Math.random() * configuration.getMaxConnectionAbsoluteValue() * 2 - configuration.getMaxConnectionAbsoluteValue());
@@ -77,7 +80,7 @@ public class Organism {
         }
     }
 
-    public int mutateConnection(int currentInnovationNumber, List<Connection> currentMutations, NeatConfiguration configuration) {
+    public int mutateConnection(int currentInnovationNumber, List<Connection> currentMutations) {
         Connection connection;
 
         int i = 0;
@@ -98,7 +101,7 @@ public class Organism {
             do {
                 if (out < hiddenNodes.size()) {
                     outNode = hiddenNodes.get(out);
-                } else { // TODO: 14.05.2020 Breaks here... Bug came after we added Bias
+                } else {
                     outNode = outputNodes.get(out - hiddenNodes.size());
                 }
                 out++;
@@ -132,21 +135,19 @@ public class Organism {
         connection.getOut().addInput(connection);
 
         currentInnovationNumber = connection.setInnovationNumber(currentInnovationNumber, currentMutations);
-        // TODO: 03.06.2020 Erstmalige Lösung... Entweder so oder nur 1 von beiden in einer Generation
+        // Problem: in der Liste von Mutationen ist dieselbe Verbindung. Kann zu Problem in mutateNode führen --> Entweder so, oder nur eins von beiden pro Organismus in einer Generation (mutateNode/Connection)
         connections.add(new Connection(connection));
 
         return currentInnovationNumber;
     }
 
 
-    static int count = 0;
-    // TODO: 03.06.2020 InnovationNumber von Knoten in currentMutations wird irgendwie verändert (siehe Console)
-    public int mutateNode(int currentInnovationNumber, List<Connection> currentMutations, NeatConfiguration configuration) {
+    public int mutateNode(int currentInnovationNumber, List<Connection> currentMutations) {
         Connection connection = connections.get((int) (Math.random() * connections.size()));
 
         connection.setEnabled(false);
 
-        Node node = NodeFactory.create("", NodeType.Hidden);
+        Node node = NodeFactory.create(configuration.getCreateStrategy(), NodePurpose.Hidden);
         Connection in = new Connection(connection.getIn(), node, connection.getWeight());
         Connection out = new Connection(node, connection.getOut(), 1.0);
 
@@ -225,9 +226,9 @@ public class Organism {
         Node in = null;
         Node out = null;
 
-        if (connection.getIn().getNodeType().equals(NodeType.Bias)) {
+        if (connection.getIn().getNodePurpose().equals(NodePurpose.Bias)) {
             in = bias;
-        } else if (connection.getIn().getNodeType().equals(NodeType.Input)) {
+        } else if (connection.getIn().getNodePurpose().equals(NodePurpose.Input)) {
             for (Node node : getInputNodes()) {
                 if (node.equals(connection.getIn())) {
                     in = node;
@@ -243,11 +244,11 @@ public class Organism {
             }
         }
         if (in == null) {
-            in = NodeFactory.create("", NodeType.Hidden, connection.getIn().getInnovationNumber());
+            in = NodeFactory.create(configuration.getCreateStrategy(), NodePurpose.Hidden, connection.getIn().getInnovationNumber());
             getHiddenNodes().add(in);
         }
 
-        if (connection.getOut().getNodeType().equals(NodeType.Hidden)) {
+        if (connection.getOut().getNodePurpose().equals(NodePurpose.Hidden)) {
             for (Node node : getHiddenNodes()) {
                 if (node.equals(connection.getOut())) {
                     out = node;
@@ -263,7 +264,7 @@ public class Organism {
             }
         }
         if (out == null) {
-            out = NodeFactory.create("", NodeType.Hidden, connection.getOut().getInnovationNumber());
+            out = NodeFactory.create(configuration.getCreateStrategy(), NodePurpose.Hidden, connection.getOut().getInnovationNumber());
             getHiddenNodes().add(out);
         }
 
@@ -280,13 +281,13 @@ public class Organism {
             mother = temp;
         }
 
-        Organism child = new Organism(configuration.isBiasNodeEnabled());
+        Organism child = new Organism(configuration);
         for (int i = 0; i < configuration.getInputCount(); i++) {
-            child.getInputNodes().add((InputNode) NodeFactory.create("", NodeType.Input, i + 1));
+            child.getInputNodes().add((InputNode) NodeFactory.create(configuration.getCreateStrategy(), NodePurpose.Input, i + 1));
         }
 
         for (int i = 0; i < configuration.getOutputCount(); i++) {
-            child.getOutputNodes().add(NodeFactory.create("", NodeType.Output, i + configuration.getInputCount() + 1));
+            child.getOutputNodes().add(NodeFactory.create(configuration.getCreateStrategy(), NodePurpose.Output, i + configuration.getInputCount() + 1));
         }
 
         int i = 0, j = 0;
@@ -375,11 +376,11 @@ public class Organism {
         return node.equals(bias) || inputNodes.contains(node) || hiddenNodes.contains(node) || outputNodes.contains(node);
     }
 
-    public boolean isMember(Species species, NeatConfiguration config) {
-        return this.calculateCompatibilityDistance(species.getRepresentative(), config) < config.getSpeciationThreshhold();
+    public boolean isMember(Species species) {
+        return this.calculateCompatibilityDistance(species.getRepresentative()) < configuration.getSpeciationThreshhold();
     }
 
-    public double calculateCompatibilityDistance(Organism organism, NeatConfiguration config) {
+    public double calculateCompatibilityDistance(Organism organism) {
         int excess = 0, disjoint = 0, joined = 0;
         double weightDifference = 0.0;
 
@@ -436,7 +437,7 @@ public class Organism {
                 }
             }
         }
-        return config.getC1() * excess / size + config.getC2() * disjoint / size + config.getC3() * weightDifference / joined;
+        return configuration.getC1() * excess / size + configuration.getC2() * disjoint / size + configuration.getC3() * weightDifference / joined;
     }
 
     public double getFitness() {

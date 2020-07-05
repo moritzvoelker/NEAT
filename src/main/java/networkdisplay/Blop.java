@@ -1,21 +1,21 @@
 package networkdisplay;
 
-import neat.NodeType;
+import neat.NodePurpose;
 
 public class Blop {
     private int x;
     private int y;
 
     private int innovationNumber;
-    private NodeType nodeType;
+    private NodePurpose nodePurpose;
     private int depth;
 
-    public Blop(int x, int y, int innovationNumber, NodeType nodeType) {
+    public Blop(int x, int y, int innovationNumber, NodePurpose nodePurpose) {
         this.x = x;
         this.y = y;
         this.innovationNumber = innovationNumber;
         depth = 0;
-        this.nodeType = nodeType;
+        this.nodePurpose = nodePurpose;
     }
 
     public int getX() {
@@ -50,11 +50,11 @@ public class Blop {
         this.depth = depth;
     }
 
-    public NodeType getNodeType() {
-        return nodeType;
+    public NodePurpose getNodePurpose() {
+        return nodePurpose;
     }
 
-    public void setNodeType(NodeType nodeType) {
-        this.nodeType = nodeType;
+    public void setNodePurpose(NodePurpose nodePurpose) {
+        this.nodePurpose = nodePurpose;
     }
 }

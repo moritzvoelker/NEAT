@@ -51,7 +51,7 @@ public class Display extends JFrame {
                 g.setColor(Color.DARK_GRAY);
                 for (Blop blop : blops) {
                     g.fillOval(blop.getX(), blop.getY(), BLOP_SIZE, BLOP_SIZE);
-                    g.drawString(blop.getNodeType().toString().substring(0, 1) + blop.getInnovationNumber(), blop.getX(), blop.getY());
+                    g.drawString(blop.getNodePurpose().toString().substring(0, 1) + blop.getInnovationNumber(), blop.getX(), blop.getY());
                 }
             }
         };
@@ -98,11 +98,11 @@ public class Display extends JFrame {
             int blopHeightSum = BLOP_SIZE * (layerNodes.size());
             int spaceHeightSum = (height - blopHeightSum) / (layerNodes.size() + 1);
             for (int j = 0; j < layerNodes.size(); j++) {
-                blops.add(new Blop(i * (BLOP_SIZE + BLOP_PADDING), (blopHeightSum / layerNodes.size() * j) + (spaceHeightSum * (j + 1)), layerNodes.get(j).getInnovationNumber(), layerNodes.get(j).getNodeType()));
+                blops.add(new Blop(i * (BLOP_SIZE + BLOP_PADDING) + BLOP_PADDING, (blopHeightSum / layerNodes.size() * j) + (spaceHeightSum * (j + 1)), layerNodes.get(j).getInnovationNumber(), layerNodes.get(j).getNodePurpose()));
             }
         }
 
-        setSize((BLOP_SIZE + BLOP_PADDING) * layers.size(), height);
+        setSize((BLOP_SIZE + BLOP_PADDING) * layers.size() + BLOP_PADDING, height);
         setVisible(true);
     }
 
@@ -111,7 +111,7 @@ public class Display extends JFrame {
         if (blop != null && blop.getDepth() < depth) {
             blop.setDepth(depth);
         } else if (blop == null) {
-            blops.add(new Blop(-1, -1, node.getInnovationNumber(), node.getNodeType()));
+            blops.add(new Blop(-1, -1, node.getInnovationNumber(), node.getNodePurpose()));
             blops.get(blops.size() - 1).setDepth(depth);
         }
         if (depth > maxDepth) {
@@ -129,7 +129,7 @@ public class Display extends JFrame {
         }
 
         for (Blop blop : blops) {
-            if (blop.getNodeType().equals(NodeType.Input) || blop.getNodeType().equals(NodeType.Bias)) {
+            if (blop.getNodePurpose().equals(NodePurpose.Input) || blop.getNodePurpose().equals(NodePurpose.Bias)) {
                 layers.get(layers.size() - 1).nodes.add(blop);
             } else {
                 layers.get(blop.getDepth()).nodes.add(blop);
@@ -147,7 +147,8 @@ public class Display extends JFrame {
     }
 
     public static void main(String[] args) {
-        Organism organism = new Organism(false);
+        NeatConfiguration configuration = new NeatConfiguration(2, 2);
+        Organism organism = new Organism(configuration);
 
         List<InputNode> inputNodes = new LinkedList<>();
         List<Node> hiddenNodes = new LinkedList<>();
@@ -155,13 +156,13 @@ public class Display extends JFrame {
         List<Connection> connections = new LinkedList<>();
 
         int i = 0;
-        inputNodes.add((InputNode) NodeFactory.create("", NodeType.Input, i++)); // 0
-        inputNodes.add((InputNode) NodeFactory.create("", NodeType.Input, i++)); // 1
-        hiddenNodes.add(NodeFactory.create("", NodeType.Hidden, i++)); // 0
-        hiddenNodes.add(NodeFactory.create("", NodeType.Hidden, i++)); // 1
-        hiddenNodes.add(NodeFactory.create("", NodeType.Hidden, i++)); // 2
-        outputNodes.add(NodeFactory.create("", NodeType.Output, i++)); // 0
-        outputNodes.add(NodeFactory.create("", NodeType.Output, i++)); // 1
+        inputNodes.add((InputNode) NodeFactory.create(configuration.getCreateStrategy(), NodePurpose.Input, i++)); // 0
+        inputNodes.add((InputNode) NodeFactory.create(configuration.getCreateStrategy(), NodePurpose.Input, i++)); // 1
+        hiddenNodes.add(NodeFactory.create(configuration.getCreateStrategy(), NodePurpose.Hidden, i++)); // 0
+        hiddenNodes.add(NodeFactory.create(configuration.getCreateStrategy(), NodePurpose.Hidden, i++)); // 1
+        hiddenNodes.add(NodeFactory.create(configuration.getCreateStrategy(), NodePurpose.Hidden, i++)); // 2
+        outputNodes.add(NodeFactory.create(configuration.getCreateStrategy(), NodePurpose.Output, i++)); // 0
+        outputNodes.add(NodeFactory.create(configuration.getCreateStrategy(), NodePurpose.Output, i++)); // 1
 
         connections.add(new Connection(inputNodes.get(0), hiddenNodes.get(0), 1.0));
         connections.add(new Connection(inputNodes.get(0), hiddenNodes.get(1), -1.0));

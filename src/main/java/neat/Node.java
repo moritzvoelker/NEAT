@@ -9,22 +9,14 @@ public abstract class Node {
     private List<Connection> in;
     protected double value;
     private boolean calculated;
-    private NodeType nodeType;
+    private NodePurpose nodePurpose;
 
-    public Node(NodeType nodeType) {
-        this.in = new LinkedList<>();
-        this.innovationNumber = -1;
-        this.value = 0.0;
-        this.calculated = false;
-        this.nodeType = nodeType;
-    }
-
-    public Node(NodeType nodeType, int innovationNumber) {
+    public Node(NodePurpose nodePurpose, int innovationNumber) {
         this.in = new LinkedList<>();
         this.innovationNumber = innovationNumber;
         this.value = 0.0;
         this.calculated = false;
-        this.nodeType = nodeType;
+        this.nodePurpose = nodePurpose;
     }
 
     public boolean isDependentOn(Node node) {
@@ -58,12 +50,12 @@ public abstract class Node {
         return in;
     }
 
-    public NodeType getNodeType() {
-        return nodeType;
+    public NodePurpose getNodePurpose() {
+        return nodePurpose;
     }
 
-    public void setNodeType(NodeType nodeType) {
-        this.nodeType = nodeType;
+    public void setNodePurpose(NodePurpose nodePurpose) {
+        this.nodePurpose = nodePurpose;
     }
 
     public int getInnovationNumber() {

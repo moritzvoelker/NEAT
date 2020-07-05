@@ -23,6 +23,8 @@ public class NeatConfiguration {
     private boolean biasNodeEnabled = true;
     private double maxConnectionAbsoluteValue = 2.0;
 
+    private CreateStrategy createStrategy = new DefaultCreateStrategy();
+
     public NeatConfiguration(int inputCount, int outputCount) {
         this.inputCount = inputCount;
         this.outputCount = outputCount;
@@ -220,6 +222,15 @@ public class NeatConfiguration {
 
     public NeatConfiguration setMaxConnectionAbsoluteValue(double maxConnectionAbsoluteValue) {
         this.maxConnectionAbsoluteValue = maxConnectionAbsoluteValue;
+        return this;
+    }
+
+    public CreateStrategy getCreateStrategy() {
+        return createStrategy;
+    }
+
+    public NeatConfiguration setCreateStrategy(CreateStrategy createStrategy) {
+        this.createStrategy = createStrategy;
         return this;
     }
 }

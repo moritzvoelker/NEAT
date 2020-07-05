@@ -1,5 +1,5 @@
 package neat;
 
-public enum NodeType {
+public enum NodePurpose {
     Input, Hidden, Output, Bias
 }

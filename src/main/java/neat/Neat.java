@@ -65,12 +65,12 @@ public class Neat {
     private void generateOrganisms(int numberOfOrganisms) {
         List<Connection> addedConnections = new LinkedList<>();
         for (int k = 0; k < numberOfOrganisms; k++) {
-            Organism organism = new Organism(configuration.isBiasNodeEnabled());
+            Organism organism = new Organism(configuration);
             for (int i = 0; i < configuration.getInputCount(); i++) {
-                organism.getInputNodes().add((InputNode) NodeFactory.create("", NodeType.Input, i + 1));
+                organism.getInputNodes().add((InputNode) NodeFactory.create(configuration.getCreateStrategy(), NodePurpose.Input, i + 1));
             }
             for (int i = 0; i < configuration.getOutputCount(); i++) {
-                Node out = NodeFactory.create("", NodeType.Output, i + configuration.getInputCount() + 1);
+                Node out = NodeFactory.create(configuration.getCreateStrategy(), NodePurpose.Output, i + configuration.getInputCount() + 1);
                 Node in = organism.getInputNodes().get((int) (Math.random() * configuration.getInputCount()));
                 organism.getOutputNodes().add(out);
 
@@ -113,8 +113,9 @@ public class Neat {
         Organism champ = getChamp();
         int speciesOfChamp = 0;
 
+        System.out.println("Number of Species: " + species.size());
         if (species.size() == 1) {
-            System.out.println("To few species");
+            System.out.println("Too few species");
         }
 
 
@@ -134,7 +135,7 @@ public class Neat {
                 if (!species.get(0).getMembers().contains(champ) && !species.get(1).getMembers().contains(champ)) {
                     newPopulation.add(champ);
                 }
-                species.forEach(species1 -> species1.setGenerationsSinceInprovement(0));
+                species.forEach(species1 -> species1.setGenerationsSinceImprovement(0));
             }
         } else {
             generationsSinceLastImprovement = 0;
@@ -177,7 +178,7 @@ public class Neat {
 
         i = 0;
         for (Species currentSpecies : species) {
-            globalInnovationNumber = currentSpecies.produceOffspring(newPopulation, currentMutations, speciesSizes[i], globalInnovationNumber, configuration);
+            globalInnovationNumber = currentSpecies.produceOffspring(newPopulation, currentMutations, speciesSizes[i], globalInnovationNumber);
             i++;
         }
 
@@ -192,14 +193,15 @@ public class Neat {
         }
     }
 
+    // TODO: 06.07.2020 Die Anzahl von Spezien springt komisch: von 1 auf 27, von 27 auf 1
     private void specify(Organism organism) {
         for (Species currentSpecies : species) {
-            if (organism.isMember(currentSpecies, configuration)) {
+            if (organism.isMember(currentSpecies)) {
                 currentSpecies.getMembers().add(organism);
                 return;
             }
         }
-        species.add(new Species(organism));
+        species.add(new Species(organism, configuration));
     }
 
     public List<Species> getSpecies() {

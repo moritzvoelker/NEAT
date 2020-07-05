@@ -11,7 +11,10 @@ public class Species {
     private double averageFitness;
     private double oldAverageFitness;
 
-    public Species(Organism representative) {
+    private NeatConfiguration configuration;
+
+    public Species(Organism representative, NeatConfiguration configuration) {
+        this.configuration = configuration;
         this.representative = representative;
         members = new LinkedList<>();
         members.add(representative);
@@ -33,9 +36,8 @@ public class Species {
         return averageFitness;
     }
 
-    // TODO: 17.04.2020 Maybe package private?
-    // TODO: 23.04.2020 Think of an elegant solution for when fitness not properly set, at the moment NullPointerException
-    public int produceOffspring(List<Organism> newPopulation, List<Connection> currentMutations, int numberOfChildren, int innovationNumber, NeatConfiguration configuration) throws NullPointerException {
+    // TODO: 17.04.2020 API nochmal überprüfen und überarbeiten
+    public int produceOffspring(List<Organism> newPopulation, List<Connection> currentMutations, int numberOfChildren, int innovationNumber) throws IllegalStateException {
         if (numberOfChildren == 0) {
             members.clear();
             return innovationNumber;
@@ -50,16 +52,9 @@ public class Species {
         members = members.subList(0, (int) (members.size() * configuration.getSurvivalRate()) + 1);
         calculateAverageFitness();
 
-        newPopulation.add(new Organism(members.get(0), configuration.isBiasNodeEnabled()));
+        newPopulation.add(new Organism(members.get(0)));
         numberOfChildren--;
 
-        List<Organism> toCompare = new LinkedList<>();
-        for (Organism tmp : members) {
-            if (toCompare.contains(tmp)) {
-                System.out.println("Duplicate Organisms");
-            }
-            toCompare.add(tmp);
-        }
 
         for (int i = 0; i < numberOfChildren; i++) {
             if (Math.random() < configuration.getMutateOnlyRate()) {
@@ -68,7 +63,7 @@ public class Species {
                 for (Organism organism : members) {
                     comulativeFitness += organism.getFitness();
                     if (comulativeFitness > random) {
-                        child = new Organism(organism, configuration.isBiasNodeEnabled());
+                        child = new Organism(organism);
                         break;
                     }
                 }
@@ -98,7 +93,7 @@ public class Species {
 
 
             }
-            innovationNumber = child.mutate(currentMutations, innovationNumber, configuration);
+            innovationNumber = child.mutate(currentMutations, innovationNumber);
             newPopulation.add(child);
             child = null;
         }
@@ -171,7 +166,7 @@ public class Species {
         return averageFitness;
     }
 
-    public void setGenerationsSinceInprovement(int generationsSinceInprovement) {
+    public void setGenerationsSinceImprovement(int generationsSinceInprovement) {
         this.generationsSinceInprovement = generationsSinceInprovement;
     }
 }
