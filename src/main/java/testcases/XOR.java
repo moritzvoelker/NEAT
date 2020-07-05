@@ -3,6 +3,7 @@ package testcases;
 import neat.Neat;
 import neat.NeatConfiguration;
 import neat.Organism;
+import networkdisplay.Display;
 
 import java.util.ArrayList;
 import java.util.InputMismatchException;
@@ -26,7 +27,12 @@ public class XOR {
             boolean inputNotSet = true;
             while (inputNotSet) {
                 try {
-                    scannerOutput = Integer.parseInt(scanner.nextLine());
+                    String scannerOutputString = scanner.nextLine();
+                    if (scannerOutputString.equals("show")) {
+                        new Display(neat.getChamp());
+                        continue;
+                    }
+                    scannerOutput = Integer.parseInt(scannerOutputString);
                     inputNotSet = false;
                 } catch (NumberFormatException e) {
                     System.out.println("\u001B[31mInvalid input\u001B[0m");
