@@ -13,7 +13,7 @@ public class Organism {
     private BiasNode bias;
     private double fitness;
 
-    Organism(boolean biasNodeEnabled) {
+    public Organism(boolean biasNodeEnabled) {
         inputNodes = new LinkedList<>();
         hiddenNodes = new LinkedList<>();
         outputNodes = new LinkedList<>();
@@ -27,7 +27,7 @@ public class Organism {
     }
 
     // TODO: 03.06.2020 Brauchen biasNodeEnabled hier vllt. nicht. Ist in organism bereits enthalten
-    Organism(Organism organism, boolean biasNodeEnabled) {
+    public Organism(Organism organism, boolean biasNodeEnabled) {
         inputNodes = new LinkedList<>();
         hiddenNodes = new LinkedList<>();
         outputNodes = new LinkedList<>();
@@ -47,13 +47,13 @@ public class Organism {
     }
 
     public int mutate(List<Connection> currentMutations, int innovationNumber, NeatConfiguration configuration) {
-        mutateWeights(configuration.getMutationRateWeight(), configuration.getPerturbRate(), configuration.getStepSize());
+        mutateWeights(configuration.getMutationRateWeight(), configuration.getPerturbRate(), configuration);
         if (Math.random() < configuration.getMutationRateConnection()) {
-            innovationNumber = mutateConnection(innovationNumber, currentMutations);
+            innovationNumber = mutateConnection(innovationNumber, currentMutations, configuration);
         }
 
         if (Math.random() < configuration.getMutationRateNode()) {
-            innovationNumber = mutateNode(innovationNumber, currentMutations);
+            innovationNumber = mutateNode(innovationNumber, currentMutations, configuration);
         }
         if (Math.random() < configuration.getMutationRateEnablement()) {
             mutateEnablement();
@@ -65,19 +65,19 @@ public class Organism {
         return innovationNumber;
     }
 
-    public void mutateWeights(double mutationRate, double perturbRate, double stepSize) {
+    public void mutateWeights(double mutationRate, double perturbRate, NeatConfiguration configuration) {
         for (Connection connection : connections) {
             if (Math.random() < mutationRate) {
                 if (Math.random() < perturbRate) {
-                    connection.setWeight(connection.getWeight() + (Math.random() * 2 - 1) * stepSize);
+                    connection.setWeight(connection.getWeight() + (Math.random() * configuration.getMaxConnectionAbsoluteValue() * 2 - configuration.getMaxConnectionAbsoluteValue()) * configuration.getStepSize());
                 } else {
-                    connection.setWeight(Math.random() * 2 - 1);
+                    connection.setWeight(Math.random() * configuration.getMaxConnectionAbsoluteValue() * 2 - configuration.getMaxConnectionAbsoluteValue());
                 }
             }
         }
     }
 
-    public int mutateConnection(int currentInnovationNumber, List<Connection> currentMutations) {
+    public int mutateConnection(int currentInnovationNumber, List<Connection> currentMutations, NeatConfiguration configuration) {
         Connection connection;
 
         int i = 0;
@@ -105,9 +105,9 @@ public class Organism {
             } while (inNode.equals(outNode));
 
             if (inNode.isDependentOn(outNode)) {
-                connection = new Connection(outNode, inNode, Math.random() * 2 - 1);
+                connection = new Connection(outNode, inNode, Math.random() * configuration.getMaxConnectionAbsoluteValue() * 2 - configuration.getMaxConnectionAbsoluteValue());
             } else {
-                connection = new Connection(inNode, outNode, Math.random() * 2 - 1);
+                connection = new Connection(inNode, outNode, Math.random() * configuration.getMaxConnectionAbsoluteValue() * 2 - configuration.getMaxConnectionAbsoluteValue());
             }
 
             quit = true;
@@ -139,7 +139,7 @@ public class Organism {
     }
 
     // TODO: 03.06.2020 InnovationNumber von Knoten in currentMutations wird irgendwie verändert (siehe Console)
-    public int mutateNode(int currentInnovationNumber, List<Connection> currentMutations) {
+    public int mutateNode(int currentInnovationNumber, List<Connection> currentMutations, NeatConfiguration configuration) {
         Connection connection = connections.get((int) (Math.random() * connections.size()));
 
         connection.setEnabled(false);
@@ -174,7 +174,7 @@ public class Organism {
         connections.add(out);
 
         if (bias != null && !in.getIn().equals(bias)) {
-            connection = new Connection(bias, node, Math.random() * 2 - 1);
+            connection = new Connection(bias, node, Math.random() * configuration.getMaxConnectionAbsoluteValue() * 2 - configuration.getMaxConnectionAbsoluteValue());
             node.getIn().add(connection);
             if (i == currentMutations.size()) {
                 connection.setInnovationNumber(currentInnovationNumber++);

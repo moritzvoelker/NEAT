@@ -21,6 +21,7 @@ public class NeatConfiguration {
     private int inputCount;
     private int outputCount;
     private boolean biasNodeEnabled = true;
+    private double maxConnectionAbsoluteValue = 2.0;
 
     public NeatConfiguration(int inputCount, int outputCount) {
         this.inputCount = inputCount;
@@ -204,6 +205,15 @@ public class NeatConfiguration {
 
     public NeatConfiguration setBiasNodeEnabled(boolean biasNodeEnabled) {
         this.biasNodeEnabled = biasNodeEnabled;
+        return this;
+    }
+
+    public double getMaxConnectionAbsoluteValue() {
+        return maxConnectionAbsoluteValue;
+    }
+
+    public NeatConfiguration setMaxConnectionAbsoluteValue(double maxConnectionAbsoluteValue) {
+        this.maxConnectionAbsoluteValue = maxConnectionAbsoluteValue;
         return this;
     }
 }

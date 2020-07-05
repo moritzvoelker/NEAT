@@ -72,11 +72,12 @@ public class Neat {
                 Node in = organism.getInputNodes().get((int) (Math.random() * configuration.getInputCount()));
                 organism.getOutputNodes().add(out);
 
-                Connection connection = new Connection(in, out, Math.random() * 2 - 1);
+                Connection connection = new Connection(in, out, Math.random() * configuration.getMaxConnectionAbsoluteValue() * 2 - configuration.getMaxConnectionAbsoluteValue());
                 out.getIn().add(connection);
                 if (configuration.isBiasNodeEnabled()) {
-                    Connection biasConnection = new Connection(organism.getBias(), out, Math.random() * 2 - 1);
+                    Connection biasConnection = new Connection(organism.getBias(), out, configuration.getMaxConnectionAbsoluteValue() * 2 - configuration.getMaxConnectionAbsoluteValue());
                     out.getIn().add(biasConnection);
+                    organism.getConnections().add(biasConnection);
                     globalInnovationNumber = biasConnection.setInnovationNumber(globalInnovationNumber, addedConnections);
                 }
 
@@ -90,8 +91,9 @@ public class Neat {
             for (InputNode node : organism.getInputNodes()) {
                 if (node.getIn().isEmpty()) {
                     Node out = organism.getOutputNodes().get((int) (Math.random() * configuration.getOutputCount()));
-                    Connection connection = new Connection(node, out, Math.random() * 2 - 1);
+                    Connection connection = new Connection(node, out, configuration.getMaxConnectionAbsoluteValue() * 2 - configuration.getMaxConnectionAbsoluteValue());
                     out.getIn().add(connection);
+                    organism.getConnections().add(connection);
                 } else {
                     node.getIn().clear();
                 }
