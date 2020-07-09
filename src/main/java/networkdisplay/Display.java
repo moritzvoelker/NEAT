@@ -7,76 +7,26 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
-import java.awt.event.WindowAdapter;
-import java.awt.event.WindowEvent;
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 
-public class Display extends JFrame {
-    public static final int BLOP_SIZE = 15;
-    public static final int BLOP_PADDING = 100;
-    public static final int LINE_WIDTH = 3;
+public class Display extends JPanel {
+    public double blopSize = 0.25;
+    public double lineWidth = 0.02;
 
-    JPanel content;
-    Organism organism;
-    List<Layer> layers;
-    int maxDepth;
-    int maxHeight;
-    List<Blop> blops;
-    Display self;
+    private Organism organism;
+    private List<Layer> layers;
+    private int maxDepth;
+    private List<Blop> blops;
+    private Display self;
 
     public Display(Organism organism) {
-        content = new JPanel() {
-            @Override
-            public void paintComponent(Graphics g) {
-                ((Graphics2D) g).setStroke(new BasicStroke(LINE_WIDTH));
-                double maxAbsoluteWeight = 0.0;
-                for (Connection connection : organism.getConnections()) {
-                    if (Math.abs(connection.getWeight()) > maxAbsoluteWeight) {
-                        maxAbsoluteWeight = Math.abs(connection.getWeight());
-                    }
-                }
-                for (Connection connection : organism.getConnections()) {
-                    if (connection.getWeight() > 0) {
-                        g.setColor(new Color(0, 0, 255, (int) (255 * Math.abs(connection.getWeight() / maxAbsoluteWeight))));
-                    } else {
-                        g.setColor(new Color(255, 0, 0, (int) (255 * Math.abs(connection.getWeight() / maxAbsoluteWeight))));
-                    }
-                    Blop inBlop = getBlop(connection.getIn().getInnovationNumber());
-                    Blop outBlop = getBlop(connection.getOut().getInnovationNumber());
-                    g.drawLine(inBlop.getX() + BLOP_SIZE / 2, inBlop.getY() + BLOP_SIZE / 2, outBlop.getX() + BLOP_SIZE / 2, outBlop.getY() + BLOP_SIZE / 2);
-                }
-
-                g.setColor(Color.DARK_GRAY);
-                for (Blop blop : blops) {
-                    g.fillOval(blop.getX(), blop.getY(), BLOP_SIZE, BLOP_SIZE);
-                    g.drawString(blop.getNodePurpose().toString().substring(0, 1) + blop.getInnovationNumber(), blop.getX(), blop.getY());
-                }
-            }
-        };
         layers = new ArrayList<>();
         maxDepth = 0;
-        maxHeight = 0;
         blops = new LinkedList<>();
-        this.setContentPane(content);
         this.organism = organism;
         this.self = this;
-
-        this.addWindowListener(new WindowAdapter() {
-            @Override
-            public void windowClosing(WindowEvent e) {
-                super.windowClosing(e);
-                self.dispose();
-            }
-        });
-
-        this.addKeyListener(new KeyAdapter() {
-            @Override
-            public void keyPressed(KeyEvent e) {
-                self.dispose();
-            }
-        });
 
         for (Node node : organism.getOutputNodes()) {
             layerNodes(0, node);
@@ -85,25 +35,48 @@ public class Display extends JFrame {
         addBlopsToLayers();
         blops.clear();
 
-        for (Layer layer : layers) {
-            if (layer.nodes.size() > maxHeight) {
-                maxHeight = layer.nodes.size();
-            }
-        }
-
-        int height = maxHeight * (BLOP_SIZE + BLOP_PADDING);
-
+        double columnWidth = 1.0 / layers.size();
         for (int i = 0; i < layers.size(); i++) {
             List<Blop> layerNodes = layers.get(layers.size() - 1 - i).nodes;
-            int blopHeightSum = BLOP_SIZE * (layerNodes.size());
-            int spaceHeightSum = (height - blopHeightSum) / (layerNodes.size() + 1);
+            double rowHeight = 1.0 / layerNodes.size();
             for (int j = 0; j < layerNodes.size(); j++) {
-                blops.add(new Blop(i * (BLOP_SIZE + BLOP_PADDING) + BLOP_PADDING, (blopHeightSum / layerNodes.size() * j) + (spaceHeightSum * (j + 1)), layerNodes.get(j).getInnovationNumber(), layerNodes.get(j).getNodePurpose()));
+                blops.add(new Blop(i * columnWidth + columnWidth * 0.5, j * rowHeight + rowHeight * 0.5, layerNodes.get(j).getInnovationNumber(), layerNodes.get(j).getNodePurpose()));
             }
         }
+    }
 
-        setSize((BLOP_SIZE + BLOP_PADDING) * layers.size() + BLOP_PADDING, height);
-        setVisible(true);
+    @Override
+    public void paintComponent(Graphics g) {
+        ((Graphics2D) g).setStroke(new BasicStroke((int) (lineWidth * (getWidth() < getHeight() ? getWidth() : getHeight()))));
+        double maxAbsoluteWeight = 0.0;
+        for (Connection connection : organism.getConnections()) {
+            if (Math.abs(connection.getWeight()) > maxAbsoluteWeight) {
+                maxAbsoluteWeight = Math.abs(connection.getWeight());
+            }
+        }
+        for (Connection connection : organism.getConnections()) {
+            if (connection.getWeight() > 0) {
+                g.setColor(new Color(0, 0, 255, (int) (255 * Math.abs(connection.getWeight() / maxAbsoluteWeight))));
+            } else {
+                g.setColor(new Color(255, 0, 0, (int) (255 * Math.abs(connection.getWeight() / maxAbsoluteWeight))));
+            }
+            Blop inBlop = getBlop(connection.getIn().getInnovationNumber());
+            Blop outBlop = getBlop(connection.getOut().getInnovationNumber());
+            int pixelX1 = (int) (inBlop.getX() * getWidth());
+            int pixelY1 = (int) (inBlop.getY() * getHeight());
+            int pixelX2 = (int) (outBlop.getX() * getWidth());
+            int pixelY2 = (int) (outBlop.getY() * getHeight());
+            g.drawLine(pixelX1, pixelY1, pixelX2, pixelY2);
+        }
+
+        g.setColor(Color.DARK_GRAY);
+        for (Blop blop : blops) {
+            int pixelBlopSize = (int) (blopSize * (1.0 / Math.sqrt(blops.size())) * (getWidth() < getHeight() ? getWidth() : getHeight()));
+            int pixelX = (int) (blop.getX() * getWidth()) - pixelBlopSize / 2;
+            int pixelY = (int) (blop.getY() * getHeight()) - pixelBlopSize / 2;
+            g.fillOval(pixelX, pixelY, pixelBlopSize, pixelBlopSize);
+            g.drawString(blop.getNodePurpose().toString().substring(0, 1) + blop.getInnovationNumber(), pixelX, pixelY);
+        }
     }
 
     private void layerNodes(int depth, Node node) {
@@ -186,6 +159,16 @@ public class Display extends JFrame {
         organism.getOutputNodes().addAll(outputNodes);
         organism.getConnections().addAll(connections);
 
-        new Display(organism);
+        JFrame frame = new JFrame();
+        frame.setContentPane(new Display(organism));
+        frame.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
+        frame.addKeyListener(new KeyAdapter() {
+            @Override
+            public void keyPressed(KeyEvent e) {
+                System.exit(0);
+            }
+        });
+        frame.setSize(400, 400);
+        frame.setVisible(true);
     }
 }

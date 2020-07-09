@@ -3,14 +3,14 @@ package networkdisplay;
 import neat.NodePurpose;
 
 public class Blop {
-    private int x;
-    private int y;
+    private double x;
+    private double y;
 
     private int innovationNumber;
     private NodePurpose nodePurpose;
     private int depth;
 
-    public Blop(int x, int y, int innovationNumber, NodePurpose nodePurpose) {
+    public Blop(double x, double y, int innovationNumber, NodePurpose nodePurpose) {
         this.x = x;
         this.y = y;
         this.innovationNumber = innovationNumber;
@@ -18,19 +18,19 @@ public class Blop {
         this.nodePurpose = nodePurpose;
     }
 
-    public int getX() {
+    public double getX() {
         return x;
     }
 
-    public void setX(int x) {
+    public void setX(double x) {
         this.x = x;
     }
 
-    public int getY() {
+    public double getY() {
         return y;
     }
 
-    public void setY(int y) {
+    public void setY(double y) {
         this.y = y;
     }
 
