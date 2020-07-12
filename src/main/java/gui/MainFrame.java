@@ -52,7 +52,7 @@ public class MainFrame extends JFrame {
             y[0] = testcase.getChamp().getFitness();
             ((GraphPanel)(graphPanel.getComponent(0))).addCoordinates(testcase.getGeneration(), y);
 
-            content.validate();;
+            content.validate();
             content.repaint();
         });
         doGenButton.setEnabled(false);

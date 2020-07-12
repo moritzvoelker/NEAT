@@ -6,7 +6,7 @@ import java.util.LinkedList;
 import java.util.List;
 
 public class Graph {
-    LinkedList<Vektor> content;
+    LinkedList<Vector> content;
     Color color;
     int linewidth;
 
@@ -16,14 +16,14 @@ public class Graph {
         this.linewidth = linewidth;
     }
 
-    public Graph(List<Vektor> content, Color color, int linewidth) {
+    public Graph(List<Vector> content, Color color, int linewidth) {
         this.content = new LinkedList<>();
         addCoordinates(content);
         this.color = color;
         this.linewidth = linewidth;
     }
 
-    public Graph(Vektor c, Color color, int linewidth) {
+    public Graph(Vector c, Color color, int linewidth) {
         content = new LinkedList<>();
         content.add(c);
         this.color = color;
@@ -32,9 +32,9 @@ public class Graph {
 
 
 
-    public void addCoordinates(List<Vektor> coordinates) {
+    public void addCoordinates(List<Vector> coordinates) {
         content.addAll(coordinates);
-        content.sort(Comparator.comparing(Vektor::getX));
+        content.sort(Comparator.comparing(Vector::getX));
 
         int i, j;
 
@@ -64,7 +64,7 @@ public class Graph {
         }
     }
 
-    public void addCoordinate(Vektor c) {
+    public void addCoordinate(Vector c) {
         for (int i = 0; i < content.size(); i++) {
             double diff = content.get(i).getX() - c.getX();
             if (diff == 0) {
@@ -86,8 +86,8 @@ public class Graph {
         g.setColor(color);
 
         for (int i = 0; i < content.size() - 1; i++) {
-            Vektor c1 = axis.Value2Pixel(content.get(i), width, height);
-            Vektor c2 = axis.Value2Pixel(content.get(i+1), width, height);
+            Vector c1 = axis.Value2Pixel(content.get(i), width, height);
+            Vector c2 = axis.Value2Pixel(content.get(i+1), width, height);
             g.drawLine((int)c1.getX(), (int)c1.getY(), (int)c2.getX(), (int)c2.getY());
         }
     }

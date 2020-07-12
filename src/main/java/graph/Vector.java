@@ -1,9 +1,9 @@
 package graph;
 
-public class Vektor {
+public class Vector {
     private double x, y;
 
-    public Vektor(double x, double y) {
+    public Vector(double x, double y) {
         this.x = x;
         this.y = y;
     }

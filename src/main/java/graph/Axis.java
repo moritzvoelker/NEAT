@@ -6,9 +6,9 @@ import java.text.NumberFormat;
 public class Axis {
     private double minX, maxX, minY, maxY;
     private double resolutionX, resolutionY;
-    private Vektor center;
+    private Vector center;
 
-    public Axis(double minX, double maxX, double minY, double maxY, Vektor center) {
+    public Axis(double minX, double maxX, double minY, double maxY, Vector center) {
         this.minX = minX;
         this.maxX = maxX;
         this.minY = minY;
@@ -18,7 +18,7 @@ public class Axis {
         resolutionY = 1.0;
     }
 
-    public Axis(double minX, double maxX, double minY, double maxY, double resolutionX, double resolutionY, Vektor center) {
+    public Axis(double minX, double maxX, double minY, double maxY, double resolutionX, double resolutionY, Vector center) {
         this.minX = minX;
         this.maxX = maxX;
         this.minY = minY;
@@ -32,7 +32,7 @@ public class Axis {
         ((Graphics2D) g).setStroke(new BasicStroke(2));
         g.setColor(new Color(0));
 
-        Vektor centerPixel = Value2Pixel(center, width, height);
+        Vector centerPixel = Value2Pixel(center, width, height);
         System.out.println("Center: " + center.getX() + ", " + center.getY());
         System.out.println("CenterPixel: " + centerPixel.getX() + ", " + centerPixel.getY());
         g.drawLine((int)centerPixel.getX(), 0,(int)centerPixel.getX(), height);
@@ -129,8 +129,8 @@ public class Axis {
     }
 
 
-    Vektor Value2Pixel(Vektor c, int width, int height) {
-        return new Vektor(((c.getX() - minX) / (maxX - minX)) * width, (1.0 - (c.getY() - minY) / (maxY - minY)) * height);
+    Vector Value2Pixel(Vector c, int width, int height) {
+        return new Vector(((c.getX() - minX) / (maxX - minX)) * width, (1.0 - (c.getY() - minY) / (maxY - minY)) * height);
     }
 
     int XValue2XPixel(double x, int width) {
@@ -189,11 +189,11 @@ public class Axis {
         this.resolutionY = resolutionY;
     }
 
-    public Vektor getCenter() {
+    public Vector getCenter() {
         return center;
     }
 
-    public void setCenter(Vektor center) {
+    public void setCenter(Vector center) {
         this.center = center;
     }
 }

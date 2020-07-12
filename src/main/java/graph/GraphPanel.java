@@ -16,7 +16,7 @@ public class GraphPanel extends JPanel {
     public GraphPanel(int count, Color color, int linewidth) {
         graphs = new LinkedList<>();
         addGraphs(count, color, linewidth);
-        axis = new Axis(Double.POSITIVE_INFINITY, Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY, Double.NEGATIVE_INFINITY, new Vektor(0, 0));
+        axis = new Axis(Double.POSITIVE_INFINITY, Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY, Double.NEGATIVE_INFINITY, new Vector(0, 0));
         lineWidth = linewidth;
         normX = normY = 1.0;
     }
@@ -24,7 +24,7 @@ public class GraphPanel extends JPanel {
     public GraphPanel(int count, Color color, int linewidth, double normX, double normY) {
         graphs = new LinkedList<>();
         addGraphs(count, color, linewidth);
-        axis = new Axis(Double.POSITIVE_INFINITY, Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY, Double.NEGATIVE_INFINITY, new Vektor(0, 0));
+        axis = new Axis(Double.POSITIVE_INFINITY, Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY, Double.NEGATIVE_INFINITY, new Vector(0, 0));
         lineWidth = linewidth;
         this.normX = normX;
         this.normY = normY;
@@ -33,7 +33,7 @@ public class GraphPanel extends JPanel {
     public GraphPanel(int count, Color color, int linewidth, double normX, double normY, double resolutionX, double resolutionY) {
         graphs = new LinkedList<>();
         addGraphs(count, color, linewidth);
-        axis = new Axis(Double.POSITIVE_INFINITY, Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY, Double.NEGATIVE_INFINITY, resolutionX, resolutionY, new Vektor(0, 0));
+        axis = new Axis(Double.POSITIVE_INFINITY, Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY, Double.NEGATIVE_INFINITY, resolutionX, resolutionY, new Vector(0, 0));
         lineWidth = linewidth;
         this.normX = normX;
         this.normY = normY;
@@ -54,18 +54,18 @@ public class GraphPanel extends JPanel {
 
 
     public void addCoordinates(double x, double[] y) throws IllegalArgumentException {
+        if (y.length != graphs.size()) {
+            throw new IllegalArgumentException("Number of Coordinates (" + y.length + ") is not equal to number of Graphs (" + graphs.size() + ")!");
+        }
+
         if (axis.getMaxX() < x) {
             axis.setMaxX(x);
         }
         if (axis.getMinX() > x) {
             axis.setMinX(x);
         }
-
-        if (y.length != graphs.size()) {
-            throw new IllegalArgumentException("Number of Coordinates (" + y.length + ") is not equal to number of Graphs (" + graphs.size() + ")!");
-        }
         for (int i = 0; i < graphs.size(); i++) {
-            graphs.get(i).addCoordinate(new Vektor(x, y[i]));
+            graphs.get(i).addCoordinate(new Vector(x, y[i]));
             if (axis.getMaxY() < y[i]) {
                 axis.setMaxY(y[i]);
             }
@@ -89,7 +89,7 @@ public class GraphPanel extends JPanel {
             axis.setMinX(y);
         }
 
-        graphs.get(index).addCoordinate(new Vektor(x, y));
+        graphs.get(index).addCoordinate(new Vector(x, y));
     }
 
     public void addGraphs(int count) {
@@ -134,7 +134,7 @@ public class GraphPanel extends JPanel {
         GraphPanel graphPanel = new GraphPanel(3, new Color(0), 3);
         graphPanel.getAxis().setResolutionY(1.0);
         graphPanel.getAxis().setResolutionX(0.5);
-        graphPanel.getAxis().setCenter(new Vektor(0, 0));
+        graphPanel.getAxis().setCenter(new Vector(0, 0));
         double step = 0.5;
         for (int i = -3; i <= 3; i++) {
             double[] y = {Math.exp(i*step), i*step, 1.0};
