@@ -6,7 +6,12 @@ import testcases.XOR;
 
 import javax.swing.*;
 import javax.swing.border.EtchedBorder;
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
+import javax.swing.text.Document;
 import java.awt.*;
+import java.awt.event.KeyAdapter;
+import java.awt.event.KeyEvent;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 
@@ -35,7 +40,7 @@ public class MainFrame extends JFrame {
         JLabel generationLabel = new JLabel("Generation " + testcase.getGeneration());
         generationLabel.setFont(new Font(Font.SANS_SERIF, Font.BOLD, 50));
 
-        JPanel  controls = new JPanel(new GridLayout(3, 1));;
+        JPanel  controls = new JPanel(new GridLayout(5, 1));
 
         JPanel champDisplay = new JPanel(new GridLayout(1, 1));
         champDisplay.setBorder(BorderFactory.createEtchedBorder(EtchedBorder.LOWERED));
@@ -57,10 +62,38 @@ public class MainFrame extends JFrame {
         });
         doGenButton.setEnabled(false);
 
+        JTextField numberOfGenerations = new JTextField("1");
+        numberOfGenerations.addKeyListener(new KeyAdapter() {
+            @Override
+            public void keyTyped(KeyEvent e) {
+                if (e.getKeyChar() != '\b' && (e.getKeyChar() < '0' || e.getKeyChar() > '9')) {
+                    Toolkit.getDefaultToolkit().beep();
+                    e.consume();
+                }
+            }
+        });
+        JButton doNGenButton = new JButton("Do n generations");
+        doNGenButton.addActionListener(e -> {
+            testcase.doNGenerations(Integer.parseInt(numberOfGenerations.getText()));
+            generationLabel.setText("Generation " + testcase.getGeneration());
+
+            champDisplay.removeAll();
+            champDisplay.add(new Display(testcase.getChamp()));
+
+            double[] y = new double[1];
+            y[0] = testcase.getChamp().getFitness();
+            ((GraphPanel)(graphPanel.getComponent(0))).addCoordinates(testcase.getGeneration(), y);
+
+            content.validate();
+            content.repaint();
+        });
+        doNGenButton.setEnabled(false);
+
         JButton resetButton = new JButton("Reset");
         resetButton.addActionListener(e -> {
             testcase.init();
             doGenButton.setEnabled(true);
+            doNGenButton.setEnabled(true);
             generationLabel.setText("Generation " + testcase.getGeneration());
 
             champDisplay.removeAll();
@@ -81,6 +114,8 @@ public class MainFrame extends JFrame {
 
         controls.add(resetButton);
         controls.add(doGenButton);
+        controls.add(numberOfGenerations);
+        controls.add(doNGenButton);
         controls.add(champDisplay);
 
 
