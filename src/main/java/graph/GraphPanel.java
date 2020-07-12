@@ -133,6 +133,7 @@ public class GraphPanel extends JPanel {
     public static void main(String[] args) {
         GraphPanel graphPanel = new GraphPanel(3, new Color(0), 3);
         graphPanel.getAxis().setResolutionY(1.0);
+        graphPanel.getAxis().setResolutionX(0.5);
         graphPanel.getAxis().setCenter(new Vektor(0, 0));
         double step = 0.5;
         for (int i = -3; i <= 3; i++) {

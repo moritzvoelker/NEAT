@@ -48,13 +48,22 @@ public class Axis {
             ytpixel = YValue2YPixel(yt, height);
         }
 
-        System.out.println("ysteppixel: " + ysteppixel);
+        int xsteppixel = (int)(resolutionX / (maxX - minX) * width * normX);
+        int xtpixel = (int) (centerPixel.getX());   // Die Pixelkoordinaten von denen aus die Achsenbeschriftung gemalt wird.
+        double xt = center.getX();                  // Die Koordinaten von denen aus die Achsenbeschriftung gemalt wird.
+
+        if (xtpixel > height || xtpixel < 0) {
+            xt = xt + ((int)((maxX - minX) / (2 * normX * resolutionX))) * resolutionX;
+            xtpixel = XValue2XPixel(xt, width);
+        }
+
 
         int i = 1;
         for (boolean cont = true; cont ; i++) {
             int y1 = ytpixel -  i * ysteppixel;
             int y2 = ytpixel +  i * ysteppixel;
-            // System.out.println(y1 + ", " + y2);
+            int x1 = xtpixel + i * xsteppixel;
+            int x2 = xtpixel - i * xsteppixel;
 
             g.setFont(new Font(Font.SANS_SERIF, Font.PLAIN, 10));
             NumberFormat nf  = NumberFormat.getInstance();
@@ -73,7 +82,7 @@ public class Axis {
                 }
                 g.drawString("" + nf.format((yt + i * resolutionY)), 6, y1);
             }
-            if (y2  < height) {
+            if (y2  <= height) {
                 cont = true;
                 g.drawLine(0, y2, 4, y2);
 
@@ -85,55 +94,38 @@ public class Axis {
                 }
                 g.drawString("" + nf.format((yt - i * resolutionY)), 6, y2);
             }
-        }
-
-
-        /*
-        int ystep = height / 5;
-        double ystepvalue = (maxY-minY) / 5.0;
-
-        int yt = (int)centerPixel.getY();
-        double ytvalue = center.getY();
-        if (yt > height || yt < 0) {
-            yt = height / 2;
-            ytvalue = (maxY - minY) / 2;
-        }
-        int i = 0;
-        for (boolean cont = true; cont ; i++) {
-            int y1 = yt -  i * ystep;
-            int y2 = yt +  i * ystep;
-
-            g.setFont(new Font(Font.SANS_SERIF, Font.PLAIN, 10));
-            NumberFormat nf  = NumberFormat.getInstance();
-            nf.setMaximumFractionDigits(2);
-
-            cont = false;
-            if (y1 > 0) {
+            if (x1 < width) {
                 cont = true;
-                g.drawLine(0, y1, 4, y1);
+                g.drawLine(x1, height, x1, height - 4);
 
-                y1 += 4;
-                if (y1 < 10) {
-                    y1 = 10;
-                } else if (y1 > height - 3) {
-                    y1 = height - 3;
+                String str = "" + nf.format((xt - i * resolutionX));
+                int lengthpixel = (str.length() * 3);
+
+                x1 -= lengthpixel / 2;
+                if (x1 < 0) {
+                    x1 = 0;
+                } else if (x1 > width - lengthpixel) {
+                    x1 = width - lengthpixel;
                 }
-                g.drawString("" + nf.format((ytvalue + i * ystepvalue) / norm), 6, y1);
+                g.drawString("" + nf.format((xt + i * resolutionX)), x1, height - 13);
             }
-            if (y2  < height) {
-                cont = true;
-                g.drawLine(0, y2, 4, y2);
 
-                y2 += 4;
-                if (y2 < 10) {
-                    y2 = 10;
-                } else if (y2 > height - 3) {
-                    y2 = height - 3;
+            if (x2 > 0) {
+                cont = true;
+                g.drawLine(x2, height, x2, height - 4);
+
+                String str = "" + nf.format((xt - i * resolutionX));
+                int lengthpixel = (str.length() * 3);
+
+                x2 -= lengthpixel / 2;
+                if (x2 < 0) {
+                    x2 = 0;
+                } else if (x2 > width - lengthpixel) {
+                    x2 = width - lengthpixel;
                 }
-                g.drawString("" + nf.format((ytvalue - i * ystepvalue) / norm), 6, y2);
+                g.drawString(str, x2, height - 13);
             }
         }
-        */
     }
 
 
