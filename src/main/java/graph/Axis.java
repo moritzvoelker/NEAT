@@ -30,43 +30,55 @@ public class Axis {
 
     void paintComponent(Graphics g, int width, int height, double normX, double normY) {
         ((Graphics2D) g).setStroke(new BasicStroke(2));
-        g.setColor(new Color(0));
+        g.setColor(new Color(0x000000));
 
-        Vector centerPixel = Value2Pixel(center, width, height);
+        Vector centerPixel = value2Pixel(center, width, height);
+
         System.out.println("Center: " + center.getX() + ", " + center.getY());
         System.out.println("CenterPixel: " + centerPixel.getX() + ", " + centerPixel.getY());
-        g.drawLine((int)centerPixel.getX(), 0,(int)centerPixel.getX(), height);
-        g.drawLine(0, (int)centerPixel.getY(), width, (int)centerPixel.getY());
+        g.drawLine((int) centerPixel.getX(), 0, (int) centerPixel.getX(), height);
+        g.drawLine(0, (int) centerPixel.getY(), width, (int) centerPixel.getY());
 
         ((Graphics2D) g).setStroke(new BasicStroke(1));
-        int ysteppixel = (int)(resolutionY / (maxY - minY) * height * normY);
+        int ysteppixel = (int) (resolutionY / (maxY - minY) * height * normY);
+        if (ysteppixel == 0)
+            ysteppixel = 1;
         int ytpixel = (int) (centerPixel.getY());   // Die Pixelkoordinaten von denen aus die Achsenbeschriftung gemalt wird.
         double yt = center.getY();                  // Die Koordinaten von denen aus die Achsenbeschriftung gemalt wird.
 
+        System.out.println("resolutionY = "+ resolutionY + "; maxY-minY = " + (maxY-minY) + "; ysteppixel = " + (resolutionY / (maxY - minY) * height * normY));
+        //if (ysteppixel == 0)));
+
         if (ytpixel > height || ytpixel < 0) {
-            yt = yt + ((int)((maxY - minY) / (2 * normY * resolutionY))) * resolutionY;
+            yt = yt + ((int) ((maxY - minY) / (2 * normY * resolutionY))) * resolutionY;
             ytpixel = YValue2YPixel(yt, height);
         }
 
-        int xsteppixel = (int)(resolutionX / (maxX - minX) * width * normX);
+        int xsteppixel = (int) (resolutionX / (maxX - minX) * width * normX);
         int xtpixel = (int) (centerPixel.getX());   // Die Pixelkoordinaten von denen aus die Achsenbeschriftung gemalt wird.
         double xt = center.getX();                  // Die Koordinaten von denen aus die Achsenbeschriftung gemalt wird.
 
+        if (xsteppixel == 0)
+            xsteppixel = 1;
+
         if (xtpixel > height || xtpixel < 0) {
-            xt = xt + ((int)((maxX - minX) / (2 * normX * resolutionX))) * resolutionX;
+            xt = xt + ((int) ((maxX - minX) / (2 * normX * resolutionX))) * resolutionX;
             xtpixel = XValue2XPixel(xt, width);
         }
 
-
         int i = 1;
-        for (boolean cont = true; cont ; i++) {
-            int y1 = ytpixel -  i * ysteppixel;
-            int y2 = ytpixel +  i * ysteppixel;
+        for (boolean cont = true; cont; i++) {
+            int y1 = ytpixel - i * ysteppixel;
+            int y2 = ytpixel + i * ysteppixel;
             int x1 = xtpixel + i * xsteppixel;
             int x2 = xtpixel - i * xsteppixel;
 
+            //System.out.println("ystepppixel = "+ ysteppixel);
+            //System.out.println("y1 = " + y1 + "; y2 = " + y2 + "; x1 = " + x1 + "; x2 = " + x2);
+
+
             g.setFont(new Font(Font.SANS_SERIF, Font.PLAIN, 10));
-            NumberFormat nf  = NumberFormat.getInstance();
+            NumberFormat nf = NumberFormat.getInstance();
             nf.setMaximumFractionDigits(2);
 
             cont = false;
@@ -82,7 +94,7 @@ public class Axis {
                 }
                 g.drawString("" + nf.format((yt + i * resolutionY)), 6, y1);
             }
-            if (y2  <= height) {
+            if (y2 <= height) {
                 cont = true;
                 g.drawLine(0, y2, 4, y2);
 
@@ -129,7 +141,7 @@ public class Axis {
     }
 
 
-    Vector Value2Pixel(Vector c, int width, int height) {
+    Vector value2Pixel(Vector c, int width, int height) {
         return new Vector(((c.getX() - minX) / (maxX - minX)) * width, (1.0 - (c.getY() - minY) / (maxY - minY)) * height);
     }
 

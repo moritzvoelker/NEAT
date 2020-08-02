@@ -6,35 +6,50 @@ import java.awt.*;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
 import java.util.LinkedList;
+import java.util.List;
 
 public class GraphPanel extends JPanel {
-    private int lineWidth = 5;
     private Axis axis;
-    private LinkedList<Graph> graphs;
+    private List<Graph> graphs;
     private double normX, normY;
 
-    public GraphPanel(int count, Color color, int linewidth) {
-        graphs = new LinkedList<>();
-        addGraphs(count, color, linewidth);
+    public GraphPanel() {
+        this.graphs = new LinkedList<>();
         axis = new Axis(Double.POSITIVE_INFINITY, Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY, Double.NEGATIVE_INFINITY, new Vector(0, 0));
-        lineWidth = linewidth;
         normX = normY = 1.0;
     }
 
-    public GraphPanel(int count, Color color, int linewidth, double normX, double normY) {
-        graphs = new LinkedList<>();
-        addGraphs(count, color, linewidth);
+    public GraphPanel(List<Graph> graphs) {
+        this.graphs = graphs;
         axis = new Axis(Double.POSITIVE_INFINITY, Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY, Double.NEGATIVE_INFINITY, new Vector(0, 0));
-        lineWidth = linewidth;
+        normX = normY = 1.0;
+    }
+
+    public GraphPanel(Graph graph) {
+        this.graphs = new LinkedList<>();
+        this.graphs.add(graph);
+        axis = new Axis(Double.POSITIVE_INFINITY, Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY, Double.NEGATIVE_INFINITY, new Vector(0, 0));
+        normX = normY = 1.0;
+    }
+
+    public GraphPanel(List<Graph> graphs, double normX, double normY) {
+        this.graphs = graphs;
+        axis = new Axis(Double.POSITIVE_INFINITY, Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY, Double.NEGATIVE_INFINITY, new Vector(0, 0));
         this.normX = normX;
         this.normY = normY;
     }
 
-    public GraphPanel(int count, Color color, int linewidth, double normX, double normY, double resolutionX, double resolutionY) {
-        graphs = new LinkedList<>();
-        addGraphs(count, color, linewidth);
+    public GraphPanel(List<Graph> graphs, double normX, double normY, double resolutionX, double resolutionY) {
+        this.graphs = graphs;
         axis = new Axis(Double.POSITIVE_INFINITY, Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY, Double.NEGATIVE_INFINITY, resolutionX, resolutionY, new Vector(0, 0));
-        lineWidth = linewidth;
+        this.normX = normX;
+        this.normY = normY;
+    }
+
+    public GraphPanel(Graph graph, double normX, double normY, double resolutionX, double resolutionY) {
+        this.graphs = new LinkedList<>();
+        this.graphs.add(graph);
+        axis = new Axis(Double.POSITIVE_INFINITY, Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY, Double.NEGATIVE_INFINITY, resolutionX, resolutionY, new Vector(0, 0));
         this.normX = normX;
         this.normY = normY;
     }
@@ -46,9 +61,8 @@ public class GraphPanel extends JPanel {
         for (Graph graph : graphs) {
             graph.paintComponent(g, axis, getWidth(), getHeight());
         }
-        axis.paintComponent(g, getWidth(), getHeight(), normX, normY);
-
-
+        if (graphs.size() > 0)
+            axis.paintComponent(g, getWidth(), getHeight(), normX, normY);
     }
 
 
@@ -86,34 +100,41 @@ public class GraphPanel extends JPanel {
             axis.setMaxY(y);
         }
         if (axis.getMinY() > y) {
-            axis.setMinX(y);
+            axis.setMinY(y);
         }
 
         graphs.get(index).addCoordinate(new Vector(x, y));
     }
 
-    public void addGraphs(int count) {
-        Color color = new Color(0);
-        addGraphs(count, color, lineWidth);
+    public void addGraphs(List<Graph> graphs) {
+        this.graphs.addAll(graphs);
     }
 
-    public void addGraphs(int count, Color color, int linewidth) {
-        for (int i = 0; i < count; i++) {
-            graphs.add(new Graph(color, linewidth));
-        }
+    public void addGraph(Graph graph) { this.graphs.add(graph); }
+
+    public void removeAllGraphs() {
+        graphs.clear();
+    }
+
+    public void removeGraph(int index) throws IndexOutOfBoundsException {
+        graphs.remove(index);
+    }
+
+    // nicht sicher ob funktioniert. Braucht eventuell eine Implementierung von equals
+    public void removeGraph(Graph graph) throws NullPointerException {
+        graphs.remove(graph);
+    }
+
+    public void resetAxis() {
+        axis.setMaxX(Double.NEGATIVE_INFINITY);
+        axis.setMinX(Double.POSITIVE_INFINITY);
+        axis.setMaxY(Double.NEGATIVE_INFINITY);
+        axis.setMinY(Double.POSITIVE_INFINITY);
     }
 
     // Either just select it and then configure via GraphPanel or return the Graph
     public Graph getGraph(int index) {
         return graphs.get(index);
-    }
-
-    public int getLineWidth() {
-        return lineWidth;
-    }
-
-    public void setLineWidth(int lineWidth) {
-        this.lineWidth = lineWidth;
     }
 
 
@@ -131,7 +152,12 @@ public class GraphPanel extends JPanel {
     }
 
     public static void main(String[] args) {
-        GraphPanel graphPanel = new GraphPanel(3, new Color(0), 3);
+        /*
+        List<Graph> graphs = new ArrayList<>(3);
+        graphs.add(new LineGraph(new Color(0), 3));
+        graphs.add(new LineGraph(new Color(0), 3));
+        graphs.add(new LineGraph(new Color(0), 3));
+        GraphPanel graphPanel = new GraphPanel(graphs);
         graphPanel.getAxis().setResolutionY(1.0);
         graphPanel.getAxis().setResolutionX(0.5);
         graphPanel.getAxis().setCenter(new Vector(0, 0));
@@ -142,7 +168,15 @@ public class GraphPanel extends JPanel {
         }
 
         graphPanel.setNorm(1.0,1.0);
-
+        */
+        GraphPanel graphPanel = new GraphPanel(new BarGraph(new Color(54, 255, 34, 230), 3));
+        graphPanel.getAxis().setResolutionY(1.0);
+        graphPanel.getAxis().setResolutionX(0.5);
+        graphPanel.getAxis().setCenter(new Vector(0, 0));
+        double step = 0.5;
+        for (int i = -3; i <= 3; i++) {
+            graphPanel.addCoordinate(0, step * i, i);
+        }
 
         graphPanel.setBorder(BorderFactory.createEtchedBorder(EtchedBorder.LOWERED));
 

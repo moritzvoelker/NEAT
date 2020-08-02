@@ -4,9 +4,11 @@ import gui.Testcase;
 import neat.Neat;
 import neat.NeatConfiguration;
 import neat.Organism;
+import neat.Species;
 import networkdisplay.Display;
 
 import javax.swing.*;
+import java.awt.*;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
 import java.util.ArrayList;
@@ -16,14 +18,24 @@ import java.util.Scanner;
 public class XOR implements Testcase {
     private final NeatConfiguration configuration;
     private final Neat neat;
-    boolean hasAlreadyWorked;
-    int generation;
+    private boolean hasAlreadyWorked;
+    private int generation;
+
+    private JPanel panel;
+    private JLabel[] labels;
 
     public XOR() {
         configuration = new NeatConfiguration(2, 1);
         neat = new Neat(configuration);
         hasAlreadyWorked = false;
         generation = 0;
+
+        panel = new JPanel(new GridLayout(4, 1));
+        labels = new JLabel[] {new JLabel(), new JLabel(), new JLabel(), new JLabel()};
+
+        for (JLabel label : labels) {
+            panel.add(label);
+        }
     }
 
     @Override
@@ -31,21 +43,36 @@ public class XOR implements Testcase {
         neat.firstGeneration();
         evaluateGeneration();
         generation = 1;
+        hasAlreadyWorked = false;
     }
 
     @Override
     public int doNGenerations(int n) {
-        for (int i = 0; i < n; i++) {
+        int i;
+        for (i = 0; i < n; i++) {
             neat.nextGeneration();
             System.out.println("Generation " + generation);
             generation++;
             if (evaluateGeneration() && !hasAlreadyWorked) {
                 hasAlreadyWorked = true;
                 System.out.println("\u001B[32mFound working organism.\u001B[0m");
-                return i;
+                break;
             }
         }
-        return n;
+
+        double[][] possibleInputs = new double[][]{
+                new double[]{0.0, 0.0},
+                new double[]{0.0, 1.0},
+                new double[]{1.0, 0.0},
+                new double[]{1.0, 1.0}
+        };
+
+        for (int j = 0; j < labels.length; j++) {
+            neat.getChamp().setInput(possibleInputs[j]);
+            labels[j].setText("Input: " + possibleInputs[j][0] + ", " + possibleInputs[j][1] + "; Output: " + neat.getChamp().getOutput()[0]);
+        }
+
+        return i;
     }
 
     @Override
@@ -56,6 +83,24 @@ public class XOR implements Testcase {
     @Override
     public Organism getChamp() {
         return neat.getChamp();
+    }
+
+    @Override
+    public JPanel getAnimationPanel() {
+        return panel;
+    }
+
+    @Override
+    public int[] getFitnessDistribution() {
+        int[] distribution = new int[16];
+        for (Species species :
+                neat.getSpecies()) {
+            for (Organism organism: species.getMembers()) {
+                // TODO: 02.08.2020 If it works to good, it breaks (if fitness == 16.0 throws ArrayIndexOutOfBoundsException)
+                distribution[(int)organism.getFitness()]++;
+            }
+        }
+        return distribution;
     }
 
     private boolean evaluateGeneration() {
