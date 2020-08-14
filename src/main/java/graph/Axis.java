@@ -33,7 +33,7 @@ public class Axis {
         g.setColor(new Color(0x000000));
 
         Vector centerPixel = value2Pixel(center, width, height);
-
+        System.out.println("MaxX = " + maxX + "; minX = " + minX + "; maxX - minX = " + (maxX - minX));
         System.out.println("Center: " + center.getX() + ", " + center.getY());
         System.out.println("CenterPixel: " + centerPixel.getX() + ", " + centerPixel.getY());
         g.drawLine((int) centerPixel.getX(), 0, (int) centerPixel.getX(), height);

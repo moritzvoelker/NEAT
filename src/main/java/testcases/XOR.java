@@ -103,6 +103,16 @@ public class XOR implements Testcase {
         return distribution;
     }
 
+    @Override
+    public List<Species> getSpecies() {
+        return neat.getSpecies();
+    }
+
+    @Override
+    public int getPopulationSize() {
+        return configuration.getPopulationSize();
+    }
+
     private boolean evaluateGeneration() {
         List<double[]> inputs = new ArrayList<>(configuration.getPopulationSize());
         double[][] possibleInputs = new double[][]{

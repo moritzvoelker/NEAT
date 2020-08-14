@@ -1,8 +1,10 @@
 package gui;
 
 import neat.Organism;
+import neat.Species;
 
 import javax.swing.*;
+import java.util.List;
 
 public interface Testcase {
     void init();
@@ -11,4 +13,6 @@ public interface Testcase {
     Organism getChamp();
     JPanel getAnimationPanel();
     int[] getFitnessDistribution();
+    List<Species> getSpecies();
+    int getPopulationSize();
 }

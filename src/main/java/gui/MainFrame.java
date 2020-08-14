@@ -1,6 +1,7 @@
 package gui;
 
 import graph.*;
+import neat.Species;
 import networkdisplay.Display;
 import testcases.XOR;
 
@@ -22,6 +23,8 @@ public class MainFrame extends JFrame {
     private JPanel fitnessGraphPanel;
     private GraphPanel fitnessDistributionPanel;
     private JPanel widgetPanel;
+    private JPanel champDisplay;
+    private GraphPanel speciesDistributionPanel;
 
     public MainFrame() {
         self = this;
@@ -44,12 +47,18 @@ public class MainFrame extends JFrame {
         fitnessDistributionPanel.getAxis().setResolutionY(20.0);
         fitnessDistributionPanel.setBorder(BorderFactory.createEtchedBorder(EtchedBorder.LOWERED));
 
+
+        speciesDistributionPanel = new GraphPanel();
+        speciesDistributionPanel.getAxis().setResolutionY(50);
+        speciesDistributionPanel.setBorder(BorderFactory.createEtchedBorder(EtchedBorder.LOWERED));
+
+
         JLabel generationLabel = new JLabel("Generation " + testcase.getGeneration());
         generationLabel.setFont(new Font(Font.SANS_SERIF, Font.BOLD, 50));
 
-        JPanel controls = new JPanel(new GridLayout(5, 1));
+        JPanel controls = new JPanel(new GridLayout(4, 1));
 
-        JPanel champDisplay = new JPanel(new GridLayout(1, 1));
+        champDisplay = new JPanel(new GridLayout(1, 1));
         champDisplay.setBorder(BorderFactory.createEtchedBorder(EtchedBorder.LOWERED));
 
         JButton doGenButton = new JButton("Do one generation");
@@ -72,6 +81,24 @@ public class MainFrame extends JFrame {
             System.out.println(Arrays.toString(distribution));
             for (int i = 0; i < distribution.length; i++) {
                 fitnessDistributionPanel.addCoordinate(0, i, distribution[i]);
+            }
+
+            List<Species> speciesList = new ArrayList<>(testcase.getSpecies());
+            int i = 1;
+            int value = testcase.getPopulationSize();
+            for (Graph graph : speciesDistributionPanel.getGraphs()) {
+                speciesList.remove(((DistributionGraph) graph).getSpecies());
+                speciesDistributionPanel.addCoordinate(i - 1, testcase.getGeneration(), value);
+                value -= ((DistributionGraph) graph).getSpecies().getMembers().size();
+                i++;
+            }
+            for (Species species : speciesList) {
+                speciesDistributionPanel.addGraph(new DistributionGraph(new Color((100 * i) % 256, (150 * i) % 256, (200 * i) % 256), 3, species));
+                speciesDistributionPanel.addCoordinate(i - 1, 1, value);
+
+
+                value -= species.getMembers().size();
+                i++;
             }
 
             content.validate();
@@ -120,6 +147,26 @@ public class MainFrame extends JFrame {
                 fitnessDistributionPanel.addCoordinate(0, i, distribution[i]);
             }
 
+
+            int i = 1;
+            int value = testcase.getPopulationSize();
+            for (Graph graph : speciesDistributionPanel.getGraphs()) {
+                speciesDistributionPanel.addCoordinate(i - 1, testcase.getGeneration(), value);
+                value -= ((DistributionGraph) graph).getSpecies().getMembers().size();
+                i++;
+            }
+            for (Species species : testcase.getSpecies()) {
+                if (!speciesDistributionPanel.getGraphs().contains(species)) {
+                    speciesDistributionPanel.addGraph(new DistributionGraph(new Color((100 * i) % 256, (150 * i) % 256, (200 * i) % 256), 3, species));
+                    speciesDistributionPanel.addCoordinate(i - 1, 1, value);
+
+
+                    value -= species.getMembers().size();
+                    i++;
+                }
+            }
+
+
             content.validate();
             content.repaint();
         });
@@ -160,6 +207,19 @@ public class MainFrame extends JFrame {
                 fitnessDistributionPanel.addCoordinate(0, i, distribution[i]);
             }
 
+            speciesDistributionPanel.removeAllGraphs();
+            int i = 1;
+            int value = testcase.getPopulationSize();
+            for (Species species : testcase.getSpecies()) {
+                speciesDistributionPanel.addGraph(new DistributionGraph(new Color((100 * i) % 256, (150 * i) % 256, (200 * i) % 256), 3, species));
+                speciesDistributionPanel.addCoordinate(i - 1, 0, 0);
+                speciesDistributionPanel.addCoordinate(i - 1, 1, value);
+
+                value -= species.getMembers().size();
+                i++;
+            }
+
+
             System.out.println("Initialized testcase");
             content.validate();
             content.repaint();
@@ -177,7 +237,6 @@ public class MainFrame extends JFrame {
         controls.add(doGenButton);
         controls.add(numberOfGenerations);
         controls.add(doNGenButton);
-        controls.add(champDisplay);
 
 
         content.add(generationLabel, BorderLayout.NORTH);
@@ -194,13 +253,14 @@ public class MainFrame extends JFrame {
         List<Widget> widgets = new ArrayList<>(16);
         MouseListener mouseListener = new MouseAdapter() {
             int focusedIndex = -1;
+
             @Override
             public void mouseClicked(MouseEvent e) {
-                Widget widget =(Widget)e.getComponent();
+                Widget widget = (Widget) e.getComponent();
                 if (!widget.isFocused()) {
+                    focusedIndex = Arrays.asList(widgetPanel.getComponents()).indexOf(e.getComponent());
                     content.remove(widgetPanel);
                     content.add(e.getComponent(), BorderLayout.CENTER);
-                    focusedIndex = widgetPanel.getComponentZOrder(e.getComponent());
                 } else {
                     content.remove(e.getComponent());
                     widgetPanel.add(e.getComponent(), focusedIndex);
@@ -212,7 +272,9 @@ public class MainFrame extends JFrame {
             }
         };
         widgets.add(new Widget("Fitness graph", fitnessGraphPanel, mouseListener));
-        widgets.add(new Widget("Fitress distribution", fitnessDistributionPanel, mouseListener));
+        widgets.add(new Widget("Fitness distribution", fitnessDistributionPanel, mouseListener));
+        widgets.add(new Widget("Champion structure", champDisplay, mouseListener));
+        widgets.add(new Widget("Species distribution", speciesDistributionPanel, mouseListener));
         return widgets;
     }
 

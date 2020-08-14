@@ -137,6 +137,10 @@ public class GraphPanel extends JPanel {
         return graphs.get(index);
     }
 
+    public List<Graph> getGraphs() {
+        return graphs;
+    }
+
 
     public void setNorm(double normX, double normY) {
         this.normX = normX;
