@@ -33,33 +33,23 @@ public class Axis {
         g.setColor(new Color(0x000000));
 
         Vector centerPixel = value2Pixel(center, width, height);
-        System.out.println("MaxX = " + maxX + "; minX = " + minX + "; maxX - minX = " + (maxX - minX));
-        System.out.println("Center: " + center.getX() + ", " + center.getY());
-        System.out.println("CenterPixel: " + centerPixel.getX() + ", " + centerPixel.getY());
         g.drawLine((int) centerPixel.getX(), 0, (int) centerPixel.getX(), height);
         g.drawLine(0, (int) centerPixel.getY(), width, (int) centerPixel.getY());
 
         ((Graphics2D) g).setStroke(new BasicStroke(1));
-        int ysteppixel = (int) (resolutionY / (maxY - minY) * height * normY);
-        if (ysteppixel == 0)
-            ysteppixel = 1;
+        double ysteppixel = (resolutionY / (maxY - minY) * height * normY);
         int ytpixel = (int) (centerPixel.getY());   // Die Pixelkoordinaten von denen aus die Achsenbeschriftung gemalt wird.
         double yt = center.getY();                  // Die Koordinaten von denen aus die Achsenbeschriftung gemalt wird.
 
-        System.out.println("resolutionY = "+ resolutionY + "; maxY-minY = " + (maxY-minY) + "; ysteppixel = " + (resolutionY / (maxY - minY) * height * normY));
-        //if (ysteppixel == 0)));
 
         if (ytpixel > height || ytpixel < 0) {
             yt = yt + ((int) ((maxY - minY) / (2 * normY * resolutionY))) * resolutionY;
             ytpixel = YValue2YPixel(yt, height);
         }
 
-        int xsteppixel = (int) (resolutionX / (maxX - minX) * width * normX);
+        double xsteppixel = (resolutionX / (maxX - minX) * width * normX);
         int xtpixel = (int) (centerPixel.getX());   // Die Pixelkoordinaten von denen aus die Achsenbeschriftung gemalt wird.
         double xt = center.getX();                  // Die Koordinaten von denen aus die Achsenbeschriftung gemalt wird.
-
-        if (xsteppixel == 0)
-            xsteppixel = 1;
 
         if (xtpixel > height || xtpixel < 0) {
             xt = xt + ((int) ((maxX - minX) / (2 * normX * resolutionX))) * resolutionX;
@@ -68,13 +58,10 @@ public class Axis {
 
         int i = 1;
         for (boolean cont = true; cont; i++) {
-            int y1 = ytpixel - i * ysteppixel;
-            int y2 = ytpixel + i * ysteppixel;
-            int x1 = xtpixel + i * xsteppixel;
-            int x2 = xtpixel - i * xsteppixel;
-
-            //System.out.println("ystepppixel = "+ ysteppixel);
-            //System.out.println("y1 = " + y1 + "; y2 = " + y2 + "; x1 = " + x1 + "; x2 = " + x2);
+            int y1 = ytpixel - (int)(i * ysteppixel);
+            int y2 = ytpixel + (int)(i * ysteppixel);
+            int x1 = xtpixel + (int)(i * xsteppixel);
+            int x2 = xtpixel - (int)(i * xsteppixel);
 
 
             g.setFont(new Font(Font.SANS_SERIF, Font.PLAIN, 10));
