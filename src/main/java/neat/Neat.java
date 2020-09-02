@@ -1,5 +1,8 @@
 package neat;
 
+import networkdisplay.Display;
+
+import javax.swing.*;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -126,8 +129,10 @@ public class Neat {
                 }
                 for (int i = 2; i < species.size(); i++) {
                     if (species.get(i).getAverageFitness() > species.get(0).getAverageFitness()) {
+                        species.get(1).getMembers().clear();
                         species.set(1, species.set(0, species.get(i)));
                     } else if (species.get(i).getAverageFitness() > species.get(1).getAverageFitness()) {
+                        species.get(1).getMembers().clear();
                         species.set(1, species.get(i));
                     }
                 }
@@ -148,6 +153,7 @@ public class Neat {
                     if (species1.getChamp().equals(champ)) {
                         newPopulation.add(champ);
                     }
+                    species1.getMembers().clear();
                     return false;
                 }
                 return true;
@@ -171,7 +177,7 @@ public class Neat {
             speciesSizes[speciesOfChamp]++;
             currentPopulationSize++;
         }
-
+        // TODO: 31.08.2020 Maybe randomize, since it favors the first species
         for (i = 0; i < configuration.getPopulationSize() - currentPopulationSize; i++) {
             speciesSizes[i % species.size()]++;
         }
@@ -193,7 +199,7 @@ public class Neat {
         }
     }
 
-    // TODO: 06.07.2020 Die Anzahl von Spezien springt komisch: von 1 auf 27, von 27 auf 1
+    // TODO: 06.07.2020 Die Anzahl von Spezien springt komisch: von 1 auf 27, von 27 auf 1 (Vermutlich zu tun mit dem Sprung von size  19 -> 20)
     private void specify(Organism organism) {
         for (Species currentSpecies : species) {
             if (organism.isMember(currentSpecies)) {

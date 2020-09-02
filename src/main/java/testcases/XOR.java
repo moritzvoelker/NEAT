@@ -113,6 +113,11 @@ public class XOR implements Testcase {
         return configuration.getPopulationSize();
     }
 
+    @Override
+    public boolean hasWorkingOrganism() {
+        return works(neat.getChamp());
+    }
+
     private boolean evaluateGeneration() {
         List<double[]> inputs = new ArrayList<>(configuration.getPopulationSize());
         double[][] possibleInputs = new double[][]{

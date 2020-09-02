@@ -15,4 +15,5 @@ public interface Testcase {
     int[] getFitnessDistribution();
     List<Species> getSpecies();
     int getPopulationSize();
+    boolean hasWorkingOrganism();
 }
