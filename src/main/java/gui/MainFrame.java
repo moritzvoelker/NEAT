@@ -20,11 +20,15 @@ public class MainFrame extends JFrame {
     private Testcase testcase;
     private List<Widget> widgets;
 
+
+    private JLabel generationLabel;
     private JPanel fitnessGraphPanel;
     private GraphPanel fitnessDistributionPanel;
     private JPanel widgetPanel;
     private JPanel champDisplay;
     private GraphPanel speciesDistributionPanel;
+
+    private boolean hasAlreadyWorked;
 
     public MainFrame() {
         self = this;
@@ -53,7 +57,7 @@ public class MainFrame extends JFrame {
         speciesDistributionPanel.setBorder(BorderFactory.createEtchedBorder(EtchedBorder.LOWERED));
 
 
-        JLabel generationLabel = new JLabel("Generation " + testcase.getGeneration());
+        generationLabel = new JLabel("Generation " + testcase.getGeneration());
         generationLabel.setFont(new Font(Font.SANS_SERIF, Font.BOLD, 50));
 
         JPanel controls = new JPanel(new GridLayout(4, 1));
@@ -63,46 +67,7 @@ public class MainFrame extends JFrame {
 
         JButton doGenButton = new JButton("Do one generation");
         doGenButton.addActionListener(e -> {
-            testcase.doNGenerations(1);
-            generationLabel.setText("Generation " + testcase.getGeneration());
-
-            champDisplay.removeAll();
-            champDisplay.add(new Display(testcase.getChamp()));
-
-            double[] y = new double[1];
-            y[0] = testcase.getChamp().getFitness();
-            ((GraphPanel) (fitnessGraphPanel.getComponent(0))).addCoordinates(testcase.getGeneration(), y);
-//            ((GraphPanel)(graphPanel.getComponent(0))).getAxis().setResolutionX(testcase.getGeneration() / 10.0);
-
-            fitnessDistributionPanel.removeAllGraphs();
-            fitnessDistributionPanel.addGraph(new BarGraph(new Color(0), 3));
-            fitnessDistributionPanel.resetAxis();
-            int[] distribution = testcase.getFitnessDistribution();
-            System.out.println(Arrays.toString(distribution));
-            for (int i = 0; i < distribution.length; i++) {
-                fitnessDistributionPanel.addCoordinate(0, i, distribution[i]);
-            }
-
-            List<Species> speciesList = new ArrayList<>(testcase.getSpecies());
-            int i = 1;
-            int value = testcase.getPopulationSize();
-            for (Graph graph : speciesDistributionPanel.getGraphs()) {
-                speciesList.remove(((DistributionGraph) graph).getSpecies());
-                speciesDistributionPanel.addCoordinate(i - 1, testcase.getGeneration(), value);
-                value -= ((DistributionGraph) graph).getSpecies().getMembers().size();
-                i++;
-            }
-            for (Species species : speciesList) {
-                speciesDistributionPanel.addGraph(new DistributionGraph(new Color((100 * i) % 256, (150 * i) % 256, (200 * i) % 256), 3, species));
-                speciesDistributionPanel.addCoordinate(i - 1, 1, value);
-
-
-                value -= species.getMembers().size();
-                i++;
-            }
-
-            content.validate();
-            content.repaint();
+            doGeneration();
         });
         doGenButton.setEnabled(false);
 
@@ -116,64 +81,21 @@ public class MainFrame extends JFrame {
                 }
             }
         });
+
+
         JButton doNGenButton = new JButton("Do n generations");
         doNGenButton.addActionListener(e -> {
-            testcase.doNGenerations(Integer.parseInt(numberOfGenerations.getText()));
-            generationLabel.setText("Generation " + testcase.getGeneration());
-
-            champDisplay.removeAll();
-            champDisplay.add(new Display(testcase.getChamp()));
-
-            double[] y = new double[1];
-            y[0] = testcase.getChamp().getFitness();
-            ((GraphPanel) (fitnessGraphPanel.getComponent(0))).addCoordinates(testcase.getGeneration(), y);
-//            ((GraphPanel)(graphPanel.getComponent(0))).getAxis().setResolutionX(testcase.getGeneration() / 10.0);
-
-            /*fitnessDistributionPanel.removeAll();
-            GraphPanel graphPanel = new GraphPanel(new BarGraph(new Color(0), 3));
-            fitnessDistributionPanel.add(graphPanel);
-            int[] distribution = testcase.getFitnessDistribution();
-            System.out.println(Arrays.toString(distribution));
-            for (int i = 0; i < distribution.length; i++) {
-                graphPanel.addCoordinate(0, i, distribution[i]);
-            }*/
-
-            fitnessDistributionPanel.removeAllGraphs();
-            fitnessDistributionPanel.addGraph(new BarGraph(new Color(0), 3));
-            fitnessDistributionPanel.resetAxis();
-            int[] distribution = testcase.getFitnessDistribution();
-            System.out.println(Arrays.toString(distribution));
-            for (int i = 0; i < distribution.length; i++) {
-                fitnessDistributionPanel.addCoordinate(0, i, distribution[i]);
-            }
-
-
-            int i = 1;
-            int value = testcase.getPopulationSize();
-            for (Graph graph : speciesDistributionPanel.getGraphs()) {
-                speciesDistributionPanel.addCoordinate(i - 1, testcase.getGeneration(), value);
-                value -= ((DistributionGraph) graph).getSpecies().getMembers().size();
-                i++;
-            }
-            for (Species species : testcase.getSpecies()) {
-                if (!speciesDistributionPanel.getGraphs().contains(species)) {
-                    speciesDistributionPanel.addGraph(new DistributionGraph(new Color((100 * i) % 256, (150 * i) % 256, (200 * i) % 256), 3, species));
-                    speciesDistributionPanel.addCoordinate(i - 1, 1, value);
-
-
-                    value -= species.getMembers().size();
-                    i++;
+            for (int i = 0; i < Integer.parseInt(numberOfGenerations.getText()); i++) {
+                if (doGeneration()) {
+                    break;
                 }
             }
-
-
-            content.validate();
-            content.repaint();
         });
         doNGenButton.setEnabled(false);
 
         JButton resetButton = new JButton("Reset");
         resetButton.addActionListener(e -> {
+            hasAlreadyWorked = false;
             testcase.init();
             doGenButton.setEnabled(true);
             doNGenButton.setEnabled(true);
@@ -208,6 +130,7 @@ public class MainFrame extends JFrame {
             }
 
             speciesDistributionPanel.removeAllGraphs();
+            speciesDistributionPanel.resetAxis();
             int i = 1;
             int value = testcase.getPopulationSize();
             for (Species species : testcase.getSpecies()) {
@@ -245,7 +168,7 @@ public class MainFrame extends JFrame {
 
         setContentPane(content);
 
-        setSize(640, 400);
+        setSize(1000, 800);
         setVisible(true);
     }
 
@@ -276,6 +199,62 @@ public class MainFrame extends JFrame {
         widgets.add(new Widget("Champion structure", champDisplay, mouseListener));
         widgets.add(new Widget("Species distribution", speciesDistributionPanel, mouseListener));
         return widgets;
+    }
+
+    private boolean doGeneration() {
+        testcase.doNGenerations(1);
+        generationLabel.setText("Generation " + testcase.getGeneration());
+
+        champDisplay.removeAll();
+        champDisplay.add(new Display(testcase.getChamp()));
+
+        double[] y = new double[1];
+        y[0] = testcase.getChamp().getFitness();
+        ((GraphPanel) (fitnessGraphPanel.getComponent(0))).addCoordinates(testcase.getGeneration(), y);
+
+        fitnessDistributionPanel.removeAllGraphs();
+        fitnessDistributionPanel.addGraph(new BarGraph(new Color(0), 3));
+        fitnessDistributionPanel.resetAxis();
+        int[] distribution = testcase.getFitnessDistribution();
+        System.out.println(Arrays.toString(distribution));
+        for (int i = 0; i < distribution.length; i++) {
+            fitnessDistributionPanel.addCoordinate(0, i, distribution[i]);
+        }
+
+        List<Species> speciesList = new ArrayList<>(testcase.getSpecies());
+        System.out.println("Population size = " + speciesDistributionPanel.getGraphs().stream().mapToInt(graph -> { return ((DistributionGraph)graph).getSpecies().getMembers().size();}).sum());
+        System.out.println("Population size (spezies) = " + testcase.getSpecies().stream().mapToInt(species1 -> { return species1.getMembers().size();}).sum());
+        int i = 1;
+        int value = testcase.getPopulationSize();
+        System.out.println("Population size (testcase)" + value);
+        for (Graph graph : speciesDistributionPanel.getGraphs()) {
+            speciesList.remove(((DistributionGraph) graph).getSpecies());
+            speciesDistributionPanel.addCoordinate(i - 1, testcase.getGeneration(), value);
+            value -= ((DistributionGraph) graph).getSpecies().getMembers().size();
+            if (value < 0)
+                System.out.println("value = " + value);
+            i++;
+        }
+        for (Species species : speciesList) {
+            speciesDistributionPanel.addGraph(new DistributionGraph(new Color((100 * i) % 256, (150 * i) % 256, (200 * i) % 256), 3, species));
+            speciesDistributionPanel.addCoordinate(i - 1, testcase.getGeneration() - 1, 0);
+            speciesDistributionPanel.addCoordinate(i - 1, testcase.getGeneration(), value);
+
+
+            value -= species.getMembers().size();
+            if (value < 0)
+                System.out.println("value = " + value);
+            i++;
+        }
+
+        content.validate();
+        content.repaint();
+        if (!hasAlreadyWorked && testcase.hasWorkingOrganism()) {
+            hasAlreadyWorked = true;
+            JOptionPane.showMessageDialog(this, "Found working organism!", "Success", JOptionPane.INFORMATION_MESSAGE);
+            return true;
+        }
+        return false;
     }
 
     public static void main(String[] args) {
