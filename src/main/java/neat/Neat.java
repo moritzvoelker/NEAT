@@ -98,6 +98,7 @@ public class Neat {
                     Node out = organism.getOutputNodes().get((int) (Math.random() * configuration.getOutputCount()));
                     Connection connection = new Connection(node, out, configuration.getMaxConnectionAbsoluteValue() * 2 - configuration.getMaxConnectionAbsoluteValue());
                     out.getIn().add(connection);
+                    globalInnovationNumber = connection.setInnovationNumber(globalInnovationNumber, addedConnections);
                     organism.getConnections().add(connection);
                 } else {
                     node.getIn().clear();

@@ -22,7 +22,7 @@ public class MainFrame extends JFrame {
 
 
     private JLabel generationLabel;
-    private JPanel fitnessGraphPanel;
+    private GraphPanel fitnessGraphPanel;
     private GraphPanel fitnessDistributionPanel;
     private JPanel widgetPanel;
     private JPanel champDisplay;
@@ -44,7 +44,7 @@ public class MainFrame extends JFrame {
 
         content = new JPanel(new BorderLayout());
 
-        fitnessGraphPanel = new JPanel(new GridLayout(1, 1));
+        fitnessGraphPanel = new GraphPanel();
         fitnessGraphPanel.setBorder(BorderFactory.createEtchedBorder(EtchedBorder.LOWERED));
 
         fitnessDistributionPanel = new GraphPanel();
@@ -104,21 +104,18 @@ public class MainFrame extends JFrame {
             champDisplay.removeAll();
             champDisplay.add(new Display(testcase.getChamp()));
 
-            fitnessGraphPanel.removeAll();
-            fitnessGraphPanel.add(new GraphPanel(new LineGraph(new Color(0, 0, 0, 150), 3), 1.0, 16.0, 1.0, 0.1));
-            double[] y = {0.0};
-            ((GraphPanel) (fitnessGraphPanel.getComponent(0))).addCoordinates(0, y);
-            y[0] = testcase.getChamp().getFitness();
-            ((GraphPanel) (fitnessGraphPanel.getComponent(0))).addCoordinates(1, y);
+            fitnessGraphPanel.removeAllGraphs();
+            fitnessGraphPanel.addGraph(new LineGraph(new Color(0, 0, 0, 150), 3));
+            fitnessGraphPanel.addGraph(new LineGraph(new Color(255, 0, 0, 150), 3));
+            fitnessGraphPanel.resetAxis();
 
-            /*fitnessDistributionPanel.removeAll();
-            GraphPanel graphPanel = new GraphPanel(new BarGraph(new Color(0), 3));
-            fitnessDistributionPanel.add(graphPanel);
-            int[] distribution = testcase.getFitnessDistribution();
-            System.out.println(Arrays.toString(distribution));
-            for (int i = 0; i < distribution.length; i++) {
-                graphPanel.addCoordinate(0, i, distribution[i]);
-            }*/
+            double[] y = {0.0, 0.0};
+            fitnessGraphPanel.addCoordinates(0, y);
+            y[0] = testcase.getChamp().getFitness();
+            y[1] = ((testcase.getChamp().getFitness() > 0) ? 0.5 : 0);
+            fitnessGraphPanel.addCoordinates(1, y);
+
+
 
             fitnessDistributionPanel.removeAllGraphs();
             fitnessDistributionPanel.addGraph(new BarGraph(new Color(0), 3));
@@ -208,9 +205,10 @@ public class MainFrame extends JFrame {
         champDisplay.removeAll();
         champDisplay.add(new Display(testcase.getChamp()));
 
-        double[] y = new double[1];
+        double[] y = new double[2];
         y[0] = testcase.getChamp().getFitness();
-        ((GraphPanel) (fitnessGraphPanel.getComponent(0))).addCoordinates(testcase.getGeneration(), y);
+        y[1] = ((testcase.getChamp().getFitness() > fitnessGraphPanel.getGraph(0).getCoordinates().get(testcase.getGeneration() - 1).getY()) ? 0.5 : 0);
+        fitnessGraphPanel.addCoordinates(testcase.getGeneration(), y);
 
         fitnessDistributionPanel.removeAllGraphs();
         fitnessDistributionPanel.addGraph(new BarGraph(new Color(0), 3));

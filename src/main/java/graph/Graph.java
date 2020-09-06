@@ -64,6 +64,10 @@ public abstract class Graph {
         content.add(c);
     }
 
+    public List<Vector> getCoordinates() {
+        return content;
+    }
+
 
 
 
