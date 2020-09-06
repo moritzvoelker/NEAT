@@ -25,7 +25,8 @@ public class XOR implements Testcase {
     private JLabel[] labels;
 
     public XOR() {
-        configuration = new NeatConfiguration(2, 1);
+        configuration = new NeatConfiguration(2, 1).setPopulationSize(150).setSpeciationThreshhold(4.0).setPurgeAge(9).setMaxGenerationsWithoutImprovement(10);
+
         neat = new Neat(configuration);
         hasAlreadyWorked = false;
         generation = 0;
@@ -145,10 +146,7 @@ public class XOR implements Testcase {
 
         neat.setFitness(fitness);
         System.out.println("Fitness of Champion: " + neat.getChamp().getFitness());
-        if (works(neat.getChamp())) {
-            return true;
-        }
-        return false;
+        return works(neat.getChamp());
     }
 
     public static void main(String[] args) {
@@ -254,6 +252,8 @@ public class XOR implements Testcase {
             return 1.0 - output[0];
         }
     }
+
+
 
     private static boolean works(Organism organism) {
         double[][] possibleInputs = new double[][]{

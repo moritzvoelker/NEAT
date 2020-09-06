@@ -36,7 +36,7 @@ public class Organism {
         outputNodes = new LinkedList<>();
         connections = new TestList<>();
         fitness = -1.0;
-        if (organism.getBias() != null) { // if (organism.getBias() != null) {
+        if (organism.getBias() != null) {
             bias = new BiasNode();
         } else {
             bias = null;
@@ -384,11 +384,16 @@ public class Organism {
         int excess = 0, disjoint = 0, joined = 0;
         double weightDifference = 0.0;
 
-        int size = Math.max(organism.getConnections().size(), connections.size());
 
+        int size = Math.max(organism.getConnections().size(), connections.size());
+        /*
         if (size < 20) {
-            size = 1;
-        }
+            size = 1 + (int) Math.pow(Math.sqrt(19) / 20 * size, 2);
+        } else {
+            System.out.println("Organism is now big!");
+        }*/
+
+
 
         int i = 0, j = 0;
         Connection fatherConnection = connections.get(i);

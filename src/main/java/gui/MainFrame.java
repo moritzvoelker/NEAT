@@ -220,11 +220,8 @@ public class MainFrame extends JFrame {
         }
 
         List<Species> speciesList = new ArrayList<>(testcase.getSpecies());
-        System.out.println("Population size = " + speciesDistributionPanel.getGraphs().stream().mapToInt(graph -> { return ((DistributionGraph)graph).getSpecies().getMembers().size();}).sum());
-        System.out.println("Population size (spezies) = " + testcase.getSpecies().stream().mapToInt(species1 -> { return species1.getMembers().size();}).sum());
         int i = 1;
         int value = testcase.getPopulationSize();
-        System.out.println("Population size (testcase)" + value);
         for (Graph graph : speciesDistributionPanel.getGraphs()) {
             speciesList.remove(((DistributionGraph) graph).getSpecies());
             speciesDistributionPanel.addCoordinate(i - 1, testcase.getGeneration(), value);
