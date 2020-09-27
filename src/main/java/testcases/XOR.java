@@ -25,10 +25,15 @@ public class XOR implements Testcase {
     private JLabel[] labels;
 
     public XOR() {
-        configuration = new NeatConfiguration(2, 1).setPopulationSize(150).setSpeciationThreshhold(4.0).setPurgeAge(9).setMaxGenerationsWithoutImprovement(10);
+        configuration = new NeatConfiguration(2, 1)/*.setPopulationSize(150).setSpeciationThreshhold(4.0).setPurgeAge(9).setMaxGenerationsWithoutImprovement(10)*/;
 
         neat = new Neat(configuration);
-        hasAlreadyWorked = false;
+
+        reset();
+    }
+
+    @Override
+    public void reset() {
         generation = 0;
 
         panel = new JPanel(new GridLayout(4, 1));

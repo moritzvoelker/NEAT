@@ -1,6 +1,8 @@
 package gui;
 
 import graph.*;
+import neat.NeatConfiguration;
+import neat.Organism;
 import neat.Species;
 import networkdisplay.Display;
 import testcases.XOR;
@@ -15,11 +17,9 @@ import java.util.Arrays;
 import java.util.List;
 
 public class MainFrame extends JFrame {
-    private MainFrame self;
     private JPanel content;
     private Testcase testcase;
     private List<Widget> widgets;
-
 
     private JLabel generationLabel;
     private GraphPanel fitnessGraphPanel;
@@ -27,23 +27,42 @@ public class MainFrame extends JFrame {
     private JPanel widgetPanel;
     private JPanel champDisplay;
     private GraphPanel speciesDistributionPanel;
+    private JPanel organisms;
+    private JScrollPane scrollPane;
+    private JPanel organismList;
 
     private boolean hasAlreadyWorked;
 
     public MainFrame() {
-        self = this;
-        this.addWindowListener(new WindowAdapter() {
-            @Override
-            public void windowClosing(WindowEvent e) {
-                self.dispose();
-                System.exit(0);
-            }
-        });
+        this.setDefaultCloseOperation(EXIT_ON_CLOSE);
 
         testcase = new XOR();
 
         content = new JPanel(new BorderLayout());
 
+        generationLabel = new JLabel("Generation 0");
+        generationLabel.setFont(new Font(Font.SANS_SERIF, Font.BOLD, 50));
+
+        initializeWidgets();
+
+        widgets = getWidgets();
+        widgetPanel = new JPanel(new GridLayout(4, 4));
+
+        for (Widget widget : widgets) {
+            widgetPanel.add(widget);
+        }
+
+        content.add(generationLabel, BorderLayout.NORTH);
+        content.add(getControls(), BorderLayout.EAST);
+        content.add(widgetPanel, BorderLayout.CENTER);
+
+        setContentPane(content);
+
+        setSize(1000, 800);
+        setVisible(true);
+    }
+
+    private void initializeWidgets() {
         fitnessGraphPanel = new GraphPanel();
         fitnessGraphPanel.setBorder(BorderFactory.createEtchedBorder(EtchedBorder.LOWERED));
 
@@ -51,27 +70,31 @@ public class MainFrame extends JFrame {
         fitnessDistributionPanel.getAxis().setResolutionY(20.0);
         fitnessDistributionPanel.setBorder(BorderFactory.createEtchedBorder(EtchedBorder.LOWERED));
 
+        initializeFitnessPanels();
 
         speciesDistributionPanel = new GraphPanel();
         speciesDistributionPanel.getAxis().setResolutionY(50);
         speciesDistributionPanel.setBorder(BorderFactory.createEtchedBorder(EtchedBorder.LOWERED));
 
-
-        generationLabel = new JLabel("Generation " + testcase.getGeneration());
-        generationLabel.setFont(new Font(Font.SANS_SERIF, Font.BOLD, 50));
-
-        JPanel controls = new JPanel(new GridLayout(4, 1));
+        organisms = new JPanel(new GridBagLayout());
+        scrollPane = new JScrollPane();
+        scrollPane.getVerticalScrollBar().setUnitIncrement(100);
+        organismList = new JPanel(new BorderLayout());
+        organismList.add(scrollPane);
 
         champDisplay = new JPanel(new GridLayout(1, 1));
         champDisplay.setBorder(BorderFactory.createEtchedBorder(EtchedBorder.LOWERED));
+    }
+
+    private JPanel getControls() {
+        JPanel controls = new JPanel(new GridLayout(4, 1));
 
         JButton doGenButton = new JButton("Do one generation");
         doGenButton.addActionListener(e -> {
             doGeneration();
         });
-        doGenButton.setEnabled(false);
 
-        JTextField numberOfGenerations = new JTextField("1");
+        JTextField numberOfGenerations = new JTextField("10");
         numberOfGenerations.addKeyListener(new KeyAdapter() {
             @Override
             public void keyTyped(KeyEvent e) {
@@ -85,88 +108,52 @@ public class MainFrame extends JFrame {
 
         JButton doNGenButton = new JButton("Do n generations");
         doNGenButton.addActionListener(e -> {
-            for (int i = 0; i < Integer.parseInt(numberOfGenerations.getText()); i++) {
+            int generations = Integer.parseInt(numberOfGenerations.getText());
+            for (int i = 0; i < generations; i++) {
                 if (doGeneration()) {
                     break;
                 }
             }
         });
-        doNGenButton.setEnabled(false);
 
         JButton resetButton = new JButton("Reset");
         resetButton.addActionListener(e -> {
             hasAlreadyWorked = false;
-            testcase.init();
-            doGenButton.setEnabled(true);
-            doNGenButton.setEnabled(true);
-            generationLabel.setText("Generation " + testcase.getGeneration());
+            testcase.reset();
+            generationLabel.setText("Generation 0");
 
             champDisplay.removeAll();
-            champDisplay.add(new Display(testcase.getChamp()));
 
-            fitnessGraphPanel.removeAllGraphs();
-            fitnessGraphPanel.addGraph(new LineGraph(new Color(0, 0, 0, 150), 3));
-            fitnessGraphPanel.addGraph(new LineGraph(new Color(255, 0, 0, 150), 3));
-            fitnessGraphPanel.resetAxis();
+            scrollPane.removeAll();
 
-            double[] y = {0.0, 0.0};
-            fitnessGraphPanel.addCoordinates(0, y);
-            y[0] = testcase.getChamp().getFitness();
-            y[1] = ((testcase.getChamp().getFitness() > 0) ? 0.5 : 0);
-            fitnessGraphPanel.addCoordinates(1, y);
-
-
-
-            fitnessDistributionPanel.removeAllGraphs();
-            fitnessDistributionPanel.addGraph(new BarGraph(new Color(0), 3));
-            fitnessDistributionPanel.resetAxis();
-            int[] distribution = testcase.getFitnessDistribution();
-            System.out.println(Arrays.toString(distribution));
-            for (int i = 0; i < distribution.length; i++) {
-                fitnessDistributionPanel.addCoordinate(0, i, distribution[i]);
-            }
+            initializeFitnessPanels();
 
             speciesDistributionPanel.removeAllGraphs();
             speciesDistributionPanel.resetAxis();
-            int i = 1;
-            int value = testcase.getPopulationSize();
-            for (Species species : testcase.getSpecies()) {
-                speciesDistributionPanel.addGraph(new DistributionGraph(new Color((100 * i) % 256, (150 * i) % 256, (200 * i) % 256), 3, species));
-                speciesDistributionPanel.addCoordinate(i - 1, 0, 0);
-                speciesDistributionPanel.addCoordinate(i - 1, 1, value);
-
-                value -= species.getMembers().size();
-                i++;
-            }
-
 
             System.out.println("Initialized testcase");
             content.validate();
             content.repaint();
         });
 
-        widgets = getWidgets();
-        widgetPanel = new JPanel(new GridLayout(4, 4));
-
-        for (Widget widget : widgets) {
-            widgetPanel.add(widget);
-        }
-
-
         controls.add(resetButton);
         controls.add(doGenButton);
         controls.add(numberOfGenerations);
         controls.add(doNGenButton);
+        return controls;
+    }
 
+    private void initializeFitnessPanels() {
+        fitnessGraphPanel.removeAllGraphs();
+        fitnessGraphPanel.addGraph(new LineGraph(new Color(0, 0, 0, 150), 3));
+        fitnessGraphPanel.addGraph(new LineGraph(new Color(255, 0, 0, 150), 3));
+        fitnessGraphPanel.resetAxis();
+        double[] y = {0.0, 0.0};
+        fitnessGraphPanel.addCoordinates(0, y);
 
-        content.add(generationLabel, BorderLayout.NORTH);
-        content.add(controls, BorderLayout.EAST);
-        content.add(widgetPanel, BorderLayout.CENTER);
-
-        setContentPane(content);
-
-        setSize(1000, 800);
-        setVisible(true);
+        fitnessDistributionPanel.removeAllGraphs();
+        fitnessDistributionPanel.addGraph(new BarGraph(new Color(0), 3));
+        fitnessDistributionPanel.resetAxis();
     }
 
     private List<Widget> getWidgets() {
@@ -195,11 +182,16 @@ public class MainFrame extends JFrame {
         widgets.add(new Widget("Fitness distribution", fitnessDistributionPanel, mouseListener));
         widgets.add(new Widget("Champion structure", champDisplay, mouseListener));
         widgets.add(new Widget("Species distribution", speciesDistributionPanel, mouseListener));
+        widgets.add(new Widget("Organism list", organismList, mouseListener));
         return widgets;
     }
 
     private boolean doGeneration() {
-        testcase.doNGenerations(1);
+        if (testcase.getGeneration() == 0) {
+            testcase.init();
+        } else {
+            testcase.doNGenerations(1);
+        }
         generationLabel.setText("Generation " + testcase.getGeneration());
 
         champDisplay.removeAll();
@@ -210,11 +202,27 @@ public class MainFrame extends JFrame {
         y[1] = ((testcase.getChamp().getFitness() > fitnessGraphPanel.getGraph(0).getCoordinates().get(testcase.getGeneration() - 1).getY()) ? 0.5 : 0);
         fitnessGraphPanel.addCoordinates(testcase.getGeneration(), y);
 
+        organisms.removeAll();
+
+        GridBagConstraints gbc = new GridBagConstraints();
+        gbc.gridwidth = GridBagConstraints.REMAINDER;
+        gbc.weightx = 1;
+        gbc.weighty = 1;
+        for (int i = 1; i <= testcase.getSpecies().size(); i++) {
+            for (Organism organism : testcase.getSpecies().get(i - 1).getMembers()) {
+                Display display = new Display(organism);
+                display.setPreferredSize(new Dimension(100, 200));
+                display.setBackground(new Color((100 * i) % 256, (150 * i) % 256, (200 * i) % 256));
+                organisms.add(display, gbc);
+            }
+        }
+
+        scrollPane.setViewportView(organisms);
+
         fitnessDistributionPanel.removeAllGraphs();
         fitnessDistributionPanel.addGraph(new BarGraph(new Color(0), 3));
         fitnessDistributionPanel.resetAxis();
         int[] distribution = testcase.getFitnessDistribution();
-        System.out.println(Arrays.toString(distribution));
         for (int i = 0; i < distribution.length; i++) {
             fitnessDistributionPanel.addCoordinate(0, i, distribution[i]);
         }
@@ -226,19 +234,13 @@ public class MainFrame extends JFrame {
             speciesList.remove(((DistributionGraph) graph).getSpecies());
             speciesDistributionPanel.addCoordinate(i - 1, testcase.getGeneration(), value);
             value -= ((DistributionGraph) graph).getSpecies().getMembers().size();
-            if (value < 0)
-                System.out.println("value = " + value);
             i++;
         }
         for (Species species : speciesList) {
             speciesDistributionPanel.addGraph(new DistributionGraph(new Color((100 * i) % 256, (150 * i) % 256, (200 * i) % 256), 3, species));
             speciesDistributionPanel.addCoordinate(i - 1, testcase.getGeneration() - 1, 0);
             speciesDistributionPanel.addCoordinate(i - 1, testcase.getGeneration(), value);
-
-
             value -= species.getMembers().size();
-            if (value < 0)
-                System.out.println("value = " + value);
             i++;
         }
 

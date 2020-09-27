@@ -386,10 +386,10 @@ public class Organism {
 
 
         int size = Math.max(organism.getConnections().size(), connections.size());
-        /*
+
         if (size < 20) {
             size = 1 + (int) Math.pow(Math.sqrt(19) / 20 * size, 2);
-        } else {
+        }/* else {
             System.out.println("Organism is now big!");
         }*/
 

@@ -7,6 +7,7 @@ import javax.swing.*;
 import java.util.List;
 
 public interface Testcase {
+    void reset();
     void init();
     int doNGenerations(int n);
     int getGeneration();

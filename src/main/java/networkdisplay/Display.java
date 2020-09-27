@@ -47,6 +47,7 @@ public class Display extends JPanel {
 
     @Override
     public void paintComponent(Graphics g) {
+        super.paintComponent(g);
         ((Graphics2D) g).setStroke(new BasicStroke((int) (lineWidth * (getWidth() < getHeight() ? getWidth() : getHeight()))));
         double maxAbsoluteWeight = 0.0;
         for (Connection connection : organism.getConnections()) {

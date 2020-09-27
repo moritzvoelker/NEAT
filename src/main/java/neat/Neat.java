@@ -1,21 +1,21 @@
 package neat;
 
-import networkdisplay.Display;
-
-import javax.swing.*;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.stream.Collectors;
 
 public class Neat {
     private NeatConfiguration configuration;
 
     private List<Species> species;
-    private int globalInnovationNumber = 1;
+    private int globalInnovationNumber;
     private int generationsSinceLastImprovement;
-    private Organism lastChamp = null;
+    private Organism lastChamp;
 
     public Neat(NeatConfiguration configuration) {
         this.configuration = configuration;
+        species = new LinkedList<>();
     }
 
     // TODO: 23.04.2020 Offset instead of clearing?
@@ -55,7 +55,7 @@ public class Neat {
     public void firstGeneration(NeatConfiguration configuration) {
         this.configuration = configuration;
 
-        species = new LinkedList<>();
+        species.clear();
         lastChamp = null;
 
         globalInnovationNumber = configuration.getInputCount() + configuration.getOutputCount() + 1;

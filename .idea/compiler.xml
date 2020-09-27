@@ -9,5 +9,8 @@
         <module name="NEAT" />
       </profile>
     </annotationProcessing>
+    <bytecodeTargetLevel>
+      <module name="NEAT" target="14" />
+    </bytecodeTargetLevel>
   </component>
 </project>
