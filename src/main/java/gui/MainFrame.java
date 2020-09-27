@@ -209,6 +209,7 @@ public class MainFrame extends JFrame {
         y[0] = testcase.getChamp().getFitness();
         y[1] = ((testcase.getChamp().getFitness() > fitnessGraphPanel.getGraph(0).getCoordinates().get(testcase.getGeneration() - 1).getY()) ? 0.5 : 0);
         fitnessGraphPanel.addCoordinates(testcase.getGeneration(), y);
+        fitnessGraphPanel.getAxis().setResolutionX(Math.ceil(testcase.getGeneration() / 10.0));
 
         fitnessDistributionPanel.removeAllGraphs();
         fitnessDistributionPanel.addGraph(new BarGraph(new Color(0), 3));
@@ -241,6 +242,7 @@ public class MainFrame extends JFrame {
                 System.out.println("value = " + value);
             i++;
         }
+        speciesDistributionPanel.getAxis().setResolutionX(Math.ceil(testcase.getGeneration() / 10.0));
 
         content.validate();
         content.repaint();
