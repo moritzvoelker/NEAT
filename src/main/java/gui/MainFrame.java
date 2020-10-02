@@ -78,7 +78,8 @@ public class MainFrame extends JFrame {
 
         organisms = new JPanel(new GridBagLayout());
         scrollPane = new JScrollPane();
-        scrollPane.getVerticalScrollBar().setUnitIncrement(100);
+        scrollPane.setHorizontalScrollBarPolicy(ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
+        scrollPane.getVerticalScrollBar().setUnitIncrement(166 / 2);
         organismList = new JPanel(new BorderLayout());
         organismList.add(scrollPane);
 
@@ -124,7 +125,7 @@ public class MainFrame extends JFrame {
 
             champDisplay.removeAll();
 
-            scrollPane.removeAll();
+            scrollPane.setViewportView(null);
 
             initializeFitnessPanels();
 
@@ -178,10 +179,33 @@ public class MainFrame extends JFrame {
                 content.repaint();
             }
         };
+        // TODO: 03.10.2020 Sehr hässlich. Irgendwie in einen mouseListener vielleicht? widgets per label durchsuchen?
+        MouseListener mouseListener2 = new MouseAdapter() {
+            int focusedIndex = -1;
+
+            @Override
+            public void mouseClicked(MouseEvent e) {
+                Widget widget = widgets.get(3);
+                if (!widget.isFocused()) {
+                    focusedIndex = Arrays.asList(widgetPanel.getComponents()).indexOf(widget);
+                    content.remove(widgetPanel);
+                    content.add(widget, BorderLayout.CENTER);
+                } else {
+                    content.remove(widget);
+                    widgetPanel.add(widget, focusedIndex);
+                    content.add(widgetPanel, BorderLayout.CENTER);
+                }
+                widget.setFocused(!widget.isFocused());
+                content.validate();
+                content.repaint();
+            }
+        };
+
         widgets.add(new Widget("Fitness graph", fitnessGraphPanel, mouseListener));
-        widgets.add(new Widget("Fitness distribution", fitnessDistributionPanel, mouseListener));
+        //widgets.add(new Widget("Fitness distribution", fitnessDistributionPanel, mouseListener));
         widgets.add(new Widget("Champion structure", champDisplay, mouseListener));
         widgets.add(new Widget("Species distribution", speciesDistributionPanel, mouseListener));
+        scrollPane.addMouseListener(mouseListener2);
         widgets.add(new Widget("Organism list", organismList, mouseListener));
         return widgets;
     }
@@ -203,22 +227,7 @@ public class MainFrame extends JFrame {
         fitnessGraphPanel.addCoordinates(testcase.getGeneration(), y);
         fitnessGraphPanel.getAxis().setResolutionX(Math.ceil(testcase.getGeneration() / 10.0));
 
-        organisms.removeAll();
 
-        GridBagConstraints gbc = new GridBagConstraints();
-        gbc.gridwidth = GridBagConstraints.REMAINDER;
-        gbc.weightx = 1;
-        gbc.weighty = 1;
-        for (int i = 1; i <= testcase.getSpecies().size(); i++) {
-            for (Organism organism : testcase.getSpecies().get(i - 1).getMembers()) {
-                Display display = new Display(organism);
-                display.setPreferredSize(new Dimension(100, 200));
-                display.setBackground(new Color((100 * i) % 256, (150 * i) % 256, (200 * i) % 256));
-                organisms.add(display, gbc);
-            }
-        }
-
-        scrollPane.setViewportView(organisms);
 
         fitnessDistributionPanel.removeAllGraphs();
         fitnessDistributionPanel.addGraph(new BarGraph(new Color(0), 3));
@@ -245,6 +254,39 @@ public class MainFrame extends JFrame {
             i++;
         }
         speciesDistributionPanel.getAxis().setResolutionX(Math.ceil(testcase.getGeneration() / 10.0));
+
+        organisms.removeAll();
+
+        GridBagConstraints gbc = new GridBagConstraints();
+//        gbc.gridwidth = GridBagConstraints.REMAINDER;
+//        gbc.weightx = 1;
+//        gbc.weighty = 1;
+
+        gbc.gridwidth = 1;
+        gbc.weightx = 1;
+        gbc.weighty = 1;
+        gbc.gridx = 0;
+        gbc.gridy = GridBagConstraints.RELATIVE;
+        gbc.fill = GridBagConstraints.HORIZONTAL;
+        for (int j = 1, k = 0; j <= testcase.getSpecies().size(); j++) {
+            Color c;
+            while (!((DistributionGraph) speciesDistributionPanel.getGraph(k)).getSpecies().equals(testcase.getSpecies().get(j-1))) {
+                k++;
+            }
+
+            for (Organism organism : testcase.getSpecies().get(j - 1).getMembers()) {
+                Display display = new Display(organism);
+                display.setPreferredSize(new Dimension(50, 166));
+                display.setBackground(speciesDistributionPanel.getGraph(k).getColor());
+
+                organisms.add(display, gbc);
+
+            }
+        }
+
+
+        scrollPane.setViewportView(organisms);
+
 
         content.validate();
         content.repaint();

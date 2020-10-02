@@ -69,7 +69,13 @@ public abstract class Graph {
     }
 
 
+    public Color getColor() {
+        return color;
+    }
 
+    public void setColor(Color color) {
+        this.color = color;
+    }
 
     public abstract void paintComponent(Graphics g, Axis axis, int width, int height);
 }
