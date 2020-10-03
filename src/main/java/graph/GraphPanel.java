@@ -55,16 +55,23 @@ public class GraphPanel extends JPanel {
     }
 
 
-
     @Override
     public void paintComponent(Graphics g) {
+        boolean coordinates = false;
         for (Graph graph : graphs) {
             graph.paintComponent(g, axis, getWidth(), getHeight());
+            if (graph.content.size() > 0) {
+                coordinates = true;
+            }
         }
-        if (graphs.size() > 0)
-            axis.paintComponent(g, getWidth(), getHeight(), normX, normY);
-    }
 
+        if (!coordinates) {
+            new Axis(0.0, 1.0, 0.0, 1.0, 1.0, 1.0, new Vector(0.0, 0.0)).paintComponent(g, getWidth(), getHeight(), normX, normY);
+        } else {
+            axis.paintComponent(g, getWidth(), getHeight(), normX, normY);
+        }
+
+    }
 
 
     public void addCoordinates(double x, double[] y) throws IllegalArgumentException {
@@ -110,7 +117,9 @@ public class GraphPanel extends JPanel {
         this.graphs.addAll(graphs);
     }
 
-    public void addGraph(Graph graph) { this.graphs.add(graph); }
+    public void addGraph(Graph graph) {
+        this.graphs.add(graph);
+    }
 
     public void removeAllGraphs() {
         graphs.clear();
@@ -178,9 +187,9 @@ public class GraphPanel extends JPanel {
         graphPanel.getAxis().setResolutionX(0.5);
         graphPanel.getAxis().setCenter(new Vector(0, 0));
         double step = 0.5;
-        for (int i = -3; i <= 3; i++) {
-            graphPanel.addCoordinate(0, step * i, i);
-        }
+//        for (int i = -3; i <= 3; i++) {
+//            graphPanel.addCoordinate(0, step * i, i);
+//        }
 
         graphPanel.setBorder(BorderFactory.createEtchedBorder(EtchedBorder.LOWERED));
 

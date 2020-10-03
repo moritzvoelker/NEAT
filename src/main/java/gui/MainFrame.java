@@ -1,7 +1,6 @@
 package gui;
 
 import graph.*;
-import neat.NeatConfiguration;
 import neat.Organism;
 import neat.Species;
 import networkdisplay.Display;
@@ -70,7 +69,13 @@ public class MainFrame extends JFrame {
         fitnessDistributionPanel.getAxis().setResolutionY(20.0);
         fitnessDistributionPanel.setBorder(BorderFactory.createEtchedBorder(EtchedBorder.LOWERED));
 
-        initializeFitnessPanels();
+
+        fitnessGraphPanel.addGraph(new LineGraph(new Color(0, 0, 0, 150), 3));
+        fitnessGraphPanel.addGraph(new LineGraph(new Color(255, 0, 0, 150), 3));
+
+        fitnessDistributionPanel.addGraph(new BarGraph(new Color(0), 3));
+
+        resetFitnessPanels();
 
         speciesDistributionPanel = new GraphPanel();
         speciesDistributionPanel.getAxis().setResolutionY(50);
@@ -127,7 +132,7 @@ public class MainFrame extends JFrame {
 
             scrollPane.setViewportView(null);
 
-            initializeFitnessPanels();
+            resetFitnessPanels();
 
             speciesDistributionPanel.removeAllGraphs();
             speciesDistributionPanel.resetAxis();
@@ -144,16 +149,13 @@ public class MainFrame extends JFrame {
         return controls;
     }
 
-    private void initializeFitnessPanels() {
-        fitnessGraphPanel.removeAllGraphs();
-        fitnessGraphPanel.addGraph(new LineGraph(new Color(0, 0, 0, 150), 3));
-        fitnessGraphPanel.addGraph(new LineGraph(new Color(255, 0, 0, 150), 3));
+    private void resetFitnessPanels() {
+        fitnessGraphPanel.getGraphs().forEach(Graph::clear);
         fitnessGraphPanel.resetAxis();
         double[] y = {0.0, 0.0};
         fitnessGraphPanel.addCoordinates(0, y);
 
-        fitnessDistributionPanel.removeAllGraphs();
-        fitnessDistributionPanel.addGraph(new BarGraph(new Color(0), 3));
+        fitnessDistributionPanel.getGraphs().forEach(Graph::clear);
         fitnessDistributionPanel.resetAxis();
     }
 
@@ -164,28 +166,7 @@ public class MainFrame extends JFrame {
 
             @Override
             public void mouseClicked(MouseEvent e) {
-                Widget widget = (Widget) e.getComponent();
-                if (!widget.isFocused()) {
-                    focusedIndex = Arrays.asList(widgetPanel.getComponents()).indexOf(e.getComponent());
-                    content.remove(widgetPanel);
-                    content.add(e.getComponent(), BorderLayout.CENTER);
-                } else {
-                    content.remove(e.getComponent());
-                    widgetPanel.add(e.getComponent(), focusedIndex);
-                    content.add(widgetPanel, BorderLayout.CENTER);
-                }
-                widget.setFocused(!widget.isFocused());
-                content.validate();
-                content.repaint();
-            }
-        };
-        // TODO: 03.10.2020 Sehr hässlich. Irgendwie in einen mouseListener vielleicht? widgets per label durchsuchen?
-        MouseListener mouseListener2 = new MouseAdapter() {
-            int focusedIndex = -1;
-
-            @Override
-            public void mouseClicked(MouseEvent e) {
-                Widget widget = widgets.get(3);
+                Widget widget = getWidget(e.getComponent());
                 if (!widget.isFocused()) {
                     focusedIndex = Arrays.asList(widgetPanel.getComponents()).indexOf(widget);
                     content.remove(widgetPanel);
@@ -202,12 +183,16 @@ public class MainFrame extends JFrame {
         };
 
         widgets.add(new Widget("Fitness graph", fitnessGraphPanel, mouseListener));
-        //widgets.add(new Widget("Fitness distribution", fitnessDistributionPanel, mouseListener));
+        widgets.add(new Widget("Fitness distribution", fitnessDistributionPanel, mouseListener));
         widgets.add(new Widget("Champion structure", champDisplay, mouseListener));
         widgets.add(new Widget("Species distribution", speciesDistributionPanel, mouseListener));
-        scrollPane.addMouseListener(mouseListener2);
+        scrollPane.addMouseListener(mouseListener);
         widgets.add(new Widget("Organism list", organismList, mouseListener));
         return widgets;
+    }
+
+    private Widget getWidget(Component component) {
+        return component instanceof Widget ? (Widget) component : getWidget(component.getParent());
     }
 
     private boolean doGeneration() {
@@ -229,9 +214,9 @@ public class MainFrame extends JFrame {
 
 
 
-        fitnessDistributionPanel.removeAllGraphs();
-        fitnessDistributionPanel.addGraph(new BarGraph(new Color(0), 3));
+        fitnessDistributionPanel.getGraphs().forEach(Graph::clear);
         fitnessDistributionPanel.resetAxis();
+
         int[] distribution = testcase.getFitnessDistribution();
         for (int i = 0; i < distribution.length; i++) {
             fitnessDistributionPanel.addCoordinate(0, i, distribution[i]);

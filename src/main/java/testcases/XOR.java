@@ -25,7 +25,7 @@ public class XOR implements Testcase {
     private JLabel[] labels;
 
     public XOR() {
-        configuration = new NeatConfiguration(2, 1)/*.setPopulationSize(150).setSpeciationThreshhold(4.0).setPurgeAge(9).setMaxGenerationsWithoutImprovement(10)*/;
+        configuration = new NeatConfiguration(2, 1).setSpeciationThreshhold(1.0)/*.setPopulationSize(150).setSpeciationThreshhold(4.0).setPurgeAge(9).setMaxGenerationsWithoutImprovement(10)*/;
 
         neat = new Neat(configuration);
 

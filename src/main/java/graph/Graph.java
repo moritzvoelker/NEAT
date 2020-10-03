@@ -64,10 +64,13 @@ public abstract class Graph {
         content.add(c);
     }
 
+    public void clear() {
+        content.clear();
+    }
+
     public List<Vector> getCoordinates() {
         return content;
     }
-
 
     public Color getColor() {
         return color;
