@@ -10,6 +10,7 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
+import java.awt.image.BufferStrategy;
 import java.util.List;
 
 public class FlappyBirds implements Testcase {
@@ -80,9 +81,12 @@ public class FlappyBirds implements Testcase {
         return false;
     }
 
-    private void paintGame() {
-        Graphics g = animationPanel.getGraphics();
-        int height = animationPanel.getHeight();
+    private void paintGame(Graphics g, int height) {
+        //Graphics2D g =  (Graphics2D) strategy.getDrawGraphics();
+        //int height = animationPanel.getHeight();
+
+        g.setColor(Color.WHITE);
+        g.fillRect(0, 0, animationPanel.getWidth(), animationPanel.getHeight());
 
         g.setColor(Color.GREEN);
 
@@ -106,15 +110,20 @@ public class FlappyBirds implements Testcase {
                     (int) ((Player.RADIUS * 2) * height),
                     (int) ((Player.RADIUS * 2) * height));
         }
-        animationPanel.validate();
-        animationPanel.repaint();
+
     }
 
     public static void main(String[] args) {
         FlappyBirds flappyBirds = new FlappyBirds();
         JFrame jFrame = new JFrame();
+
+        flappyBirds.animationPanel.setLayout(new BorderLayout());
+        Canvas canvas = new Canvas();
+        flappyBirds.animationPanel.add(canvas, BorderLayout.CENTER);
+
+
         jFrame.setContentPane(flappyBirds.animationPanel);
-        jFrame.addKeyListener(new KeyAdapter() {
+        flappyBirds.animationPanel.addKeyListener(new KeyAdapter() {
             @Override
             public void keyPressed(KeyEvent e) {
                 if (e.getKeyCode() == KeyEvent.VK_SPACE) {
@@ -124,10 +133,24 @@ public class FlappyBirds implements Testcase {
         });
         jFrame.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
         jFrame.setSize(640, 400);
+
+        canvas.setSize(640, 400);
+        canvas.setIgnoreRepaint(true);
         jFrame.setVisible(true);
+
+        canvas.createBufferStrategy(2);
+        BufferStrategy strategy = canvas.getBufferStrategy();
+
+
         flappyBirds.game.start();
         while (true) {
-            flappyBirds.paintGame();
+            Graphics g;
+            g = strategy.getDrawGraphics();
+            flappyBirds.paintGame(g, flappyBirds.animationPanel.getHeight());
+            g.dispose();
+
+            strategy.show();
+
             if (!flappyBirds.game.isAlive()) {
                 flappyBirds.game = new Game(1, 30);
                 flappyBirds.game.start(); 
