@@ -1,5 +1,7 @@
 package testcases.flappybirds;
 
+import java.util.function.Consumer;
+
 public class Player {
 
     public static final double RADIUS = 0.02;

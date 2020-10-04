@@ -111,6 +111,9 @@ public class FlappyBirds implements Testcase {
                     (int) ((Player.RADIUS * 2) * height));
         }
 
+        g.setColor(Color.BLACK);
+        g.setFont(new Font(Font.SERIF, Font.BOLD, 30));
+        g.drawString(String.valueOf(game.getPlayers().get(0).getScore()), (int)(0.1 * height), (int)(0.1 * height));
     }
 
     public static void main(String[] args) {
@@ -123,11 +126,13 @@ public class FlappyBirds implements Testcase {
 
 
         jFrame.setContentPane(flappyBirds.animationPanel);
-        flappyBirds.animationPanel.addKeyListener(new KeyAdapter() {
+        jFrame.addKeyListener(new KeyAdapter() {
             @Override
             public void keyPressed(KeyEvent e) {
                 if (e.getKeyCode() == KeyEvent.VK_SPACE) {
-                    flappyBirds.game.getPlayers().get(0).setJump(true);
+                    flappyBirds.game.jump(0);
+                } else if (e.getKeyCode() == KeyEvent.VK_ESCAPE) {
+                    System.exit(0);
                 }
             }
         });

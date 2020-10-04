@@ -3,6 +3,8 @@ package testcases.flappybirds;
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Vector;
+import java.util.function.Predicate;
 
 public class Game extends Thread {
     public static final double GRAVITY = 0.0025;
@@ -12,21 +14,21 @@ public class Game extends Thread {
     public static final double PLAYER_X = 0.3;
     public static final int PILLAR_COUNT = 10;
 
-    private List<Player> players;
-    private List<Player> activePlayers;
-    private LinkedList<Pillar> pillars;
+    private Vector<Player> players;
+    private Vector<Player> activePlayers;
+    private Vector<Pillar> pillars;
     private double x;
     private int currentPillar;
     private int frameRate;
 
     public Game(int playerCount, int frameRate) {
-        players = new ArrayList<>(playerCount);
-        activePlayers = new ArrayList<>(playerCount);
+        players = new Vector<>(playerCount);
+        activePlayers = new Vector<>(playerCount);
         for (int i = 0; i < playerCount; i++) {
             players.add(new Player());
         }
         activePlayers.addAll(players);
-        pillars = new LinkedList<>();
+        pillars = new Vector<>();
         for (int i = 0; i < PILLAR_COUNT; i++) {
             pillars.add(new Pillar(getRandomHoleY()));
         }
@@ -67,7 +69,9 @@ public class Game extends Thread {
     private boolean collisionAndScoring(Player player) {
         if (PLAYER_X + Player.RADIUS > x + PILLAR_DISTANCE * currentPillar
                 && PLAYER_X - Player.RADIUS < x + PILLAR_DISTANCE * currentPillar + Pillar.WIDTH
-                && (player.getY() > pillars.get(currentPillar).getHoleY() + Pillar.HOLE_HEIGHT / 2 || player.getY() < pillars.get(currentPillar).getHoleY() - Pillar.HOLE_HEIGHT / 2)) {
+                && (player.getY() + Player.RADIUS > pillars.get(currentPillar).getHoleY() + Pillar.HOLE_HEIGHT / 2
+                    || player.getY() - Player.RADIUS < pillars.get(currentPillar).getHoleY() - Pillar.HOLE_HEIGHT / 2)
+                || player.getY() + Player.RADIUS < 0.0 || player.getY() - Player.RADIUS > 1.0) {
             return true;
         }
         if (PLAYER_X - Player.RADIUS > x + PILLAR_DISTANCE * currentPillar + Pillar.WIDTH) {
@@ -86,8 +90,8 @@ public class Game extends Thread {
     }
 
     private void pillarOverflow() {
-        pillars.add(pillars.removeFirst());
-        pillars.getLast().setHoleY(getRandomHoleY());
+        pillars.add(pillars.remove(0));
+        pillars.get(pillars.size() - 1).setHoleY(getRandomHoleY());
         x += PILLAR_DISTANCE;
         currentPillar--;
     }
@@ -100,7 +104,7 @@ public class Game extends Thread {
         return activePlayers;
     }
 
-    public LinkedList<Pillar> getPillars() {
+    public Vector<Pillar> getPillars() {
         return pillars;
     }
 
