@@ -1,14 +1,12 @@
 package testcases.flappybirds;
 
-import java.util.function.Consumer;
-
 public class Player {
 
     public static final double RADIUS = 0.02;
 
     private double y;
     private double vy;
-    private int score;
+    private double score;
     private boolean jump;
 
     public Player() {
@@ -23,10 +21,6 @@ public class Player {
 
     public void applyVelocity() {
         y += vy;
-    }
-
-    public void score() {
-        score++;
     }
 
     public void setVy(double vy) {
@@ -45,11 +39,11 @@ public class Player {
         return vy;
     }
 
-    public int getScore() {
+    public double getScore() {
         return score;
     }
 
-    public void setScore(int score) {
+    public void setScore(double score) {
         this.score = score;
     }
 

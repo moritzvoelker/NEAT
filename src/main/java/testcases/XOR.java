@@ -102,8 +102,11 @@ public class XOR implements Testcase {
         for (Species species :
                 neat.getSpecies()) {
             for (Organism organism: species.getMembers()) {
-                // TODO: 02.08.2020 If it works to good, it breaks (if fitness == 16.0 throws ArrayIndexOutOfBoundsException)
-                distribution[(int)organism.getFitness()]++;
+                if (organism.getFitness() == 16.0) {
+                    distribution[15]++;
+                } else {
+                    distribution[(int) organism.getFitness()]++;
+                }
             }
         }
         return distribution;

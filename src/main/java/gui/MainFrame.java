@@ -5,6 +5,7 @@ import neat.Organism;
 import neat.Species;
 import networkdisplay.Display;
 import testcases.XOR;
+import testcases.flappybirds.FlappyBirds;
 
 import javax.swing.*;
 import javax.swing.border.EtchedBorder;
@@ -35,7 +36,7 @@ public class MainFrame extends JFrame {
     public MainFrame() {
         this.setDefaultCloseOperation(EXIT_ON_CLOSE);
 
-        testcase = new XOR();
+        testcase = new FlappyBirds();
 
         content = new JPanel(new BorderLayout());
 
