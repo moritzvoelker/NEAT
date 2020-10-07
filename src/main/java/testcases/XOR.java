@@ -1,5 +1,6 @@
 package testcases;
 
+import gui.AnimationPanel;
 import gui.Testcase;
 import neat.Neat;
 import neat.NeatConfiguration;
@@ -92,8 +93,8 @@ public class XOR implements Testcase {
     }
 
     @Override
-    public JPanel getAnimationPanel() {
-        return panel;
+    public AnimationPanel getAnimationPanel() {
+        return null;
     }
 
     @Override

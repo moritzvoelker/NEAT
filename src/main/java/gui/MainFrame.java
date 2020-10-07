@@ -57,6 +57,7 @@ public class MainFrame extends JFrame {
         content.add(widgetPanel, BorderLayout.CENTER);
 
         setContentPane(content);
+        new Thread(testcase.getAnimationPanel()).start();
 
         setSize(1000, 800);
         setVisible(true);
@@ -189,6 +190,7 @@ public class MainFrame extends JFrame {
         widgets.add(new Widget("Species distribution", speciesDistributionPanel, mouseListener));
         scrollPane.addMouseListener(mouseListener);
         widgets.add(new Widget("Organism list", organismList, mouseListener));
+        widgets.add(new Widget("Animation", testcase.getAnimationPanel(), mouseListener));
         return widgets;
     }
 

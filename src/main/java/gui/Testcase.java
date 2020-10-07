@@ -12,7 +12,7 @@ public interface Testcase {
     int doNGenerations(int n);
     int getGeneration();
     Organism getChamp();
-    JPanel getAnimationPanel();
+    AnimationPanel getAnimationPanel();
     int[] getFitnessDistribution();
     List<Species> getSpecies();
     int getPopulationSize();

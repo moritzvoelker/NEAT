@@ -1,5 +1,6 @@
 package testcases.flappybirds;
 
+import gui.AnimationPanel;
 import gui.Testcase;
 import neat.Neat;
 import neat.NeatConfiguration;
@@ -19,7 +20,7 @@ public class FlappyBirds implements Testcase {
 
     private NeatConfiguration neatConfiguration;
     private Neat neat;
-    private JPanel animationPanel;
+    private GameAnimationPanel animationPanel;
     private Game game;
     private boolean hasAlreadyWorked;
     private int generation;
@@ -30,7 +31,6 @@ public class FlappyBirds implements Testcase {
         neatConfiguration = new NeatConfiguration(4, 1);
 
         neat = new Neat(neatConfiguration);
-        animationPanel = new JPanel();
         seed = new Random().nextLong();
 
         reset();
@@ -39,13 +39,14 @@ public class FlappyBirds implements Testcase {
     @Override
     public void reset() {
         generation = 0;
-        animationPanel = new JPanel(new GridLayout(4, 1));
+        animationPanel = new GameAnimationPanel();
     }
 
     @Override
     public void init() {
         neat.firstGeneration();
         evaluateGeneration();
+        updateAnimationPanel();
         generation = 1;
         hasAlreadyWorked = false;
     }
@@ -63,6 +64,7 @@ public class FlappyBirds implements Testcase {
                 break;
             }
         }
+        updateAnimationPanel();
         return i;
     }
 
@@ -77,7 +79,7 @@ public class FlappyBirds implements Testcase {
     }
 
     @Override
-    public JPanel getAnimationPanel() {
+    public AnimationPanel getAnimationPanel() {
         return animationPanel;
     }
 
@@ -111,10 +113,20 @@ public class FlappyBirds implements Testcase {
     public boolean hasWorkingOrganism() {
         return neat.getChamp().getFitness() >= 10.0;
     }
+
+    private void updateAnimationPanel() {
+        ArrayList<Organism> players = new ArrayList<>(neat.getSpecies().size());
+        for (Species species : neat.getSpecies()) {
+            players.add(species.getMembers().get(0));
+        }
+        animationPanel.setPlayers(players);
+        animationPanel.setSeed(seed);
+    }
+
     // Inputs: Player y, Player velocity, distance to next pillar, y of hole of next pillar
     private boolean evaluateGeneration() {
         seed++;
-        Game game = new Game(neatConfiguration.getPopulationSize(), 0, seed);
+        Game game = new Game(neatConfiguration.getPopulationSize(), seed);
         List<double[]> inputs = new ArrayList<>(neatConfiguration.getPopulationSize());
         List<double[]> outputs;
 
@@ -149,41 +161,6 @@ public class FlappyBirds implements Testcase {
         return hasWorkingOrganism();
     }
 
-    private void paintGame(Graphics g, int height) {
-        //Graphics2D g =  (Graphics2D) strategy.getDrawGraphics();
-        //int height = animationPanel.getHeight();
-
-        g.setColor(Color.WHITE);
-        g.fillRect(0, 0, animationPanel.getWidth(), animationPanel.getHeight());
-
-        g.setColor(Color.GREEN);
-
-        for (int i = 0; i < game.getPillars().size(); i++) {
-            g.fillRect((int) ((game.getX() + Game.PILLAR_DISTANCE * i) * height),
-                    0,
-                    (int) (Pillar.WIDTH * height),
-                    (int) ((game.getPillars().get(i).getHoleY() - Pillar.HOLE_HEIGHT / 2) * height));
-
-            g.fillRect((int) ((game.getX() + Game.PILLAR_DISTANCE * i) * height),
-                    (int) ((game.getPillars().get(i).getHoleY() + Pillar.HOLE_HEIGHT / 2) * height),
-                    (int) (Pillar.WIDTH * height),
-                    height - (int) ((game.getPillars().get(i).getHoleY() + Pillar.HOLE_HEIGHT / 2) * height));
-        }
-
-        g.setColor(Color.RED);
-
-        for (Player player : game.getPlayers()) {
-            g.fillOval((int) ((Game.PLAYER_X - Player.RADIUS) * height),
-                    (int) ((player.getY() - Player.RADIUS) * height),
-                    (int) ((Player.RADIUS * 2) * height),
-                    (int) ((Player.RADIUS * 2) * height));
-        }
-
-        g.setColor(Color.BLACK);
-        g.setFont(new Font(Font.SERIF, Font.BOLD, 30));
-        g.drawString(String.valueOf(game.getPillarsPassed()), (int)(0.1 * height), (int)(0.1 * height));
-    }
-
     public static void main(String[] args) {
         FlappyBirds flappyBirds = new FlappyBirds();
         JFrame jFrame = new JFrame();
@@ -204,6 +181,16 @@ public class FlappyBirds implements Testcase {
                 }
             }
         });
+        canvas.addKeyListener(new KeyAdapter() {
+            @Override
+            public void keyPressed(KeyEvent e) {
+                if (e.getKeyCode() == KeyEvent.VK_SPACE) {
+                    flappyBirds.game.jump(0);
+                } else if (e.getKeyCode() == KeyEvent.VK_ESCAPE) {
+                    System.exit(0);
+                }
+            }
+        });
         jFrame.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
         jFrame.setSize(640, 400);
 
@@ -215,18 +202,36 @@ public class FlappyBirds implements Testcase {
         BufferStrategy strategy = canvas.getBufferStrategy();
 
 
-        flappyBirds.game.start();
+        flappyBirds.game = new Game(1);
+        long start;
+        long startForTimer = System.currentTimeMillis();
+        int k = 0;
         while (true) {
+            start = System.nanoTime();
             Graphics g;
             g = strategy.getDrawGraphics();
-            flappyBirds.paintGame(g, flappyBirds.animationPanel.getHeight());
+            flappyBirds.game.paint(g, flappyBirds.animationPanel.getWidth(), flappyBirds.animationPanel.getHeight());
             g.dispose();
 
             strategy.show();
+            if (!flappyBirds.game.iterate()) {
+                flappyBirds.game = new Game(1);
+            }
 
-            if (!flappyBirds.game.isAlive()) {
-                flappyBirds.game = new Game(1, 30);
-                flappyBirds.game.start(); 
+            k++;
+            if (k >= 30) {
+                System.out.println("Needed time: " + (System.currentTimeMillis() - startForTimer));
+                k = 0;
+                startForTimer = System.currentTimeMillis();
+            }
+
+            long elapsedTime = (System.nanoTime() - start) / 1_000_000;
+            try {
+                if (1000 / 30 > elapsedTime) {
+                    Thread.sleep(1000 / 30 - elapsedTime);
+                }
+            } catch (InterruptedException e) {
+                break;
             }
         }
     }

@@ -57,6 +57,7 @@ public class GraphPanel extends JPanel {
 
     @Override
     public void paintComponent(Graphics g) {
+        super.paintComponent(g);
         boolean coordinates = false;
         for (Graph graph : graphs) {
             graph.paintComponent(g, axis, getWidth(), getHeight());
