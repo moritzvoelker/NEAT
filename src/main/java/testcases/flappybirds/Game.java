@@ -5,7 +5,7 @@ import java.util.List;
 import java.util.Random;
 import java.util.Vector;
 
-public class Game extends Thread {
+public class Game {
     public static final double GRAVITY = 0.0025;
     public static final double JUMP_ACCELERATION = -0.02;
     public static final double PILLAR_DISTANCE = 0.5;
@@ -20,10 +20,8 @@ public class Game extends Thread {
     private double x;
     private int currentPillar;
     private int pillarsPassed;
-    private int frameRate;
-    private Canvas canvas;
 
-    public Game(int playerCount, int frameRate) {
+    public Game(int playerCount) {
         players = new Vector<>(playerCount);
         activePlayers = new Vector<>(playerCount);
         for (int i = 0; i < playerCount; i++) {
@@ -38,10 +36,9 @@ public class Game extends Thread {
         x = PILLAR_DISTANCE;
         currentPillar = 0;
         pillarsPassed = 0;
-        this.frameRate = frameRate;
     }
 
-    public Game(int playerCount, int frameRate, long seed) {
+    public Game(int playerCount, long seed) {
         players = new Vector<>(playerCount);
         activePlayers = new Vector<>(playerCount);
         for (int i = 0; i < playerCount; i++) {
@@ -56,21 +53,8 @@ public class Game extends Thread {
         x = PILLAR_DISTANCE;
         currentPillar = 0;
         pillarsPassed = 0;
-        this.frameRate = frameRate;
     }
 
-    @Override
-    public void run() {
-        while (iterate()) {
-            paint();
-            try {
-                //noinspection BusyWait
-                Thread.sleep(frameRate == 0 ? 0 : 1000 / frameRate);
-            } catch (InterruptedException e) {
-                e.printStackTrace();
-            }
-        }
-    }
 
     // TODO: 06.10.2020 Aufsplitten von Game in Timer, Painter, usw. Überklasse verwaltet alles und läuft als Thread. Berechnet alles und wartet dann bis zum nächsten geplanten Aufruf vom Timer
     public boolean iterate() {
@@ -124,12 +108,10 @@ public class Game extends Thread {
         currentPillar--;
     }
 
-    private void paint() {
-        Graphics g = canvas.getGraphics();
-        int height = canvas.getHeight();
+    public void paint(Graphics g, int width, int height) {
 
         g.setColor(Color.WHITE);
-        g.fillRect(0, 0, canvas.getWidth(), height);
+        g.fillRect(0, 0, width, height);
 
         g.setColor(Color.GREEN);
 
@@ -147,7 +129,7 @@ public class Game extends Thread {
 
         g.setColor(Color.RED);
 
-        for (Player player : getPlayers()) {
+        for (Player player : getActivePlayers()) {
             g.fillOval((int) ((PLAYER_X - Player.RADIUS) * height),
                     (int) ((player.getY() - Player.RADIUS) * height),
                     (int) ((Player.RADIUS * 2) * height),
