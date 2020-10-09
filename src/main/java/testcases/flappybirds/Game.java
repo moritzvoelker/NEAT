@@ -33,7 +33,7 @@ public class Game {
         for (int i = 0; i < PILLAR_COUNT; i++) {
             pillars.add(new Pillar(getRandomHoleY()));
         }
-        x = PILLAR_DISTANCE;
+        x = PILLAR_DISTANCE + PLAYER_X;
         currentPillar = 0;
         pillarsPassed = 0;
     }
@@ -56,7 +56,6 @@ public class Game {
     }
 
 
-    // TODO: 06.10.2020 Aufsplitten von Game in Timer, Painter, usw. Überklasse verwaltet alles und läuft als Thread. Berechnet alles und wartet dann bis zum nächsten geplanten Aufruf vom Timer
     public boolean iterate() {
         activePlayers.forEach(player -> {
             if (player.isJump()) {
@@ -138,7 +137,7 @@ public class Game {
 
         g.setColor(Color.BLACK);
         g.setFont(new Font(Font.SERIF, Font.BOLD, 30));
-        g.drawString(String.valueOf(getPillarsPassed()), (int)(0.1 * height), (int)(0.1 * height));
+        g.drawString(String.valueOf(getPillarsPassed()), (int)(0.1 * height), g.getFontMetrics().getHeight() + 3);
     }
 
     public List<Player> getPlayers() {

@@ -39,12 +39,12 @@ public class GameAnimationPanel extends AnimationPanel {
 
     @Override
     public void run() {
-        boolean running = true;
         Canvas canvas = new Canvas();
         this.add(canvas, BorderLayout.CENTER);
+        canvas.addMouseListener(this.getMouseListeners()[0]);
         canvas.createBufferStrategy(2);
         bufferStrategy = canvas.getBufferStrategy();
-        while (running) {
+        while (true) {
             long start = System.nanoTime();
 
             for (int i = 0; i < players.size(); i++) {
@@ -62,25 +62,27 @@ public class GameAnimationPanel extends AnimationPanel {
                     game.jump(i);
                 }
             }
-            if (isDisplayable()) {
-                Graphics g;
-                g = bufferStrategy.getDrawGraphics();
+
+            if (!game.iterate()) {
+                game = new Game(players.size(), seed);
+            }
+
+            if (canvas.isDisplayable()) {
+                Graphics g = bufferStrategy.getDrawGraphics();
                 paintComponent(g);
                 g.dispose();
 
                 bufferStrategy.show();
             }
-            if (!game.iterate()) {
-                game = new Game(players.size(), seed);
-            }
+
             long elapsedTime = (System.nanoTime() - start) / 1_000_000;
             try {
                 if (1000 / frameRate > elapsedTime) {
-                    System.out.println("Sleeping");
                     Thread.sleep(1000 / frameRate - elapsedTime);
                 }
-                System.out.println("Woke up");
             } catch (InterruptedException e) {
+                players.clear();
+                this.removeAll();
                 return;
             }
         }

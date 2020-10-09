@@ -29,6 +29,8 @@ public class FlappyBirds implements Testcase {
 
     public FlappyBirds() {
         neatConfiguration = new NeatConfiguration(4, 1);
+        neatConfiguration.setSpeciationThreshhold(1.0);
+        animationPanel = new GameAnimationPanel();
 
         neat = new Neat(neatConfiguration);
         seed = new Random().nextLong();
@@ -39,7 +41,7 @@ public class FlappyBirds implements Testcase {
     @Override
     public void reset() {
         generation = 0;
-        animationPanel = new GameAnimationPanel();
+        //animationPanel = new GameAnimationPanel();
     }
 
     @Override
@@ -117,7 +119,7 @@ public class FlappyBirds implements Testcase {
     private void updateAnimationPanel() {
         ArrayList<Organism> players = new ArrayList<>(neat.getSpecies().size());
         for (Species species : neat.getSpecies()) {
-            players.add(species.getMembers().get(0));
+            players.add(species.getChamp());
         }
         animationPanel.setPlayers(players);
         animationPanel.setSeed(seed);
@@ -148,6 +150,10 @@ public class FlappyBirds implements Testcase {
                 if (outputs.get(i)[0] > 0.5) {
                     game.jump(i);
                 }
+            }
+            if (game.getPillarsPassed() > 1000) {
+                game.getActivePlayers().forEach(player -> player.setScore(1000.0));
+                break;
             }
         } while(game.iterate());
 

@@ -1,6 +1,7 @@
 package neat;
 
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -200,7 +201,6 @@ public class Neat {
         }
     }
 
-    // TODO: 06.07.2020 Die Anzahl von Spezien springt komisch: von 1 auf 27, von 27 auf 1 (Vermutlich zu tun mit dem Sprung von size  19 -> 20)
     private void specify(Organism organism) {
         for (Species currentSpecies : species) {
             if (organism.isMember(currentSpecies)) {
@@ -216,13 +216,15 @@ public class Neat {
     }
 
 
-    public Organism getChamp() {
-        Organism champ = species.get(0).getChamp();
-        for (int i = 1; i < species.size(); i++) {
-            if (species.get(i).getChamp().getFitness() > champ.getFitness()) {
-                champ = species.get(i).getChamp();
-            }
+    public Organism getChamp() throws IllegalStateException {
+        try {
+            return species.stream()
+                    .map(Species::getChamp)
+                    .sorted(Comparator.comparingDouble(Organism::getFitness))
+                    .skip(species.size() - 1)
+                    .findFirst().get();
+        } catch (IllegalArgumentException e) {
+            throw new IllegalStateException("There are no species. Call firstGeneration() first.");
         }
-        return champ;
     }
 }

@@ -30,13 +30,20 @@ public class MainFrame extends JFrame {
     private JPanel organisms;
     private JScrollPane scrollPane;
     private JPanel organismList;
+    private Thread animationThread;
+
+    private JButton doGenButton;
+    private JButton doNGenButton;
 
     private boolean hasAlreadyWorked;
+    private Thread calculationThread;
+    private int generationsToDo;
 
     public MainFrame() {
         this.setDefaultCloseOperation(EXIT_ON_CLOSE);
 
         testcase = new FlappyBirds();
+        generationsToDo = 0;
 
         content = new JPanel(new BorderLayout());
 
@@ -57,7 +64,27 @@ public class MainFrame extends JFrame {
         content.add(widgetPanel, BorderLayout.CENTER);
 
         setContentPane(content);
-        new Thread(testcase.getAnimationPanel()).start();
+        calculationThread = new Thread(() -> {
+            while (true) {
+                if (generationsToDo == 0) {
+                    doGenButton.setEnabled(true);
+                    doNGenButton.setEnabled(true);
+                    synchronized (calculationThread) {
+                        try {
+                            calculationThread.wait();
+                        } catch (InterruptedException e) {
+                            break;
+                        }
+                    }
+                }
+                generationsToDo--;
+                if (doGeneration()) {
+                    generationsToDo = 0;
+                }
+            }
+        });
+        calculationThread.start();
+
 
         setSize(1000, 800);
         setVisible(true);
@@ -65,11 +92,9 @@ public class MainFrame extends JFrame {
 
     private void initializeWidgets() {
         fitnessGraphPanel = new GraphPanel();
-        fitnessGraphPanel.setBorder(BorderFactory.createEtchedBorder(EtchedBorder.LOWERED));
 
         fitnessDistributionPanel = new GraphPanel();
         fitnessDistributionPanel.getAxis().setResolutionY(20.0);
-        fitnessDistributionPanel.setBorder(BorderFactory.createEtchedBorder(EtchedBorder.LOWERED));
 
 
         fitnessGraphPanel.addGraph(new LineGraph(new Color(0, 0, 0, 150), 3));
@@ -81,7 +106,6 @@ public class MainFrame extends JFrame {
 
         speciesDistributionPanel = new GraphPanel();
         speciesDistributionPanel.getAxis().setResolutionY(50);
-        speciesDistributionPanel.setBorder(BorderFactory.createEtchedBorder(EtchedBorder.LOWERED));
 
         organisms = new JPanel(new GridBagLayout());
         scrollPane = new JScrollPane();
@@ -91,18 +115,27 @@ public class MainFrame extends JFrame {
         organismList.add(scrollPane);
 
         champDisplay = new JPanel(new GridLayout(1, 1));
-        champDisplay.setBorder(BorderFactory.createEtchedBorder(EtchedBorder.LOWERED));
     }
 
     private JPanel getControls() {
         JPanel controls = new JPanel(new GridLayout(4, 1));
 
-        JButton doGenButton = new JButton("Do one generation");
+        doGenButton = new JButton("Do one generation");
+        JTextField numberOfGenerations = new JTextField("10");
+        doNGenButton = new JButton("Do n generations");
+        JButton resetButton = new JButton("Reset");
+
+
         doGenButton.addActionListener(e -> {
-            doGeneration();
+            generationsToDo = 1;
+            doGenButton.setEnabled(false);
+            doNGenButton.setEnabled(false);
+            synchronized (calculationThread) {
+                calculationThread.notify();
+            }
         });
 
-        JTextField numberOfGenerations = new JTextField("10");
+
         numberOfGenerations.addKeyListener(new KeyAdapter() {
             @Override
             public void keyTyped(KeyEvent e) {
@@ -113,19 +146,18 @@ public class MainFrame extends JFrame {
             }
         });
 
-
-        JButton doNGenButton = new JButton("Do n generations");
         doNGenButton.addActionListener(e -> {
-            int generations = Integer.parseInt(numberOfGenerations.getText());
-            for (int i = 0; i < generations; i++) {
-                if (doGeneration()) {
-                    break;
-                }
+            generationsToDo = Integer.parseInt(numberOfGenerations.getText());
+            doGenButton.setEnabled(false);
+            doNGenButton.setEnabled(false);
+            synchronized (calculationThread) {
+                calculationThread.notify();
             }
         });
 
-        JButton resetButton = new JButton("Reset");
+
         resetButton.addActionListener(e -> {
+            generationsToDo = 0;
             hasAlreadyWorked = false;
             testcase.reset();
             generationLabel.setText("Generation 0");
@@ -135,6 +167,8 @@ public class MainFrame extends JFrame {
             scrollPane.setViewportView(null);
 
             resetFitnessPanels();
+
+            animationThread.interrupt();
 
             speciesDistributionPanel.removeAllGraphs();
             speciesDistributionPanel.resetAxis();
@@ -191,6 +225,7 @@ public class MainFrame extends JFrame {
         scrollPane.addMouseListener(mouseListener);
         widgets.add(new Widget("Organism list", organismList, mouseListener));
         widgets.add(new Widget("Animation", testcase.getAnimationPanel(), mouseListener));
+        testcase.getAnimationPanel().addMouseListener(mouseListener);
         return widgets;
     }
 
@@ -201,6 +236,8 @@ public class MainFrame extends JFrame {
     private boolean doGeneration() {
         if (testcase.getGeneration() == 0) {
             testcase.init();
+            animationThread = new Thread(testcase.getAnimationPanel());
+            animationThread.start();
         } else {
             testcase.doNGenerations(1);
         }
@@ -214,6 +251,7 @@ public class MainFrame extends JFrame {
         y[1] = ((testcase.getChamp().getFitness() > fitnessGraphPanel.getGraph(0).getCoordinates().get(testcase.getGeneration() - 1).getY()) ? 0.5 : 0);
         fitnessGraphPanel.addCoordinates(testcase.getGeneration(), y);
         fitnessGraphPanel.getAxis().setResolutionX(Math.ceil(testcase.getGeneration() / 10.0));
+        fitnessGraphPanel.getAxis().setResolutionY(Math.ceil((fitnessGraphPanel.getAxis().getMaxY() - fitnessGraphPanel.getAxis().getMinY()) / 10.0));
 
 
 
