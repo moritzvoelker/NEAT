@@ -28,7 +28,7 @@ public class FlappyBirds implements Testcase {
 
 
     public FlappyBirds() {
-        neatConfiguration = new NeatConfiguration(4, 1);
+        neatConfiguration = new NeatConfiguration(4, 1).setPrecalculateNodes(false);
         neatConfiguration.setSpeciationThreshhold(1.0);
         animationPanel = new GameAnimationPanel();
 

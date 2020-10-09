@@ -212,7 +212,7 @@ public class Organism {
         }
     }
 
-    public double[] getOutput() {
+    synchronized public double[] getOutput() {
         double[] ret = new double[outputNodes.size()];
 
         for (int i = 0; i < ret.length; i++) {

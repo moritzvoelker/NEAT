@@ -3,13 +3,15 @@ package testcases.flappybirds;
 import gui.AnimationPanel;
 import neat.Organism;
 
+import javax.swing.*;
 import java.awt.*;
 import java.awt.image.BufferStrategy;
+import java.util.Hashtable;
 import java.util.LinkedList;
 import java.util.List;
 
 public class GameAnimationPanel extends AnimationPanel {
-    private final int frameRate = 30;
+    private int frameRate = 30;
 
     private BufferStrategy bufferStrategy;
     private Game game;
@@ -40,7 +42,20 @@ public class GameAnimationPanel extends AnimationPanel {
     @Override
     public void run() {
         Canvas canvas = new Canvas();
+        JSlider slider = new JSlider(JSlider.VERTICAL, -1, 3, 0);
+        Hashtable<Integer, JLabel> labelTable = new Hashtable<>();
+        labelTable.put(-1, new JLabel("0.5x"));
+        labelTable.put(0, new JLabel("1.0x"));
+        labelTable.put(1, new JLabel("2.0x"));
+        labelTable.put(2, new JLabel("4.0x"));
+        labelTable.put(3, new JLabel("8.0x"));
+        slider.setLabelTable(labelTable);
+        slider.setPaintLabels(true);
+        slider.addChangeListener(e -> {
+            frameRate = (int)(30 * Math.pow(2, slider.getValue()));
+        });
         this.add(canvas, BorderLayout.CENTER);
+        this.add(slider, BorderLayout.EAST);
         canvas.addMouseListener(this.getMouseListeners()[0]);
         canvas.createBufferStrategy(2);
         bufferStrategy = canvas.getBufferStrategy();

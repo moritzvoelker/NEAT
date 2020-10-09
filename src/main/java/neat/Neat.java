@@ -1,9 +1,6 @@
 package neat;
 
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.LinkedList;
-import java.util.List;
+import java.util.*;
 import java.util.stream.Collectors;
 
 public class Neat {
@@ -13,10 +10,20 @@ public class Neat {
     private int globalInnovationNumber;
     private int generationsSinceLastImprovement;
     private Organism lastChamp;
+    private List<Thread> threads;
+    private List<Organism> organismsToCalculate;
 
     public Neat(NeatConfiguration configuration) {
         this.configuration = configuration;
         species = new LinkedList<>();
+        if (configuration.isPrecalculateNodes()) {
+            organismsToCalculate = new Vector<>();
+            threads = new ArrayList<>(configuration.getNumberOfThreads());
+            for (int i = 0; i < configuration.getNumberOfThreads(); i++) {
+                threads.add(new Thread(new NodePreCalculator(this), "Thread " + i));
+                threads.get(i).start();
+            }
+        }
     }
 
     // TODO: 23.04.2020 Offset instead of clearing?
@@ -28,7 +35,34 @@ public class Neat {
                 e.printStackTrace();
             }
             input.subList(0, currentSpecies.getMembers().size()).clear();
+            if (configuration.isPrecalculateNodes()) {
+                synchronized (this) {
+                    organismsToCalculate.addAll(currentSpecies.getMembers());
+//                    System.out.println("Notifying all...");
+                    notifyAll();
+                }
+            }
         }
+    }
+
+    synchronized Organism getOrganismToCalculate() {
+//        System.out.println(Thread.currentThread().getName() + " is now doing shit...");
+        Organism organism = null;
+        do {
+//            System.out.println(Thread.currentThread().getName() + " is checking for size");
+            if (organismsToCalculate.size() > 0) {
+                organism = organismsToCalculate.remove(0);
+            } else {
+                try {
+//                    System.out.println(Thread.currentThread().getName() + " is waiting...");
+                    wait();
+                } catch (InterruptedException e) {
+                    return null;
+                }
+//                System.out.println(Thread.currentThread().getName() + " woke up.");
+            }
+        } while (organism == null);
+        return organism;
     }
 
     public List<double[]> getOutput() {
@@ -226,5 +260,9 @@ public class Neat {
         } catch (IllegalArgumentException e) {
             throw new IllegalStateException("There are no species. Call firstGeneration() first.");
         }
+    }
+
+    public List<Organism> getOrganismsToCalculate() {
+        return organismsToCalculate;
     }
 }

@@ -22,6 +22,8 @@ public class NeatConfiguration {
     private int outputCount;
     private boolean biasNodeEnabled = true;
     private double maxConnectionAbsoluteValue = 2.0;
+    private int numberOfThreads = 4;
+    private boolean precalculateNodes = true;
 
     private CreateStrategy createStrategy = new DefaultCreateStrategy();
 
@@ -231,6 +233,24 @@ public class NeatConfiguration {
 
     public NeatConfiguration setCreateStrategy(CreateStrategy createStrategy) {
         this.createStrategy = createStrategy;
+        return this;
+    }
+
+    public int getNumberOfThreads() {
+        return numberOfThreads;
+    }
+
+    public NeatConfiguration setNumberOfThreads(int numberOfThreads) {
+        this.numberOfThreads = numberOfThreads;
+        return this;
+    }
+
+    public boolean isPrecalculateNodes() {
+        return precalculateNodes;
+    }
+
+    public NeatConfiguration setPrecalculateNodes(boolean precalculateNodes) {
+        this.precalculateNodes = precalculateNodes;
         return this;
     }
 }

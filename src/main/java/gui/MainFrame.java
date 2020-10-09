@@ -14,6 +14,7 @@ import java.awt.event.*;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.LinkedList;
 import java.util.List;
 
 public class MainFrame extends JFrame {
@@ -39,7 +40,10 @@ public class MainFrame extends JFrame {
     private Thread calculationThread;
     private int generationsToDo;
 
+    private List<Long> times;
+
     public MainFrame() {
+        times = new LinkedList<>();
         this.setDefaultCloseOperation(EXIT_ON_CLOSE);
 
         testcase = new FlappyBirds();
@@ -78,9 +82,16 @@ public class MainFrame extends JFrame {
                     }
                 }
                 generationsToDo--;
+                long startingTime = System.nanoTime();
+                System.out.println("Starting time: " + startingTime);
                 if (doGeneration()) {
                     generationsToDo = 0;
                 }
+                long endingTime = System.nanoTime();
+                System.out.println("End time: " + endingTime);
+                System.out.println("Took: " + (endingTime - startingTime));
+                times.add(endingTime - startingTime);
+                System.out.println("Took on average: " + times.stream().mapToLong(Long::longValue).average());
             }
         });
         calculationThread.start();
