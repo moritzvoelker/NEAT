@@ -72,7 +72,7 @@ public class Species {
     }
 
     // TODO: 17.04.2020 API nochmal überprüfen und überarbeiten
-    public int produceOffspring(List<Organism> newPopulation, List<Connection> currentMutations, int numberOfChildren, int innovationNumber) throws IllegalStateException {
+    public int produceOffspring(List<Organism> newPopulation, List<Connection> currentMutations, List<Species> species, int numberOfChildren, int innovationNumber) throws IllegalStateException {
         if (numberOfChildren == 0) {
             members.clear();
             return innovationNumber;
@@ -94,12 +94,15 @@ public class Species {
 
 
         for (int i = 0; i < numberOfChildren; i++) {
-            double productionType = Math.random();
             if (members.size() == 1) {
                 child = new Organism(members.get(0));
-            } else if (productionType < configuration.getMutateOnlyRate()) {
+            } else if (Math.random() < configuration.getMutateOnlyRate()) {
                 child = new Organism(getWeightedRandomMember(1).get(0));
 
+            } else if (Math.random() < configuration.getMateInterspeciesRate()) {
+                List<Species> tmp = new ArrayList<>(species);
+                tmp.remove(this);
+                child = Organism.crossover(getWeightedRandomMember(1).get(0), tmp.get((int)(Math.random() * tmp.size())).getWeightedRandomMember(1).get(0), configuration);
             } else {
                 List<Organism> organisms = getWeightedRandomMember(2);
                 child = Organism.crossover(organisms.get(0), organisms.get(1), configuration);
@@ -109,7 +112,7 @@ public class Species {
         }
 
         representative = members.get((int) (Math.random() * members.size()));
-        members.clear();
+        //members.clear();
 
         return innovationNumber;
     }
