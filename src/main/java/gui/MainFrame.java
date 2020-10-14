@@ -12,6 +12,7 @@ import javax.swing.border.EtchedBorder;
 import java.awt.*;
 import java.awt.event.*;
 
+import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.LinkedList;
@@ -42,11 +43,11 @@ public class MainFrame extends JFrame {
 
     private List<Long> times;
 
-    public MainFrame() {
+    public MainFrame(Testcase testcase) {
         times = new LinkedList<>();
         this.setDefaultCloseOperation(EXIT_ON_CLOSE);
 
-        testcase = new FlappyBirds();
+        this.testcase = testcase;
         generationsToDo = 0;
 
         content = new JPanel(new BorderLayout());
@@ -178,8 +179,9 @@ public class MainFrame extends JFrame {
             scrollPane.setViewportView(null);
 
             resetFitnessPanels();
-
-            animationThread.interrupt();
+            if (animationThread != null) {
+                animationThread.interrupt();
+            }
 
             speciesDistributionPanel.removeAllGraphs();
             speciesDistributionPanel.resetAxis();
@@ -335,7 +337,7 @@ public class MainFrame extends JFrame {
         return false;
     }
 
-    public static void main(String[] args) {
-        new MainFrame();
+    public static void main(String[] args) throws ClassNotFoundException, IllegalAccessException, InvocationTargetException, InstantiationException {
+        new MainFrame((Testcase) Class.forName(args[0]).getConstructors()[0].newInstance());
     }
 }

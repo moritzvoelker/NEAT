@@ -22,13 +22,26 @@ public class XOR implements Testcase {
     private boolean hasAlreadyWorked;
     private int generation;
 
-    private JPanel panel;
+    private AnimationPanel animationPanel;
     private JLabel[] labels;
 
     public XOR() {
-        configuration = new NeatConfiguration(2, 1).setSpeciationThreshhold(1.0)/*.setPopulationSize(150).setSpeciationThreshhold(4.0).setPurgeAge(9).setMaxGenerationsWithoutImprovement(10)*/;
+        configuration = new NeatConfiguration(2, 1).setSpeciationThreshhold(1.0)/*.setSurvivalRate(1.0)*//*.setPopulationSize(150).setSpeciationThreshhold(4.0).setPurgeAge(9).setMaxGenerationsWithoutImprovement(10)*/;
 
         neat = new Neat(configuration);
+        animationPanel = new AnimationPanel() {
+            @Override
+            public void run() {
+
+            }
+        };
+        animationPanel.setLayout(new GridLayout(4, 1));
+        labels = new JLabel[] {new JLabel(), new JLabel(), new JLabel(), new JLabel()};
+
+        for (JLabel label : labels) {
+            animationPanel.add(label);
+        }
+
 
         reset();
     }
@@ -37,12 +50,6 @@ public class XOR implements Testcase {
     public void reset() {
         generation = 0;
 
-        panel = new JPanel(new GridLayout(4, 1));
-        labels = new JLabel[] {new JLabel(), new JLabel(), new JLabel(), new JLabel()};
-
-        for (JLabel label : labels) {
-            panel.add(label);
-        }
     }
 
     @Override
@@ -66,19 +73,6 @@ public class XOR implements Testcase {
                 break;
             }
         }
-
-        double[][] possibleInputs = new double[][]{
-                new double[]{0.0, 0.0},
-                new double[]{0.0, 1.0},
-                new double[]{1.0, 0.0},
-                new double[]{1.0, 1.0}
-        };
-
-        for (int j = 0; j < labels.length; j++) {
-            neat.getChamp().setInput(possibleInputs[j]);
-            labels[j].setText("Input: " + possibleInputs[j][0] + ", " + possibleInputs[j][1] + "; Output: " + neat.getChamp().getOutput()[0]);
-        }
-
         return i;
     }
 
@@ -94,7 +88,7 @@ public class XOR implements Testcase {
 
     @Override
     public AnimationPanel getAnimationPanel() {
-        return null;
+        return animationPanel;
     }
 
     @Override
@@ -155,6 +149,12 @@ public class XOR implements Testcase {
 
         neat.setFitness(fitness);
         System.out.println("Fitness of Champion: " + neat.getChamp().getFitness());
+
+        for (int j = 0; j < labels.length; j++) {
+            neat.getChamp().setInput(possibleInputs[j]);
+            labels[j].setText("Input: " + possibleInputs[j][0] + ", " + possibleInputs[j][1] + "; Output: " + neat.getChamp().getOutput()[0]);
+        }
+
         return works(neat.getChamp());
     }
 

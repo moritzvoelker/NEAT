@@ -38,7 +38,6 @@ public class Neat {
             if (configuration.isPrecalculateNodes()) {
                 synchronized (this) {
                     organismsToCalculate.addAll(currentSpecies.getMembers());
-//                    System.out.println("Notifying all...");
                     notifyAll();
                 }
             }
@@ -46,20 +45,16 @@ public class Neat {
     }
 
     synchronized Organism getOrganismToCalculate() {
-//        System.out.println(Thread.currentThread().getName() + " is now doing shit...");
         Organism organism = null;
         do {
-//            System.out.println(Thread.currentThread().getName() + " is checking for size");
             if (organismsToCalculate.size() > 0) {
                 organism = organismsToCalculate.remove(0);
             } else {
                 try {
-//                    System.out.println(Thread.currentThread().getName() + " is waiting...");
                     wait();
                 } catch (InterruptedException e) {
                     return null;
                 }
-//                System.out.println(Thread.currentThread().getName() + " woke up.");
             }
         } while (organism == null);
         return organism;
@@ -71,7 +66,6 @@ public class Neat {
         for (Species currentSpecies : species) {
             output.addAll(currentSpecies.getOutput());
         }
-
         return output;
     }
 
@@ -144,8 +138,6 @@ public class Neat {
     }
 
     // TODO: 05.06.2020 Interspecies mating
-    // TODO: 05.06.2020 Sometimes evolution gets trapped and doesn't get to the goal in a 1000 generations. Why?
-
     public void nextGeneration() {
         List<Connection> currentMutations = new LinkedList<>();
         List<Organism> newPopulation = new ArrayList<>(configuration.getPopulationSize());

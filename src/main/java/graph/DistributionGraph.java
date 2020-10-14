@@ -7,7 +7,6 @@ import java.util.Arrays;
 import java.util.stream.Collectors;
 
 
-// TODO: 15.08.2020 Breaks after an amount of generations or species. 
 public class DistributionGraph extends Graph {
     Species species;
     public DistributionGraph(Color color, int linewidth, Species sp) {

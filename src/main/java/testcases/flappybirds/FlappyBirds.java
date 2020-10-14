@@ -28,8 +28,8 @@ public class FlappyBirds implements Testcase {
 
 
     public FlappyBirds() {
-        neatConfiguration = new NeatConfiguration(4, 1).setPrecalculateNodes(false);
-        neatConfiguration.setSpeciationThreshhold(1.0);
+        neatConfiguration = new NeatConfiguration(4, 1).setPrecalculateNodes(true);
+        neatConfiguration.setSpeciationThreshhold(1.0).setSurvivalRate(1.0);
         animationPanel = new GameAnimationPanel();
 
         neat = new Neat(neatConfiguration);
@@ -131,7 +131,6 @@ public class FlappyBirds implements Testcase {
         Game game = new Game(neatConfiguration.getPopulationSize(), seed);
         List<double[]> inputs = new ArrayList<>(neatConfiguration.getPopulationSize());
         List<double[]> outputs;
-
         do {
             for (int i = 0; i < neatConfiguration.getPopulationSize(); i++) {
                 double[] input = new double[4];

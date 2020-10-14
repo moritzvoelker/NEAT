@@ -14,6 +14,8 @@ public class NodePreCalculator implements Runnable {
             organism = neat.getOrganismToCalculate();
             if (organism != null) {
                 organism.getOutput();
+            } else {
+                return;
             }
         }
     }
