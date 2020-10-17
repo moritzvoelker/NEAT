@@ -56,7 +56,7 @@ public class GraphPanel extends JPanel {
 
 
     @Override
-    public void paintComponent(Graphics g) {
+    public synchronized void paintComponent(Graphics g) {
         super.paintComponent(g);
         boolean coordinates = false;
         for (Graph graph : graphs) {
@@ -75,7 +75,7 @@ public class GraphPanel extends JPanel {
     }
 
 
-    public void addCoordinates(double x, double[] y) throws IllegalArgumentException {
+    public synchronized void addCoordinates(double x, double[] y) throws IllegalArgumentException {
         if (y.length != graphs.size()) {
             throw new IllegalArgumentException("Number of Coordinates (" + y.length + ") is not equal to number of Graphs (" + graphs.size() + ")!");
         }
@@ -97,7 +97,7 @@ public class GraphPanel extends JPanel {
         }
     }
 
-    public void addCoordinate(int index, double x, double y) {
+    public synchronized void addCoordinate(int index, double x, double y) {
         if (axis.getMaxX() < x) {
             axis.setMaxX(x);
         }
@@ -114,24 +114,24 @@ public class GraphPanel extends JPanel {
         graphs.get(index).addCoordinate(new Vector(x, y));
     }
 
-    public void addGraphs(List<Graph> graphs) {
+    public synchronized void addGraphs(List<Graph> graphs) {
         this.graphs.addAll(graphs);
     }
 
-    public void addGraph(Graph graph) {
+    public synchronized void addGraph(Graph graph) {
         this.graphs.add(graph);
     }
 
-    public void removeAllGraphs() {
+    public synchronized void removeAllGraphs() {
         graphs.clear();
     }
 
-    public void removeGraph(int index) throws IndexOutOfBoundsException {
+    public synchronized void removeGraph(int index) throws IndexOutOfBoundsException {
         graphs.remove(index);
     }
 
     // nicht sicher ob funktioniert. Braucht eventuell eine Implementierung von equals
-    public void removeGraph(Graph graph) throws NullPointerException {
+    public synchronized void removeGraph(Graph graph) throws NullPointerException {
         graphs.remove(graph);
     }
 
