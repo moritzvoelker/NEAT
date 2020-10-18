@@ -1,6 +1,8 @@
 package neat;
 
-public class NeatConfiguration {
+import java.io.Serializable;
+
+public class NeatConfiguration implements Serializable {
     private int populationSize = 150;
     private int purgeAge = 15;
     private int maxGenerationsWithoutImprovement = 20;

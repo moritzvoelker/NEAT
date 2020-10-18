@@ -1,14 +1,15 @@
 package neat;
 
+import java.io.*;
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 
-public class Species {
-    private int generationsSinceInprovement;
+public class Species implements Serializable {
+    private int generationsSinceImprovement;
     private Organism representative;
     private List<Organism> members;
-    private double averageFitness;
+    private transient double averageFitness;
     private double oldAverageFitness;
 
     private NeatConfiguration configuration;
@@ -117,13 +118,13 @@ public class Species {
     public int generationsSinceLastImprovement() {
         calculateAverageFitness();
         if (oldAverageFitness >= averageFitness) {
-            generationsSinceInprovement++;
+            generationsSinceImprovement++;
         } else {
-            generationsSinceInprovement = 0;
+            generationsSinceImprovement = 0;
             oldAverageFitness = averageFitness;
         }
 
-        return generationsSinceInprovement;
+        return generationsSinceImprovement;
     }
 
     public void setInput(List<double[]> input) {
@@ -176,7 +177,17 @@ public class Species {
         return averageFitness;
     }
 
-    public void setGenerationsSinceImprovement(int generationsSinceInprovement) {
-        this.generationsSinceInprovement = generationsSinceInprovement;
+    public void setGenerationsSinceImprovement(int generationsSinceImprovement) {
+        this.generationsSinceImprovement = generationsSinceImprovement;
+    }
+
+    private void readObject(ObjectInputStream objectInputStream) throws IOException, ClassNotFoundException {
+        objectInputStream.defaultReadObject();
+        averageFitness = 0.0;
+    }
+
+    private void writeObject(ObjectOutputStream objectOutputStream) throws IOException {
+        members = new LinkedList<>(members);
+        objectOutputStream.defaultWriteObject();
     }
 }

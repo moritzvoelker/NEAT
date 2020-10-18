@@ -1,21 +1,26 @@
 package neat;
 
+import java.io.*;
 import java.util.*;
 import java.util.stream.Collectors;
 
-public class Neat {
+public class Neat implements Serializable {
     private NeatConfiguration configuration;
 
     private List<Species> species;
     private int globalInnovationNumber;
     private int generationsSinceLastImprovement;
     private Organism lastChamp;
-    private List<Thread> threads;
-    private List<Organism> organismsToCalculate;
+    private transient List<Thread> threads;
+    private transient List<Organism> organismsToCalculate;
 
     public Neat(NeatConfiguration configuration) {
         this.configuration = configuration;
         species = new LinkedList<>();
+        initializeThreads();
+    }
+
+    private void initializeThreads() {
         if (configuration.isPrecalculateNodes()) {
             organismsToCalculate = new Vector<>();
             threads = new ArrayList<>(configuration.getNumberOfThreads());
@@ -256,5 +261,15 @@ public class Neat {
 
     public List<Organism> getOrganismsToCalculate() {
         return organismsToCalculate;
+    }
+
+    private void readObject(ObjectInputStream objectInputStream) throws ClassNotFoundException, IOException {
+        objectInputStream.defaultReadObject();
+        initializeThreads();
+    }
+
+    private void writeObject(ObjectOutputStream objectOutputStream) throws IOException {
+        species = new LinkedList<>(species);
+        objectOutputStream.defaultWriteObject();
     }
 }

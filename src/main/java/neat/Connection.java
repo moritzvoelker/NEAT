@@ -1,8 +1,12 @@
 package neat;
 
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
+import java.io.Serializable;
 import java.util.List;
 
-public class Connection {
+public class Connection implements Serializable {
     private Node in;
     private Node out;
 
@@ -103,5 +107,13 @@ public class Connection {
     @Override
     public int hashCode() {
         return Integer.parseInt(Integer.toString(in.getInnovationNumber()) +  out.getInnovationNumber());
+    }
+
+    private void readObject(ObjectInputStream objectInputStream) throws IOException, ClassNotFoundException {
+        objectInputStream.defaultReadObject();
+    }
+
+    private void writeObject(ObjectOutputStream objectOutputStream) throws IOException {
+        objectOutputStream.defaultWriteObject();
     }
 }
