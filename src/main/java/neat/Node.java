@@ -1,14 +1,18 @@
 package neat;
 
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
+import java.io.Serializable;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.stream.Collectors;
 
-public abstract class Node {
+public abstract class Node implements Serializable {
     private int innovationNumber;
-    private List<Connection> in;
-    protected double value;
-    private boolean calculated;
+    private transient List<Connection> in;
+    protected transient double value;
+    private transient boolean calculated;
     private NodePurpose nodePurpose;
 
     public Node(NodePurpose nodePurpose, int innovationNumber) {
@@ -73,5 +77,16 @@ public abstract class Node {
 
     public void resetCalculated() {
         calculated = false;
+    }
+
+    private void readObject(ObjectInputStream objectInputStream) throws IOException, ClassNotFoundException {
+        in = new LinkedList<>();
+        objectInputStream.defaultReadObject();
+        value = 0.0;
+        calculated = false;
+    }
+
+    private void writeObject(ObjectOutputStream objectOutputStream) throws IOException {
+        objectOutputStream.defaultWriteObject();
     }
 }

@@ -1,19 +1,21 @@
 package neat;
 
+import java.io.*;
+import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.LinkedList;
 import java.util.List;
 
-public class Organism {
-
-    private List<InputNode> inputNodes;
-    private List<Node> hiddenNodes;
-    private List<Node> outputNodes;
-    private List<Connection> connections;
-    private BiasNode bias;
-    private double fitness;
+public class Organism implements Serializable {
 
     private NeatConfiguration configuration;
+
+    private transient List<InputNode> inputNodes;
+    private transient List<Node> hiddenNodes;
+    private transient List<Node> outputNodes;
+    private List<Connection> connections;
+    private transient BiasNode bias;
+    private double fitness;
 
     public Organism(NeatConfiguration configuration) {
         this.configuration = configuration;
@@ -487,5 +489,35 @@ public class Organism {
 
     public BiasNode getBias() {
         return bias;
+    }
+
+    private void readObject(ObjectInputStream objectInputStream) throws IOException, ClassNotFoundException {
+        objectInputStream.defaultReadObject();
+
+        inputNodes = new ArrayList<>(configuration.getInputCount());
+        outputNodes = new ArrayList<>(configuration.getOutputCount());
+        hiddenNodes = new LinkedList<>();
+
+        for (Connection connection : connections) {
+            if (connection.getIn().getNodePurpose().equals(NodePurpose.Bias) && bias != null) {
+                bias = (BiasNode) connection.getIn();
+            } else if (connection.getIn().getNodePurpose().equals(NodePurpose.Input) && !inputNodes.contains(connection.getIn())) {
+                inputNodes.add((InputNode) connection.getIn());
+            } else if (connection.getIn().getNodePurpose().equals(NodePurpose.Hidden) && !hiddenNodes.contains(connection.getIn())) {
+                hiddenNodes.add(connection.getIn());
+            }
+
+            if (connection.getOut().getNodePurpose().equals(NodePurpose.Output) && !outputNodes.contains(connection.getOut())) {
+                outputNodes.add(connection.getOut());
+            } else if (connection.getOut().getNodePurpose().equals(NodePurpose.Hidden) && !hiddenNodes.contains(connection.getOut())) {
+                hiddenNodes.add(connection.getOut());
+            }
+
+            connection.getOut().addInput(connection);
+        }
+    }
+
+    private void writeObject(ObjectOutputStream objectOutputStream) throws IOException {
+        objectOutputStream.defaultWriteObject();
     }
 }
