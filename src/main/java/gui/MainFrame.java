@@ -1,17 +1,19 @@
 package gui;
 
 import graph.*;
+import neat.NeatConfiguration;
 import neat.Organism;
 import neat.Species;
 import networkdisplay.Display;
-import testcases.XOR;
-import testcases.flappybirds.FlappyBirds;
 
+import javax.imageio.ImageIO;
 import javax.swing.*;
-import javax.swing.border.EtchedBorder;
 import java.awt.*;
 import java.awt.event.*;
 
+import java.io.File;
+import java.io.IOException;
+import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -24,6 +26,7 @@ public class MainFrame extends JFrame {
     private List<Widget> widgets;
 
     private JLabel generationLabel;
+    private JButton settingsButton;
     private GraphPanel fitnessGraphPanel;
     private GraphPanel fitnessDistributionPanel;
     private JPanel widgetPanel;
@@ -52,9 +55,6 @@ public class MainFrame extends JFrame {
 
         content = new JPanel(new BorderLayout());
 
-        generationLabel = new JLabel("Generation 0");
-        generationLabel.setFont(new Font(Font.SANS_SERIF, Font.BOLD, 50));
-
         initializeWidgets();
 
         widgets = getWidgets();
@@ -64,7 +64,7 @@ public class MainFrame extends JFrame {
             widgetPanel.add(widget);
         }
 
-        content.add(generationLabel, BorderLayout.NORTH);
+        content.add(getHeader(), BorderLayout.NORTH);
         content.add(getControls(), BorderLayout.EAST);
         content.add(widgetPanel, BorderLayout.CENTER);
 
@@ -100,6 +100,73 @@ public class MainFrame extends JFrame {
 
         setSize(1000, 800);
         setVisible(true);
+    }
+
+    private JPanel getHeader() {
+        generationLabel = new JLabel("Generation 0");
+        generationLabel.setFont(new Font(Font.SANS_SERIF, Font.BOLD, 50));
+
+        int size = generationLabel.getPreferredSize().height;
+        try {
+            settingsButton = new JButton(getScaledIcon(ImageIO.read(new File("./src/main/resources/settings.png")), size, size));
+        } catch (IOException e) {
+            settingsButton = new JButton("Settings");
+        }
+
+        settingsButton.addActionListener(e -> {
+            JPanel content = new JPanel(new BorderLayout());
+            JPanel settings = new JPanel(new GridBagLayout());
+            JScrollPane scrollPane = new JScrollPane(settings);
+
+            for (Field field : NeatConfiguration.class.getDeclaredFields()) {
+                JPanel setting = new JPanel(new BorderLayout());
+                setting.add(new JLabel(field.getName()), BorderLayout.CENTER);
+                if (field.getType().equals(boolean.class)) {
+                    setting.add(new JCheckBox(), BorderLayout.EAST);
+                } else if (field.getType().equals(double.class)) {
+                    JTextField textField = new JTextField();
+                    textField.addKeyListener(new KeyAdapter() {
+                        @Override
+                        public void keyTyped(KeyEvent e) {
+                            if (e.getKeyChar() != '\b' && e.getKeyChar() != '.' && (e.getKeyChar() < '0' || e.getKeyChar() > '9') && textField.getText().matches("\\d+\\.?\\d*")) {
+                                Toolkit.getDefaultToolkit().beep();
+                                e.consume();
+                            }
+                        }
+                    });
+                    settings.add(textField);
+                } else if (field.getType().equals(int.class)) {
+                    JTextField textField = new JTextField();
+                    textField.addKeyListener(new KeyAdapter() {
+                        @Override
+                        public void keyTyped(KeyEvent e) {
+                            if (e.getKeyChar() != '\b' && (e.getKeyChar() < '0' || e.getKeyChar() > '9')) {
+                                Toolkit.getDefaultToolkit().beep();
+                                e.consume();
+                            }
+                        }
+                    });
+                    settings.add(textField);
+                }
+            }
+
+            content.add(scrollPane, BorderLayout.CENTER);
+
+            JDialog dialog = new JDialog(this, true);
+            dialog.setContentPane(content);
+            dialog.setSize(400, 400);
+            dialog.setVisible(true);
+        });
+
+        JPanel header = new JPanel(new BorderLayout());
+        header.add(generationLabel, BorderLayout.CENTER);
+        header.add(settingsButton, BorderLayout.EAST);
+
+        return header;
+    }
+
+    private Icon getScaledIcon(Image srcImg, int w, int h) {
+        return new ImageIcon(srcImg.getScaledInstance(w, h, Image.SCALE_SMOOTH));
     }
 
     private void initializeWidgets() {
