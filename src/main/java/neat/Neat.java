@@ -217,9 +217,10 @@ public class Neat implements Serializable {
 
         i = 0;
         for (Species currentSpecies : species) {
-            globalInnovationNumber = currentSpecies.produceOffspring(newPopulation, currentMutations, speciesSizes[i], globalInnovationNumber);
+            globalInnovationNumber = currentSpecies.produceOffspring(newPopulation, currentMutations, species, speciesSizes[i], globalInnovationNumber);
             i++;
         }
+        species.forEach(specie -> specie.getMembers().clear());
 
         for (Organism organism : newPopulation) {
             specify(organism);
