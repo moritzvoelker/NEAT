@@ -1,7 +1,9 @@
 package testcases;
 
 import gui.AnimationPanel;
+import gui.DefaultWidgetsPanel;
 import gui.Testcase;
+import gui.WidgetsPanel;
 import neat.Neat;
 import neat.NeatConfiguration;
 import neat.Organism;
@@ -49,7 +51,9 @@ public class XOR implements Testcase {
     @Override
     public void reset() {
         generation = 0;
-
+        for (JLabel label : labels) {
+            label.setText("");
+        }
     }
 
     @Override
@@ -84,6 +88,11 @@ public class XOR implements Testcase {
     @Override
     public Organism getChamp() {
         return neat.getChamp();
+    }
+
+    @Override
+    public WidgetsPanel getWidgetsPanel() {
+        return new DefaultWidgetsPanel(this);
     }
 
     @Override

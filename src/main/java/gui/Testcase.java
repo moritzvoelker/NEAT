@@ -12,6 +12,7 @@ public interface Testcase {
     int doNGenerations(int n);
     int getGeneration();
     Organism getChamp();
+    WidgetsPanel getWidgetsPanel();
     AnimationPanel getAnimationPanel();
     int[] getFitnessDistribution();
     List<Species> getSpecies();

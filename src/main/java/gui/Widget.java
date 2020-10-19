@@ -12,14 +12,20 @@ public class Widget extends JPanel {
     private JPanel content;
     private boolean focused;
 
-    // TODO: 09.10.2020 Change the way the MouseListener is added to children of the widget... Either pass MouseEvent to parent or copy the MouseListener from parent
-    public Widget(String title, JPanel content, MouseListener mouseListener) {
+    public Widget(String title, JPanel content) {
         super(new BorderLayout());
         this.title = new JLabel(title);
         this.content = content;
         add(this.title, BorderLayout.NORTH);
         add(content, BorderLayout.CENTER);
-        addMouseListener(mouseListener);
+        content.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseClicked(MouseEvent e) {
+                super.mouseClicked(e);
+                e.setSource(content.getParent());
+                content.getParent().dispatchEvent(e);
+            }
+        });
         content.setBorder(BorderFactory.createEtchedBorder(EtchedBorder.LOWERED));
         this.focused = false;
     }
