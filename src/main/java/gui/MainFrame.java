@@ -90,37 +90,69 @@ public class MainFrame extends JFrame {
         } catch (IOException e) {
             settingsButton = new JButton("Settings");
         }
-
+        // TODO: 21.10.2020 Input and output nodes are changeable currently (not wanted)
+        // TODO: 21.10.2020 Idea: add all settings that should be changeable to a (Hash-)Map and use that to get all keys and values.
         settingsButton.addActionListener(e -> {
-            JPanel content = new JPanel(new BorderLayout());
-            JPanel settings = new JPanel(new GridBagLayout());
-            JScrollPane scrollPane = new JScrollPane(settings);
+            JDialog dialog = new JDialog(this, true);
 
-            for (Field field : NeatConfiguration.class.getDeclaredFields()) {
-                JPanel setting = new JPanel(new BorderLayout());
-                setting.add(new JLabel(field.getName()), BorderLayout.CENTER);
-                if (field.getType().equals(boolean.class)) {
-                    setting.add(new JCheckBox(), BorderLayout.EAST);
-                } else if (field.getType().equals(double.class)) {
-                    settings.add(new JSpinner(new SpinnerNumberModel()));
-                } else if (field.getType().equals(int.class)) {
-                    JTextField textField = new JTextField();
-                    textField.addKeyListener(new KeyAdapter() {
-                        @Override
-                        public void keyTyped(KeyEvent e) {
-                            if (e.getKeyChar() != '\b' && (e.getKeyChar() < '0' || e.getKeyChar() > '9')) {
-                                Toolkit.getDefaultToolkit().beep();
-                                e.consume();
-                            }
-                        }
-                    });
-                    settings.add(textField);
+            JPanel content = new JPanel(new BorderLayout());
+            JPanel settings = new JPanel(new GridLayout(NeatConfiguration.class.getDeclaredFields().length, 1));
+            JScrollPane scrollPane = new JScrollPane(settings);
+            NeatConfiguration neatConfiguration = testcase.getConfiguration();
+
+            try {
+                for (Field field : neatConfiguration.getClass().getDeclaredFields()) {
+                    field.setAccessible(true);
+                    JPanel setting = new JPanel(new BorderLayout());
+                    setting.add(new JLabel(field.getName()), BorderLayout.CENTER);
+                    if (field.getType().equals(boolean.class)) {
+                        setting.add(new JCheckBox("", field.getBoolean(neatConfiguration)), BorderLayout.EAST);
+                    } else if (field.getType().equals(double.class)) {
+                        setting.add(new JSpinner(new SpinnerNumberModel(field.getDouble(neatConfiguration), 0.0, Integer.MAX_VALUE, 0.01)), BorderLayout.EAST);
+                    } else if (field.getType().equals(int.class)) {
+                        setting.add(new JSpinner(new SpinnerNumberModel(field.getInt(neatConfiguration), 0, Integer.MAX_VALUE, 1)), BorderLayout.EAST);
+                    } else {
+                        continue;
+                    }
+                    settings.add(setting);
                 }
+            } catch (IllegalAccessException illegalAccessException) {
+                illegalAccessException.printStackTrace();
+                dialog.dispose();
             }
+            JPanel buttons = new JPanel(/*new GridLayout(1, 2)*/);
+            JButton cancelButton = new JButton("Cancel");
+            cancelButton.addActionListener(e1 -> {dialog.dispose();});
+            JButton applyButton = new JButton("Apply");
+            applyButton.addActionListener(e1 -> {
+                try {
+                    int i = 0;
+                    for (Field field : neatConfiguration.getClass().getDeclaredFields()) {
+                        field.setAccessible(true);
+                        if (field.getType().equals(boolean.class)) {
+                            field.setBoolean(neatConfiguration, ((JCheckBox) ((JPanel) settings.getComponent(i)).getComponent(1)).isSelected());
+                        } else if (field.getType().equals(double.class)) {
+                            field.setDouble(neatConfiguration, (double) ((JSpinner) ((JPanel) settings.getComponent(i)).getComponent(1)).getValue());
+                        } else if (field.getType().equals(int.class)) {
+                            field.setInt(neatConfiguration, (int) ((JSpinner) ((JPanel) settings.getComponent(i)).getComponent(1)).getValue());
+                        } else {
+                            continue;
+                        }
+                        i++;
+                    }
+                } catch (IllegalAccessException illegalAccessException) {
+                    illegalAccessException.printStackTrace();
+                }
+                dialog.dispose();
+            });
+            buttons.add(cancelButton);
+            buttons.add(applyButton);
 
             content.add(scrollPane, BorderLayout.CENTER);
+            content.add(buttons, BorderLayout.SOUTH);
 
-            JDialog dialog = new JDialog(this, true);
+
+
             dialog.setContentPane(content);
             dialog.setSize(400, 400);
             dialog.setVisible(true);
