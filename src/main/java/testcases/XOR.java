@@ -122,8 +122,8 @@ public class XOR implements Testcase {
     }
 
     @Override
-    public int getPopulationSize() {
-        return configuration.getPopulationSize();
+    public NeatConfiguration getConfiguration() {
+        return configuration;
     }
 
     @Override

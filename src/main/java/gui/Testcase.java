@@ -1,5 +1,6 @@
 package gui;
 
+import neat.NeatConfiguration;
 import neat.Organism;
 import neat.Species;
 
@@ -16,6 +17,6 @@ public interface Testcase {
     AnimationPanel getAnimationPanel();
     int[] getFitnessDistribution();
     List<Species> getSpecies();
-    int getPopulationSize();
+    NeatConfiguration getConfiguration();
     boolean hasWorkingOrganism();
 }

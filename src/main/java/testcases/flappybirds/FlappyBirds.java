@@ -114,8 +114,8 @@ public class FlappyBirds implements Testcase {
     }
 
     @Override
-    public int getPopulationSize() {
-        return neatConfiguration.getPopulationSize();
+    public NeatConfiguration getConfiguration() {
+        return neatConfiguration;
     }
 
     @Override

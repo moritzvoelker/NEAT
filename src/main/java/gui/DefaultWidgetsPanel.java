@@ -103,7 +103,7 @@ public class DefaultWidgetsPanel extends WidgetsPanel {
 
         List<Species> speciesList = new ArrayList<>(testcase.getSpecies());
         int i = 1;
-        int value = testcase.getPopulationSize();
+        int value = testcase.getConfiguration().getPopulationSize();
         for (Graph graph : speciesDistributionPanel.getGraphs()) {
             speciesList.remove(((DistributionGraph) graph).getSpecies());
             speciesDistributionPanel.addCoordinate(i - 1, testcase.getGeneration(), value);
