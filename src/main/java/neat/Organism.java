@@ -53,11 +53,11 @@ public class Organism implements Serializable {
 
     public int mutate(List<Connection> currentMutations, int innovationNumber) {
         mutateWeights();
-        if (Math.random() < configuration.getMutationRateConnection()) {
+        if (Math.random() < configuration.getMutateConnectionRate()) {
             innovationNumber = mutateConnection(innovationNumber, currentMutations);
         }
 
-        if (Math.random() < configuration.getMutationRateNode()) {
+        if (Math.random() < configuration.getMutateNodeRate()) {
             innovationNumber = mutateNode(innovationNumber, currentMutations);
         }
         if (Math.random() < configuration.getMutationRateEnablement()) {
@@ -72,7 +72,7 @@ public class Organism implements Serializable {
 
     public void mutateWeights() {
         for (Connection connection : connections) {
-            if (Math.random() < configuration.getMutationRateWeight()) {
+            if (Math.random() < configuration.getMutateWeightRate()) {
                 if (Math.random() < configuration.getPerturbRate()) {
                     connection.setWeight(connection.getWeight() + (Math.random() * configuration.getMaxConnectionAbsoluteValue() * 2 - configuration.getMaxConnectionAbsoluteValue()) * configuration.getStepSize());
                 } else {

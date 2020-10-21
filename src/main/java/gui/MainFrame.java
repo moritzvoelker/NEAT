@@ -115,11 +115,17 @@ public class MainFrame extends JFrame {
                         continue;
                     }
                     settings.add(setting);
+                    field.setAccessible(false);
                 }
             } catch (IllegalAccessException illegalAccessException) {
                 illegalAccessException.printStackTrace();
                 dialog.dispose();
             }
+            System.out.println(scrollPane.getVerticalScrollBar().getPreferredSize().width);
+            Dimension k = new Dimension(settings.getPreferredSize().width + scrollPane.getVerticalScrollBar().getPreferredSize().width  + 20, 400);
+            dialog.setMinimumSize(k);
+            dialog.setPreferredSize(k);
+
             JPanel buttons = new JPanel(/*new GridLayout(1, 2)*/);
             JButton cancelButton = new JButton("Cancel");
             cancelButton.addActionListener(e1 -> {dialog.dispose();});
@@ -154,7 +160,6 @@ public class MainFrame extends JFrame {
 
 
             dialog.setContentPane(content);
-            dialog.setSize(400, 400);
             dialog.setVisible(true);
         });
 

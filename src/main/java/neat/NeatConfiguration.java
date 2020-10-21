@@ -7,9 +7,9 @@ public class NeatConfiguration implements Serializable {
     private int purgeAge = 15;
     private int maxGenerationsWithoutImprovement = 20;
     private double speciationThreshhold = 3.0;
-    private double mutationRateNode = 0.03;
-    private double mutationRateConnection = 0.05;
-    private double mutationRateWeight = 0.8;
+    private double mutateNodeRate = 0.03;
+    private double mutateConnectionRate = 0.05;
+    private double mutateWeightRate = 0.8;
     private double perturbRate = 0.9;
     private double mutationRateEnablement = 0.01;
     private double stepSize = 0.1;
@@ -76,30 +76,30 @@ public class NeatConfiguration implements Serializable {
         return this;
     }
 
-    public double getMutationRateNode() {
-        return mutationRateNode;
+    public double getMutateNodeRate() {
+        return mutateNodeRate;
     }
 
-    public NeatConfiguration setMutationRateNode(double mutationRateNode) {
-        this.mutationRateNode = mutationRateNode;
+    public NeatConfiguration setMutateNodeRate(double mutateNodeRate) {
+        this.mutateNodeRate = mutateNodeRate;
         return this;
     }
 
-    public double getMutationRateConnection() {
-        return mutationRateConnection;
+    public double getMutateConnectionRate() {
+        return mutateConnectionRate;
     }
 
-    public NeatConfiguration setMutationRateConnection(double mutationRateConnection) {
-        this.mutationRateConnection = mutationRateConnection;
+    public NeatConfiguration setMutateConnectionRate(double mutateConnectionRate) {
+        this.mutateConnectionRate = mutateConnectionRate;
         return this;
     }
 
-    public double getMutationRateWeight() {
-        return mutationRateWeight;
+    public double getMutateWeightRate() {
+        return mutateWeightRate;
     }
 
-    public NeatConfiguration setMutationRateWeight(double mutationRateWeight) {
-        this.mutationRateWeight = mutationRateWeight;
+    public NeatConfiguration setMutateWeightRate(double mutateWeightRate) {
+        this.mutateWeightRate = mutateWeightRate;
         return this;
     }
 

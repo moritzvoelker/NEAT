@@ -100,7 +100,7 @@ public class Species implements Serializable {
             } else if (Math.random() < configuration.getMutateOnlyRate()) {
                 child = new Organism(getWeightedRandomMember(1).get(0));
 
-            } else if (Math.random() < configuration.getMateInterspeciesRate()) {
+            } else if (species.size() >= 2 && Math.random() < configuration.getMateInterspeciesRate()) {
                 List<Species> tmp = new ArrayList<>(species);
                 tmp.remove(this);
                 child = Organism.crossover(getWeightedRandomMember(1).get(0), tmp.get((int)(Math.random() * tmp.size())).getWeightedRandomMember(1).get(0), configuration);
@@ -113,8 +113,6 @@ public class Species implements Serializable {
         }
 
         representative = members.get((int) (Math.random() * members.size()));
-        //members.clear();
-
         return innovationNumber;
     }
 
