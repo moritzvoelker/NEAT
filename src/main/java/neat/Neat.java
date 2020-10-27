@@ -31,15 +31,15 @@ public class Neat implements Serializable {
         }
     }
 
-    // TODO: 23.04.2020 Offset instead of clearing?
     public void setInput(List<double[]> input) throws IllegalArgumentException {
+        int offset = 0;
         for (Species currentSpecies : species) {
             try {
-                currentSpecies.setInput(input.subList(0, currentSpecies.getMembers().size()));
+                currentSpecies.setInput(input, offset);
             } catch (IndexOutOfBoundsException e) {
                 e.printStackTrace();
             }
-            input.subList(0, currentSpecies.getMembers().size()).clear();
+            offset += currentSpecies.getMembers().size();
             if (configuration.isPrecalculateNodes()) {
                 synchronized (this) {
                     organismsToCalculate.addAll(currentSpecies.getMembers());
