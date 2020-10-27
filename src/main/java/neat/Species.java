@@ -128,9 +128,9 @@ public class Species implements Serializable {
         return generationsSinceImprovement;
     }
 
-    public void setInput(List<double[]> input) {
+    public void setInput(List<double[]> input, int offset) {
         for (int i = 0; i < members.size(); i++) {
-            members.get(i).setInput(input.get(i));
+            members.get(i).setInput(input.get(offset + i));
         }
     }
 
