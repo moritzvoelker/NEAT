@@ -61,6 +61,11 @@ public class MainFrame extends JFrame {
                     }
                 }
                 generationsToDo--;
+                if (generationsToDo <= 0) {
+                    doNGenButton.setText("Do n generations");
+                    doNGenButton.setEnabled(false);
+                    generationsToDo = 0;
+                }
                 long startingTime = System.nanoTime();
                 System.out.println("Starting time: " + startingTime);
                 if (doGeneration()) {
@@ -204,9 +209,16 @@ public class MainFrame extends JFrame {
         });
 
         doNGenButton.addActionListener(e -> {
-            generationsToDo = Integer.parseInt(numberOfGenerations.getText());
+            if (generationsToDo == 0) {
+                doNGenButton.setText("Break");
+                generationsToDo = Integer.parseInt(numberOfGenerations.getText());
+            } else {
+                doNGenButton.setText("Do n generations");
+                doNGenButton.setEnabled(false);
+                generationsToDo = 0;
+            }
             doGenButton.setEnabled(false);
-            doNGenButton.setEnabled(false);
+            //doNGenButton.setEnabled(false);
             synchronized (calculationThread) {
                 calculationThread.notify();
             }
