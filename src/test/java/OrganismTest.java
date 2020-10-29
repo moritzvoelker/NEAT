@@ -1,6 +1,6 @@
 import neat.Connection;
 import neat.NeatConfiguration;
-import neat.organisms.Organism;
+import neat.Organism;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;

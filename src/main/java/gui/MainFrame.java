@@ -69,6 +69,7 @@ public class MainFrame extends JFrame {
                 long startingTime = System.nanoTime();
                 System.out.println("Starting time: " + startingTime);
                 if (doGeneration()) {
+                    doNGenButton.setText("Do n generations");
                     generationsToDo = 0;
                 }
                 long endingTime = System.nanoTime();

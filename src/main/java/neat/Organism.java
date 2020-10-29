@@ -22,7 +22,7 @@ public class Organism implements Serializable {
         inputNodes = new LinkedList<>();
         hiddenNodes = new LinkedList<>();
         outputNodes = new LinkedList<>();
-        connections = new TestList<>();
+        connections = new LinkedList<>();
         fitness = -1.0;
         if (configuration.isBiasNodeEnabled()) {
             bias = new BiasNode();
@@ -36,7 +36,7 @@ public class Organism implements Serializable {
         inputNodes = new LinkedList<>();
         hiddenNodes = new LinkedList<>();
         outputNodes = new LinkedList<>();
-        connections = new TestList<>();
+        connections = new LinkedList<>();
         fitness = -1.0;
         if (organism.getBias() != null) {
             bias = new BiasNode();
