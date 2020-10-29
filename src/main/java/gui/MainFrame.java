@@ -61,6 +61,11 @@ public class MainFrame extends JFrame {
                     }
                 }
                 generationsToDo--;
+                if (generationsToDo <= 0) {
+                    doNGenButton.setText("Do n generations");
+                    doNGenButton.setEnabled(false);
+                    generationsToDo = 0;
+                }
                 long startingTime = System.nanoTime();
                 System.out.println("Starting time: " + startingTime);
                 if (doGeneration()) {
@@ -128,7 +133,7 @@ public class MainFrame extends JFrame {
 
             JPanel buttons = new JPanel(/*new GridLayout(1, 2)*/);
             JButton cancelButton = new JButton("Cancel");
-            cancelButton.addActionListener(e1 -> {dialog.dispose();});
+            cancelButton.addActionListener(e1 -> dialog.dispose());
             JButton applyButton = new JButton("Apply");
             applyButton.addActionListener(e1 -> {
                 try {
@@ -178,7 +183,7 @@ public class MainFrame extends JFrame {
         JPanel controls = new JPanel(new GridLayout(4, 1));
 
         doGenButton = new JButton("Do one generation");
-        JTextField numberOfGenerations = new JTextField("10");
+        JSpinner numberOfGenerations = new JSpinner(new SpinnerNumberModel(10, 1, Integer.MAX_VALUE, 1));
         doNGenButton = new JButton("Do n generations");
         JButton resetButton = new JButton("Reset");
 
@@ -193,20 +198,18 @@ public class MainFrame extends JFrame {
         });
 
 
-        numberOfGenerations.addKeyListener(new KeyAdapter() {
-            @Override
-            public void keyTyped(KeyEvent e) {
-                if (e.getKeyChar() != '\b' && (e.getKeyChar() < '0' || e.getKeyChar() > '9')) {
-                    Toolkit.getDefaultToolkit().beep();
-                    e.consume();
-                }
-            }
-        });
 
         doNGenButton.addActionListener(e -> {
-            generationsToDo = Integer.parseInt(numberOfGenerations.getText());
+            if (generationsToDo == 0) {
+                doNGenButton.setText("Break");
+                generationsToDo = (int)numberOfGenerations.getValue();
+            } else {
+                doNGenButton.setText("Do n generations");
+                doNGenButton.setEnabled(false);
+                generationsToDo = 0;
+            }
             doGenButton.setEnabled(false);
-            doNGenButton.setEnabled(false);
+            //doNGenButton.setEnabled(false);
             synchronized (calculationThread) {
                 calculationThread.notify();
             }
