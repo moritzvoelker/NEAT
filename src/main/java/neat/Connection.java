@@ -97,11 +97,7 @@ public class Connection implements Serializable {
 
     @Override
     public boolean equals(Object obj) {
-        if (obj instanceof Connection) {
-            return in.getInnovationNumber() == ((Connection) obj).getIn().getInnovationNumber() && out.getInnovationNumber() == ((Connection) obj).getOut().getInnovationNumber();
-        } else {
-            return false;
-        }
+        return obj instanceof Connection && in.equals(((Connection) obj).getIn()) && out.equals(((Connection) obj).getOut());
     }
 
     @Override
