@@ -103,13 +103,9 @@ public class Neat implements Serializable {
         List<Connection> addedConnections = new LinkedList<>();
         for (int k = 0; k < numberOfOrganisms; k++) {
             Organism organism = new Organism(configuration);
-            for (int i = 0; i < configuration.getInputCount(); i++) {
-                organism.getInputNodes().add((InputNode) NodeFactory.create(configuration.getCreateStrategy(), NodePurpose.Input, i + 1));
-            }
             for (int i = 0; i < configuration.getOutputCount(); i++) {
-                Node out = NodeFactory.create(configuration.getCreateStrategy(), NodePurpose.Output, i + configuration.getInputCount() + 1);
+                Node out = organism.getOutputNodes().get(i);
                 Node in = organism.getInputNodes().get((int) (Math.random() * configuration.getInputCount()));
-                organism.getOutputNodes().add(out);
 
                 Connection connection = new Connection(in, out, Math.random() * configuration.getMaxConnectionAbsoluteValue() * 2 - configuration.getMaxConnectionAbsoluteValue());
                 out.getIn().add(connection);

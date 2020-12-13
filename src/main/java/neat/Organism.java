@@ -29,6 +29,14 @@ public class Organism implements Serializable {
         } else {
             bias = null;
         }
+
+        for (int i = 0; i < configuration.getInputCount(); i++) {
+            inputNodes.add((InputNode) NodeFactory.create(configuration.getCreateStrategy(), NodePurpose.Input, i+1));
+        }
+        for (int i = 0; i < configuration.getOutputCount(); i++) {
+            outputNodes.add(NodeFactory.create(configuration.getCreateStrategy(), NodePurpose.Output, configuration.getInputCount()+i+1));
+        }
+
     }
 
     public Organism(Organism organism) {
