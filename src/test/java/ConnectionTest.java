@@ -50,11 +50,10 @@ public class ConnectionTest {
     @Test
     public void testSetInnovationNumberAlreadyExisting() {
         List<Connection> currentMutations = new ArrayList<>(2);
-        Connection mutatedConnection = new Connection(inNode, outNode, 0.0);
+        Connection mutatedConnection = new Connection(new InputNode(0), new InputNode(1), 0.0);
         mutatedConnection.setInnovationNumber(2);
         currentMutations.add(mutatedConnection);
-        when(inNode.getInnovationNumber()).thenReturn(0);
-        when(outNode.getInnovationNumber()).thenReturn(1);
+        testSubject = new Connection(new InputNode(0), new InputNode(1), -0.5);
 
         int oldInnovationNumber = 3;
         int newInnovationNumber = testSubject.setInnovationNumber(oldInnovationNumber, currentMutations);
@@ -69,7 +68,7 @@ public class ConnectionTest {
         Connection mutatedConnection = new Connection(new InputNode(3), new InputNode(4), 0.0);
         mutatedConnection.setInnovationNumber(2);
         currentMutations.add(mutatedConnection);
-        when(inNode.getInnovationNumber()).thenReturn(0);
+        testSubject = new Connection(new InputNode(0), new InputNode(1), -0.5);
 
         int oldInnovationNumber = 5;
         int newInnovationNumber = testSubject.setInnovationNumber(oldInnovationNumber, currentMutations);
@@ -80,10 +79,9 @@ public class ConnectionTest {
 
     @Test
     public void testEqualsTrue() {
-        when(inNode.getInnovationNumber()).thenReturn(0);
-        when(outNode.getInnovationNumber()).thenReturn(1);
+        testSubject = new Connection(new InputNode(0), new InputNode(1), -0.5);
 
-        Connection equalConnection = new Connection(inNode, outNode, 0.0);
+        Connection equalConnection = new Connection(new InputNode(0), new InputNode(1), 0.0);
 
         boolean equals = testSubject.equals(equalConnection);
 
@@ -92,9 +90,9 @@ public class ConnectionTest {
 
     @Test
     public void testEqualsFalse() {
-        when(inNode.getInnovationNumber()).thenReturn(0);
+        testSubject = new Connection(new InputNode(0), new InputNode(1), -0.5);
 
-        Connection unequalConnection = new Connection(new InputNode(2), new InputNode(3), 0.0);
+        Connection unequalConnection = new Connection(new InputNode(1), null, 0.0);
 
         boolean equals = testSubject.equals(unequalConnection);
 
