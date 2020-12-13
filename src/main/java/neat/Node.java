@@ -8,7 +8,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.stream.Collectors;
 
-public abstract class Node implements Serializable {
+public abstract class Node implements Serializable, Comparable<Node> {
     private int innovationNumber;
     private transient List<Connection> in;
     protected transient double value;
@@ -27,7 +27,7 @@ public abstract class Node implements Serializable {
         if (this.equals(node)) {
             return true;
         } else {
-            for (Connection connection: in) {
+            for (Connection connection : in) {
                 if (connection.isDependentOn(node)) {
                     return true;
                 }
@@ -72,7 +72,12 @@ public abstract class Node implements Serializable {
 
     @Override
     public boolean equals(Object obj) {
-        return obj instanceof Node && innovationNumber == ((Node) obj).getInnovationNumber();
+        return obj instanceof Node && this.getInnovationNumber() == ((Node) obj).getInnovationNumber();
+    }
+
+    @Override
+    public int compareTo(Node o) {
+        return innovationNumber - o.getInnovationNumber();
     }
 
     public void resetCalculated() {

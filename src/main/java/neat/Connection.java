@@ -6,8 +6,10 @@ import java.io.ObjectOutputStream;
 import java.io.Serializable;
 import java.util.List;
 
-public class Connection implements Serializable {
+public class Connection implements Serializable, Comparable<Connection> {
+    @SuppressWarnings("FieldMayBeFinal")
     private Node in;
+    @SuppressWarnings("FieldMayBeFinal")
     private Node out;
 
     private int innovationNumber;
@@ -97,7 +99,22 @@ public class Connection implements Serializable {
 
     @Override
     public boolean equals(Object obj) {
-        return obj instanceof Connection && in.equals(((Connection) obj).getIn()) && out.equals(((Connection) obj).getOut());
+        if (!(obj instanceof Connection)) {
+            return false;
+        }
+        if (!in.equals(((Connection) obj).getIn())) {
+            return false;
+        }
+        if (!out.equals(((Connection) obj).getOut())) {
+            return false;
+        }
+        return true;
+        //return obj instanceof Connection && in.equals(((Connection) obj).getIn()) && out.equals(((Connection) obj).getOut());
+    }
+
+    @Override
+    public int compareTo(Connection o) {
+        return innovationNumber - o.getInnovationNumber();
     }
 
     @Override

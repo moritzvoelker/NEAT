@@ -2,6 +2,7 @@ package networkdisplay;
 
 import neat.*;
 import neat.Node;
+import util.SortedList;
 
 import javax.swing.*;
 import java.awt.*;
@@ -63,6 +64,9 @@ public class Display extends JPanel {
             }
             Blop inBlop = getBlop(connection.getIn().getInnovationNumber());
             Blop outBlop = getBlop(connection.getOut().getInnovationNumber());
+            if (outBlop == null) {
+                System.out.println("Oh no");
+            }
             int pixelX1 = (int) (inBlop.getX() * getWidth());
             int pixelY1 = (int) (inBlop.getY() * getHeight());
             int pixelX2 = (int) (outBlop.getX() * getWidth());
@@ -124,19 +128,15 @@ public class Display extends JPanel {
         NeatConfiguration configuration = new NeatConfiguration(2, 2);
         Organism organism = new Organism(configuration);
 
-        List<InputNode> inputNodes = new LinkedList<>();
+        SortedList<InputNode> inputNodes = organism.getInputNodes();
         List<Node> hiddenNodes = new LinkedList<>();
-        List<Node> outputNodes = new LinkedList<>();
+        SortedList<Node> outputNodes = organism.getOutputNodes();
         List<Connection> connections = new LinkedList<>();
 
-        int i = 0;
-        inputNodes.add((InputNode) NodeFactory.create(configuration.getCreateStrategy(), NodePurpose.Input, i++)); // 0
-        inputNodes.add((InputNode) NodeFactory.create(configuration.getCreateStrategy(), NodePurpose.Input, i++)); // 1
+        int i = configuration.getInputCount() + configuration.getOutputCount() + 1;
         hiddenNodes.add(NodeFactory.create(configuration.getCreateStrategy(), NodePurpose.Hidden, i++)); // 0
         hiddenNodes.add(NodeFactory.create(configuration.getCreateStrategy(), NodePurpose.Hidden, i++)); // 1
         hiddenNodes.add(NodeFactory.create(configuration.getCreateStrategy(), NodePurpose.Hidden, i++)); // 2
-        outputNodes.add(NodeFactory.create(configuration.getCreateStrategy(), NodePurpose.Output, i++)); // 0
-        outputNodes.add(NodeFactory.create(configuration.getCreateStrategy(), NodePurpose.Output, i++)); // 1
 
         connections.add(new Connection(inputNodes.get(0), hiddenNodes.get(0), 1.0));
         connections.add(new Connection(inputNodes.get(0), hiddenNodes.get(1), -1.0));
@@ -155,9 +155,7 @@ public class Display extends JPanel {
         outputNodes.get(1).addInput(connections.get(5));
         outputNodes.get(1).addInput(connections.get(6));
 
-        organism.getInputNodes().addAll(inputNodes);
         organism.getHiddenNodes().addAll(hiddenNodes);
-        organism.getOutputNodes().addAll(outputNodes);
         organism.getConnections().addAll(connections);
 
         JFrame frame = new JFrame();

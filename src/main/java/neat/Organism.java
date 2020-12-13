@@ -1,28 +1,28 @@
 package neat;
 
+
+import util.SortedList;
+
 import java.io.*;
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.LinkedList;
-import java.util.List;
+import java.util.*;
 
 public class Organism implements Serializable {
 
     private NeatConfiguration configuration;
 
-    private transient List<InputNode> inputNodes;
-    private transient List<Node> hiddenNodes;
-    private transient List<Node> outputNodes;
-    private List<Connection> connections;
+    private transient SortedList<InputNode> inputNodes;
+    private transient SortedList<Node> hiddenNodes;
+    private transient SortedList<Node> outputNodes;
+    private SortedList<Connection> connections;
     private transient BiasNode bias;
     private double fitness;
 
     public Organism(NeatConfiguration configuration) {
         this.configuration = configuration;
-        inputNodes = new LinkedList<>();
-        hiddenNodes = new LinkedList<>();
-        outputNodes = new LinkedList<>();
-        connections = new LinkedList<>();
+        inputNodes = new SortedList<>();
+        hiddenNodes = new SortedList<>();
+        outputNodes = new SortedList<>();
+        connections = new SortedList<>();
         fitness = -1.0;
         if (configuration.isBiasNodeEnabled()) {
             bias = new BiasNode();
@@ -41,10 +41,10 @@ public class Organism implements Serializable {
 
     public Organism(Organism organism) {
         configuration = organism.configuration;
-        inputNodes = new LinkedList<>();
-        hiddenNodes = new LinkedList<>();
-        outputNodes = new LinkedList<>();
-        connections = new LinkedList<>();
+        inputNodes = new SortedList<>();
+        hiddenNodes = new SortedList<>();
+        outputNodes = new SortedList<>();
+        connections = new SortedList<>();
         fitness = -1.0;
         if (organism.getBias() != null) {
             bias = new BiasNode();
@@ -72,8 +72,7 @@ public class Organism implements Serializable {
             mutateEnablement();
         }
 
-        getConnections().sort(Comparator.comparingInt(Connection::getInnovationNumber));
-        getHiddenNodes().sort(Comparator.comparingInt(Node::getInnovationNumber));
+        //getHiddenNodes().sort(Comparator.comparingInt(Node::getInnovationNumber));
 
         return innovationNumber;
     }
@@ -210,10 +209,10 @@ public class Organism implements Serializable {
             throw new IllegalArgumentException("Input number doesn't match input node count. Expected: " + inputNodes.size() + "; provided: " + input.length);
         }
 
-        for (Node node: hiddenNodes) {
+        for (Node node : hiddenNodes) {
             node.resetCalculated();
         }
-        for (Node node: outputNodes) {
+        for (Node node : outputNodes) {
             node.resetCalculated();
         }
 
@@ -292,92 +291,92 @@ public class Organism implements Serializable {
         }
 
         Organism child = new Organism(configuration);
-        for (int i = 0; i < configuration.getInputCount(); i++) {
-            child.getInputNodes().add((InputNode) NodeFactory.create(configuration.getCreateStrategy(), NodePurpose.Input, i + 1));
-        }
 
-        for (int i = 0; i < configuration.getOutputCount(); i++) {
-            child.getOutputNodes().add(NodeFactory.create(configuration.getCreateStrategy(), NodePurpose.Output, i + configuration.getInputCount() + 1));
-        }
 
-        int i = 0, j = 0;
-        Connection fatherConnection = father.getConnections().get(i);
-        Connection motherConnection = mother.getConnections().get(j);
-        boolean equalParents = father.getFitness() == mother.getFitness();
-        while (i < father.getConnections().size() || (equalParents && j < mother.getConnections().size())) {
-            boolean joined = fatherConnection.getInnovationNumber() == motherConnection.getInnovationNumber();
-            Connection currentConnection;
+        Iterator<Connection> fatherIterator = father.getConnections().iterator();
+        Iterator<Connection> motherIterator = father.getConnections().iterator();
+        Connection fatherConnection = fatherIterator.next();
+        Connection motherConnection = motherIterator.next();
 
-            if (motherConnection.getInnovationNumber() < fatherConnection.getInnovationNumber()) {
-                if (equalParents) {
-                    currentConnection = motherConnection;
-                } else {
-                    if (++j == mother.getConnections().size()) {
-                        motherConnection = new Connection(null, null, 0.0);
-                        motherConnection.setInnovationNumber(Integer.MAX_VALUE);
-                    } else {
-                        motherConnection = mother.getConnections().get(j);
-                    }
-                    continue;
+        // Add joint genes
+        do {
+            if (fatherConnection.getInnovationNumber() == motherConnection.getInnovationNumber()) {
+                child.cloneConnection(Math.random() < 0.5 ? fatherConnection : motherConnection);
+                if (fatherIterator.hasNext()) {
+                    fatherConnection = fatherIterator.next();
+                }
+                if (motherIterator.hasNext()) {
+                    motherConnection = motherIterator.next();
+                }
+            } else if (fatherConnection.getInnovationNumber() < motherConnection.getInnovationNumber()) {
+                if (fatherIterator.hasNext()) {
+                    fatherConnection = fatherIterator.next();
                 }
             } else {
-                currentConnection = fatherConnection;
+                if (motherIterator.hasNext()) {
+                    motherConnection = motherIterator.next();
+                }
             }
+        } while (fatherIterator.hasNext() && motherIterator.hasNext());
 
+        if (father.getFitness() == mother.getFitness()) {
+            fatherIterator = father.getConnections().iterator();
+            motherIterator = father.getConnections().iterator();
+            fatherIterator.next();
+            motherIterator.next();
 
-            boolean alreadyExisting = child.getConnections().contains(currentConnection);
-            Connection newConnection = null;
-            if (!alreadyExisting) {
-                 newConnection = child.cloneConnection(currentConnection);
-            }
-
-            if (joined) {
-                if (!alreadyExisting) {
-                    double weight;
-                    if (Math.random() < 0.5) {
-                        weight = fatherConnection.getWeight();
+            // Add disjoint and excess genes of both parents
+            do {
+                // Joined genes are already copied
+                if (fatherConnection.getInnovationNumber() == motherConnection.getInnovationNumber()) {
+                    if (fatherIterator.hasNext()) {
+                        fatherConnection = fatherIterator.next();
                     } else {
-                        weight = motherConnection.getWeight();
-                    }
-
-                    newConnection.setWeight(weight);
-                    if (!fatherConnection.isEnabled() && !motherConnection.isEnabled()) {
-                        newConnection.setEnabled(false);
-                    } else if (((fatherConnection.isEnabled() && !motherConnection.isEnabled()) || (!fatherConnection.isEnabled() && motherConnection.isEnabled())) && Math.random() < configuration.getDisableRate()) {
-                        newConnection.setEnabled(false);
-                    }
-                }
-
-                if (++i == father.getConnections().size()) {
-                    fatherConnection = new Connection(null, null, 0.0);
-                    fatherConnection.setInnovationNumber(Integer.MAX_VALUE);
-                } else {
-                    fatherConnection = father.getConnections().get(i);
-                }
-                if (++j == mother.getConnections().size()) {
-                    motherConnection = new Connection(null, null, 0.0);
-                    motherConnection.setInnovationNumber(Integer.MAX_VALUE);
-                } else {
-                    motherConnection = mother.getConnections().get(j);
-                }
-            } else {
-                if (fatherConnection.getInnovationNumber() < motherConnection.getInnovationNumber()) {
-                    if (++i == father.getConnections().size()) {
                         fatherConnection = new Connection(null, null, 0.0);
                         fatherConnection.setInnovationNumber(Integer.MAX_VALUE);
-                    } else {
-                        fatherConnection = father.getConnections().get(i);
                     }
-                } else {
-                    if (++j == mother.getConnections().size()) {
+                    if (motherIterator.hasNext()) {
+                        motherConnection = motherIterator.next();
+                    } else {
                         motherConnection = new Connection(null, null, 0.0);
                         motherConnection.setInnovationNumber(Integer.MAX_VALUE);
-                    } else {
-                        motherConnection = mother.getConnections().get(j);
                     }
+                } else if (fatherConnection.getInnovationNumber() < motherConnection.getInnovationNumber()) {
+                    if (Math.random() < 0.5) {
+                        Connection connection = child.cloneConnection(fatherConnection);
+                        if (connection.getIn().isDependentOn(connection.getOut())) {
+                            child.getConnections().remove(connection);
+                        }
+                    }
+                    if (fatherIterator.hasNext()) {
+                        fatherConnection = fatherIterator.next();
+                    } else {
+                        fatherConnection = new Connection(null, null, 0.0);
+                        fatherConnection.setInnovationNumber(Integer.MAX_VALUE);
+                    }
+                } else {
+                    if (Math.random() < 0.5) {
+                        Connection connection = child.cloneConnection(motherConnection);
+                        if (connection.getIn().isDependentOn(connection.getOut())) {
+                            child.getConnections().remove(connection);
+                        }
+                    }
+                    if (motherIterator.hasNext()) {
+                        motherConnection = motherIterator.next();
+                    } else {
+                        motherConnection = new Connection(null, null, 0.0);
+                    }
+                }
+            } while (fatherIterator.hasNext() || motherIterator.hasNext());
+        } else {
+            // Add excess and disjoint genes of father
+            for (Connection connection : father.getConnections()) {
+                if (!child.getConnections().contains(connection)) {
+                    child.cloneConnection(connection);
                 }
             }
         }
+
         return child;
     }
 
@@ -402,7 +401,6 @@ public class Organism implements Serializable {
         }/* else {
             System.out.println("Organism is now big!");
         }*/
-
 
 
         int i = 0, j = 0;
@@ -463,35 +461,35 @@ public class Organism implements Serializable {
         this.fitness = fitness;
     }
 
-    public List<InputNode> getInputNodes() {
+    public SortedList<InputNode> getInputNodes() {
         return inputNodes;
     }
 
-    public void setInputNodes(List<InputNode> inputNodes) {
+    public void setInputNodes(SortedList<InputNode> inputNodes) {
         this.inputNodes = inputNodes;
     }
 
-    public List<Node> getHiddenNodes() {
+    public SortedList<Node> getHiddenNodes() {
         return hiddenNodes;
     }
 
-    public void setHiddenNodes(List<Node> hiddenNodes) {
+    public void setHiddenNodes(SortedList<Node> hiddenNodes) {
         this.hiddenNodes = hiddenNodes;
     }
 
-    public List<Node> getOutputNodes() {
+    public SortedList<Node> getOutputNodes() {
         return outputNodes;
     }
 
-    public void setOutputNodes(List<Node> outputNodes) {
+    public void setOutputNodes(SortedList<Node> outputNodes) {
         this.outputNodes = outputNodes;
     }
 
-    public List<Connection> getConnections() {
+    public SortedList<Connection> getConnections() {
         return connections;
     }
 
-    public void setConnections(List<Connection> connections) {
+    public void setConnections(SortedList<Connection> connections) {
         this.connections = connections;
     }
 
@@ -502,9 +500,9 @@ public class Organism implements Serializable {
     private void readObject(ObjectInputStream objectInputStream) throws IOException, ClassNotFoundException {
         objectInputStream.defaultReadObject();
 
-        inputNodes = new ArrayList<>(configuration.getInputCount());
-        outputNodes = new ArrayList<>(configuration.getOutputCount());
-        hiddenNodes = new LinkedList<>();
+        inputNodes = new SortedList<>();
+        outputNodes = new SortedList<>();
+        hiddenNodes = new SortedList<>();
 
         for (Connection connection : connections) {
             if (connection.getIn().getNodePurpose().equals(NodePurpose.Bias) && bias != null) {
