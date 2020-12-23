@@ -65,7 +65,7 @@ public class Display extends JPanel {
             Blop inBlop = getBlop(connection.getIn().getInnovationNumber());
             Blop outBlop = getBlop(connection.getOut().getInnovationNumber());
             if (outBlop == null) {
-                System.out.println("Oh no");
+                continue;
             }
             int pixelX1 = (int) (inBlop.getX() * getWidth());
             int pixelY1 = (int) (inBlop.getY() * getHeight());
@@ -136,6 +136,7 @@ public class Display extends JPanel {
         int i = configuration.getInputCount() + configuration.getOutputCount() + 1;
         hiddenNodes.add(NodeFactory.create(configuration.getCreateStrategy(), NodePurpose.Hidden, i++)); // 0
         hiddenNodes.add(NodeFactory.create(configuration.getCreateStrategy(), NodePurpose.Hidden, i++)); // 1
+        //noinspection UnusedAssignment
         hiddenNodes.add(NodeFactory.create(configuration.getCreateStrategy(), NodePurpose.Hidden, i++)); // 2
 
         connections.add(new Connection(inputNodes.get(0), hiddenNodes.get(0), 1.0));
