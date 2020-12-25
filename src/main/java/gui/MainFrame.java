@@ -14,6 +14,7 @@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLI
 
 package gui;
 
+import neat.InvalidConfigurationException;
 import neat.NeatConfiguration;
 
 import javax.imageio.ImageIO;
@@ -250,7 +251,7 @@ public class MainFrame extends JFrame {
         return controls;
     }
 
-    private boolean doGeneration() {
+    private boolean doGeneration() throws InvalidConfigurationException {
         if (testcase.getGeneration() == 0) {
             testcase.init();
             widgetsPanel.startAnimations();
