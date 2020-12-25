@@ -96,11 +96,15 @@ public class Neat implements Serializable {
         }
     }
 
-    public void firstGeneration() {
+    public void firstGeneration() throws InvalidConfigurationException {
         firstGeneration(configuration);
     }
 
-    public void firstGeneration(NeatConfiguration configuration) {
+    public void firstGeneration(NeatConfiguration configuration) throws InvalidConfigurationException {
+        List<Exception> exceptions = configuration.validate();
+        if (!exceptions.isEmpty()) {
+            throw new InvalidConfigurationException(exceptions);
+        }
         this.configuration = configuration;
 
         species.clear();

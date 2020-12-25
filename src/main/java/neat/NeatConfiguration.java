@@ -15,6 +15,8 @@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLI
 package neat;
 
 import java.io.Serializable;
+import java.util.LinkedList;
+import java.util.List;
 
 public class NeatConfiguration implements Serializable {
     private int populationSize = 150;
@@ -62,9 +64,6 @@ public class NeatConfiguration implements Serializable {
     }
 
     public NeatConfiguration setPurgeAge(int purgeAge) throws IllegalStateException {
-        if (purgeAge > maxGenerationsWithoutImprovement) {
-            throw new IllegalStateException("purgeAge has to be smaller than maxGenerationsWithoutImprovement");
-        }
         this.purgeAge = purgeAge;
         return this;
     }
@@ -73,10 +72,7 @@ public class NeatConfiguration implements Serializable {
         return maxGenerationsWithoutImprovement;
     }
 
-    public NeatConfiguration setMaxGenerationsWithoutImprovement(int maxGenerationsWithoutImprovement) throws IllegalStateException {
-        if (purgeAge > maxGenerationsWithoutImprovement) {
-            throw new IllegalStateException("purgeAge has to be smaller than maxGenerationsWithoutImprovement");
-        }
+    public NeatConfiguration setMaxGenerationsWithoutImprovement(int maxGenerationsWithoutImprovement) {
         this.maxGenerationsWithoutImprovement = maxGenerationsWithoutImprovement;
         return this;
     }
@@ -268,5 +264,13 @@ public class NeatConfiguration implements Serializable {
     public NeatConfiguration setPrecalculateNodes(boolean precalculateNodes) {
         this.precalculateNodes = precalculateNodes;
         return this;
+    }
+
+    public List<Exception> validate() {
+        List<Exception> shitYouMadeWrong = new LinkedList<>();
+        if (purgeAge > maxGenerationsWithoutImprovement) {
+            shitYouMadeWrong.add(new IllegalStateException("purgeAge has to be smaller than maxGenerationsWithoutImprovement"));
+        }
+        return shitYouMadeWrong;
     }
 }

@@ -12,26 +12,24 @@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLI
 
 */
 
-package gui;
+package neat;
 
-import neat.InvalidConfigurationException;
-import neat.NeatConfiguration;
-import neat.Organism;
-import neat.Species;
-
-import javax.swing.*;
 import java.util.List;
 
-public interface Testcase {
-    void reset();
-    void init() throws InvalidConfigurationException;
-    int doNGenerations(int n);
-    int getGeneration();
-    Organism getChamp();
-    WidgetsPanel getWidgetsPanel();
-    AnimationPanel getAnimationPanel();
-    int[] getFitnessDistribution();
-    List<Species> getSpecies();
-    NeatConfiguration getConfiguration();
-    boolean hasWorkingOrganism();
+public class InvalidConfigurationException extends Exception {
+    private final List<Exception> invalids;
+
+    public InvalidConfigurationException(List<Exception> invalids) {
+        this.invalids = invalids;
+    }
+
+    @Override
+    public void printStackTrace() {
+        super.printStackTrace();
+        invalids.forEach(Throwable::printStackTrace);
+    }
+
+    public List<Exception> getInvalids() {
+        return invalids;
+    }
 }

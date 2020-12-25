@@ -18,10 +18,7 @@ import gui.AnimationPanel;
 import gui.DefaultWidgetsPanel;
 import gui.Testcase;
 import gui.WidgetsPanel;
-import neat.Neat;
-import neat.NeatConfiguration;
-import neat.Organism;
-import neat.Species;
+import neat.*;
 import networkdisplay.Display;
 
 import javax.swing.*;
@@ -71,7 +68,7 @@ public class XOR implements Testcase {
     }
 
     @Override
-    public void init() {
+    public void init() throws InvalidConfigurationException {
         neat.firstGeneration();
         evaluateGeneration();
         generation = 1;
@@ -181,7 +178,7 @@ public class XOR implements Testcase {
         return works(neat.getChamp());
     }
 
-    public static void main(String[] args) {
+    public static void main(String[] args) throws InvalidConfigurationException {
         NeatConfiguration configuration = new NeatConfiguration(2, 1);
         Neat neat = new Neat(configuration);
         neat.firstGeneration();

@@ -18,10 +18,7 @@ import gui.AnimationPanel;
 import gui.DefaultWidgetsPanel;
 import gui.Testcase;
 import gui.WidgetsPanel;
-import neat.Neat;
-import neat.NeatConfiguration;
-import neat.Organism;
-import neat.Species;
+import neat.*;
 
 import javax.swing.*;
 import java.awt.*;
@@ -61,7 +58,7 @@ public class FlappyBirds implements Testcase {
     }
 
     @Override
-    public void init() {
+    public void init() throws InvalidConfigurationException {
         neat.firstGeneration();
         evaluateGeneration();
         updateAnimationPanel();
