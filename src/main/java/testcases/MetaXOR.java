@@ -146,7 +146,7 @@ public class MetaXOR implements Testcase {
 
     private NeatConfiguration mapOutputs(double[] outputs, NeatConfiguration configuration) {
         return configuration
-                .setPopulationSize(Math.abs((int) (outputs[0] * 100)))
+                .setPopulationSize(Math.abs((int) (outputs[0] * 100)) + 1)
                 .setPurgeAge(Math.abs((int) (outputs[1] * 10)))
                 .setMaxGenerationsWithoutImprovement((int) (Math.max(Math.abs(outputs[1]), Math.abs(outputs[2])) * 10) + 1)
                 .setSpeciationThreshhold(outputs[3])

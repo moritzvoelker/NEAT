@@ -18,13 +18,14 @@ import java.io.*;
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 public class Species implements Serializable {
     private int generationsSinceImprovement;
     private Organism representative;
     private List<Organism> members;
     private transient double averageFitness;
-    private double oldAverageFitness;
+    private double oldChampFitness;
 
     private NeatConfiguration configuration;
 
@@ -34,7 +35,7 @@ public class Species implements Serializable {
         members = new LinkedList<>();
         members.add(representative);
         this.averageFitness = 0.0;
-        this.oldAverageFitness = 0.0;
+        this.oldChampFitness = 0.0;
     }
 
     public double calculateAverageFitness() throws IllegalStateException {
@@ -89,7 +90,6 @@ public class Species implements Serializable {
     // TODO: 17.04.2020 API nochmal überprüfen und überarbeiten
     public int produceOffspring(List<Organism> newPopulation, List<Connection> currentMutations, List<Species> species, int numberOfChildren, int innovationNumber) throws IllegalStateException {
         if (numberOfChildren == 0) {
-            members.clear();
             return innovationNumber;
         }
 
@@ -131,12 +131,12 @@ public class Species implements Serializable {
     }
 
     public int generationsSinceLastImprovement() {
-        calculateAverageFitness();
-        if (oldAverageFitness >= averageFitness) {
+        double champFitness = getChamp().getFitness();
+        if (oldChampFitness >= champFitness) {
             generationsSinceImprovement++;
         } else {
             generationsSinceImprovement = 0;
-            oldAverageFitness = averageFitness;
+            oldChampFitness = champFitness;
         }
 
         return generationsSinceImprovement;

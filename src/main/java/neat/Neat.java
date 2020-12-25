@@ -168,8 +168,7 @@ public class Neat implements Serializable {
             System.out.println("Too few species");
         }
 
-
-        if (champ.equals(lastChamp)) {
+        if (lastChamp != null && champ.getFitness() <= lastChamp.getFitness()) {
             if (++generationsSinceLastImprovement > configuration.getPurgeAge() && species.size() > 1) {
                 if (species.get(1).getAverageFitness() > species.get(0).getAverageFitness()) {
                     species.set(0, species.set(1, species.get(0)));

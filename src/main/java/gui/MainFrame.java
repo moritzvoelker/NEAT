@@ -83,9 +83,14 @@ public class MainFrame extends JFrame {
                 }
                 long startingTime = System.nanoTime();
                 System.out.println("Starting time: " + startingTime);
-                if (doGeneration()) {
-                    doNGenButton.setText("Do n generations");
-                    generationsToDo = 0;
+                try {
+                    if (doGeneration()) {
+                        doNGenButton.setText("Do n generations");
+                        generationsToDo = 0;
+                    }
+                } catch (InvalidConfigurationException e) {
+                    JOptionPane.showMessageDialog(this, "An error occurred due to invalid configuration, please correct.", "Invalid configuration", JOptionPane.ERROR_MESSAGE);
+                    settingsButton.doClick();
                 }
                 long endingTime = System.nanoTime();
                 System.out.println("End time: " + endingTime);
@@ -143,7 +148,7 @@ public class MainFrame extends JFrame {
                 dialog.dispose();
             }
             System.out.println(scrollPane.getVerticalScrollBar().getPreferredSize().width);
-            Dimension k = new Dimension(settings.getPreferredSize().width + scrollPane.getVerticalScrollBar().getPreferredSize().width  + 20, 400);
+            Dimension k = new Dimension(settings.getPreferredSize().width + scrollPane.getVerticalScrollBar().getPreferredSize().width + 20, 400);
             dialog.setMinimumSize(k);
             dialog.setPreferredSize(k);
 
@@ -177,7 +182,6 @@ public class MainFrame extends JFrame {
 
             content.add(scrollPane, BorderLayout.CENTER);
             content.add(buttons, BorderLayout.SOUTH);
-
 
 
             dialog.setContentPane(content);
@@ -214,11 +218,10 @@ public class MainFrame extends JFrame {
         });
 
 
-
         doNGenButton.addActionListener(e -> {
             if (generationsToDo == 0) {
                 doNGenButton.setText("Break");
-                generationsToDo = (int)numberOfGenerations.getValue();
+                generationsToDo = (int) numberOfGenerations.getValue();
             } else {
                 doNGenButton.setText("Do n generations");
                 doNGenButton.setEnabled(false);
