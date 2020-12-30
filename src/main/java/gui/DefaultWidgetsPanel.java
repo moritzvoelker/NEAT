@@ -100,7 +100,6 @@ public class DefaultWidgetsPanel extends WidgetsPanel {
 
     @Override
     public void update() {
-        System.out.println("Widget panel update");
 
         champDisplay.removeAll();
         champDisplay.add(new Display(testcase.getChamp()));
@@ -123,12 +122,16 @@ public class DefaultWidgetsPanel extends WidgetsPanel {
         }
 
         List<Species> speciesList = new ArrayList<>(testcase.getSpecies());
+        List<Vector> newContent = new LinkedList<>();
         int value = testcase.getConfiguration().getPopulationSize();
         // Handle all species that we already know
         for (Iterator<Species> iterator = speciesGraph.keySet().iterator(); iterator.hasNext();) {
             Species species = iterator.next();
             // Add coordinate value to the graph of current species
-            speciesGraph.get(species).addCoordinate(new Vector(testcase.getGeneration(), value));
+            System.out.println(species);
+            Vector vector = new Vector(testcase.getGeneration(), value);
+            newContent.add(vector);
+            speciesGraph.get(species).addCoordinate(vector);
             if (!speciesList.remove(species)) {
                 // Since the list does not contain curr, the species should be empty and not necessary anymore --> remove from hashtable
                 iterator.remove();
@@ -137,16 +140,25 @@ public class DefaultWidgetsPanel extends WidgetsPanel {
                 value -= species.getMembers().size();
             }
         }
-
+        // Handle all species we did not know yet
         for (Species species : speciesList) {
-            DistributionGraph dgraph = new DistributionGraph(new Color((100 * (speciesGraph.size()+1)) % 256, (150 * (speciesGraph.size()+1)) % 256, (200 * (speciesGraph.size()+1)) % 256), 3);
+            System.out.println(species);
+            DistributionGraph dgraph = new DistributionGraph(new Color((50 * (speciesGraph.size()+1)) % 256, (100 * (speciesGraph.size()+1)) % 256, (75 * (speciesGraph.size()+1)) % 256), 3);
             speciesGraph.put(species, dgraph);
             speciesDistributionPanel.addGraph(dgraph);
-            dgraph.addCoordinate(new Vector(testcase.getGeneration() - 1, 0));
-            dgraph.addCoordinate(new Vector(testcase.getGeneration(), value));
+
+            Vector vector = new Vector(testcase.getGeneration() - 1, 0);
+            newContent.add(vector);
+            dgraph.addCoordinate(vector);
+
+            vector = new Vector(testcase.getGeneration(), value);
+            newContent.add(vector);
+            dgraph.addCoordinate(vector);
+
             value -= species.getMembers().size();
         }
-
+        // Update the axis of the GraphPanel with the new content we added to the graphs
+        speciesDistributionPanel.getAxis().update(newContent);
         speciesDistributionPanel.getAxis().setResolutionX(Math.ceil(testcase.getGeneration() / 10.0));
 
         organismPanel.removeAll();
@@ -167,17 +179,11 @@ public class DefaultWidgetsPanel extends WidgetsPanel {
                 Display display = new Display(organism);
                 display.setPreferredSize(new Dimension(50, 166));
                 display.setBackground(speciesGraph.get(testcase.getSpecies().get(j)).getColor());
-                System.out.println("Before add");
                 organismPanel.add(display, gbc);
-                System.out.println("After add");
-
-
             }
         }
 
         scrollPane.setViewportView(organismPanel);
-        System.out.println("/Widget panel update end");
-
     }
 
     @Override

@@ -19,6 +19,7 @@ import javax.swing.border.EtchedBorder;
 import java.awt.*;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
+import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -94,36 +95,16 @@ public class GraphPanel extends JPanel {
             throw new IllegalArgumentException("Number of Coordinates (" + y.length + ") is not equal to number of Graphs (" + graphs.size() + ")!");
         }
 
-        if (axis.getMaxX() < x) {
-            axis.setMaxX(x);
-        }
-        if (axis.getMinX() > x) {
-            axis.setMinX(x);
-        }
+        List<Vector> newContent = new ArrayList<>(y.length);
         for (int i = 0; i < graphs.size(); i++) {
-            graphs.get(i).addCoordinate(new Vector(x, y[i]));
-            if (axis.getMaxY() < y[i]) {
-                axis.setMaxY(y[i]);
-            }
-            if (axis.getMinY() > y[i]) {
-                axis.setMinY(y[i]);
-            }
+            newContent.add(new Vector(x, y[i]));
+            graphs.get(i).addCoordinate(newContent.get(i));
         }
+        axis.update(newContent);
     }
 
     public synchronized void addCoordinate(int index, double x, double y) {
-        if (axis.getMaxX() < x) {
-            axis.setMaxX(x);
-        }
-        if (axis.getMinX() > x) {
-            axis.setMinX(x);
-        }
-        if (axis.getMaxY() < y) {
-            axis.setMaxY(y);
-        }
-        if (axis.getMinY() > y) {
-            axis.setMinY(y);
-        }
+        axis.update(new Vector(x, y));
 
         graphs.get(index).addCoordinate(new Vector(x, y));
     }

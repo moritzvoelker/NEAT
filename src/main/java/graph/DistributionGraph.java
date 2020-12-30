@@ -37,5 +37,7 @@ public class DistributionGraph extends Graph {
         int[] y = Arrays.copyOfRange(content.stream().mapToInt(vector -> axis.YValue2YPixel(vector.getY(), height)).toArray(), 0, content.size() + 1);
         y[y.length - 1] = axis.YValue2YPixel(axis.getCenter().getY(), height);
         g.fillPolygon(x, y, content.size() + 1);
+        g.setColor(Color.BLACK);
+        g.drawPolygon(x, y, content.size() + 1);
     }
 }

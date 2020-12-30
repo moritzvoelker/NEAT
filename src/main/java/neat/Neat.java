@@ -238,12 +238,14 @@ public class Neat implements Serializable {
         for (Organism organism : newPopulation) {
             specify(organism);
         }
-
+        System.out.println("Species with member size");
         for (int j = species.size() - 1; j >= 0; j--) {
+            System.out.println(species.get(j) + " has " + species.get(j).getMembers().size());
             if (species.get(j).getMembers().isEmpty()) {
                 species.remove(species.get(j));
             }
         }
+        System.out.println("Number of Species: " + species.size());
     }
 
     private void specify(Organism organism) {
