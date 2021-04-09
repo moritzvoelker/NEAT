@@ -153,6 +153,7 @@ public class XOR implements Testcase {
 
         double[] fitness = new double[configuration.getPopulationSize()];
         for (int j = 0; j < 4; j++) {
+            inputs.clear();
             for (int k = 0; k < configuration.getPopulationSize(); k++) {
                 inputs.add(possibleInputs[j]);
             }
