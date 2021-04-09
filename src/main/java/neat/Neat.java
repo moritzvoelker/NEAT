@@ -18,6 +18,9 @@ import java.io.*;
 import java.util.*;
 import java.util.stream.Collectors;
 
+/**
+ * The core of this implementation of the NEAT-Algorithm. It provides the the API which is to be used.
+ */
 public class Neat implements Serializable {
     private NeatConfiguration configuration;
 
@@ -28,6 +31,11 @@ public class Neat implements Serializable {
     private transient List<Thread> threads;
     private transient List<Organism> organismsToCalculate;
 
+    /**
+     * Constructs an instance of Neat with the given configuration.
+     *
+     * @param configuration the configuration for the NEAT-Algorithm
+     */
     public Neat(NeatConfiguration configuration) {
         this.configuration = configuration;
         species = new LinkedList<>();
@@ -45,7 +53,18 @@ public class Neat implements Serializable {
         }
     }
 
+    /**
+     * Sets the inputs of all {@link Organism}s. When in the same generation, the order of organisms doesn't change, but is not deterministic. One cannot judge the {@link Species} of an organism by the position it has in the population.
+     *
+     * @param input A {@link List} of double arrays containing all inputs.
+     *              Each element of the list corresponds to an {@link Organism}. The order should not be changed throughout the complete process of one generation.
+     *              Each element of an array corresponds to an {@link InputNode}. The order should not be changed throughout the complete process of evolution.
+     * @throws IllegalArgumentException when the list doesn't have the same length as there are organisms or if the array-length doesn't match up the input count.
+     */
     public void setInput(List<double[]> input) throws IllegalArgumentException {
+        if (input.size() != configuration.getPopulationSize()) {
+            throw new IllegalArgumentException("Input size doesn't match population size. Expected: " + configuration.getPopulationSize() + "; provided: " + input.size());
+        }
         int offset = 0;
         for (Species currentSpecies : species) {
             currentSpecies.setInput(input, offset);
@@ -75,6 +94,13 @@ public class Neat implements Serializable {
         return organism;
     }
 
+    /**
+     * Starts the evaluation of all {@link Organism}s. Depending on the size of the organisms this might take a while, because the complete network has to be calculated. The order of the organisms is the same as for the inputs.
+     *
+     * @return a {@link List} of double arrays containing all outputs.
+     * Each element of the list corresponds to an {@link Organism}. The order doesn't change throughout the complete process of one generation.
+     * Each element of an array corresponds to an output {@link Node}. The order doesn't change throughout the complete process of evolution.
+     */
     public List<double[]> getOutput() {
         List<double[]> output = new ArrayList<>(configuration.getPopulationSize());
 
@@ -101,10 +127,21 @@ public class Neat implements Serializable {
         }
     }
 
+    /**
+     * Clears this instance of {@link Neat} from the current population, if one is present, and generates a new one according to the current {@link NeatConfiguration}. The first generation is ready to be evaluated.
+     *
+     * @throws InvalidConfigurationException if the configuration is has invalid fields.
+     */
     public void firstGeneration() throws InvalidConfigurationException {
         firstGeneration(configuration);
     }
 
+    /**
+     * Clears this instance of {@link Neat} from the current population, if one is present, and generates a new one according to the passed {@link NeatConfiguration}. The first generation is ready to be evaluated.
+     *
+     * @param configuration the new configuration which is used from now on.
+     * @throws InvalidConfigurationException if the configuration is has invalid fields.
+     */
     public void firstGeneration(NeatConfiguration configuration) throws InvalidConfigurationException {
         List<Exception> exceptions = configuration.validate();
         if (!exceptions.isEmpty()) {
@@ -158,10 +195,18 @@ public class Neat implements Serializable {
                 }
             }
             specify(organism);
+            if (organism.getConnections().stream().noneMatch(connection -> connection.getWeight() == 2.0)) {
+                System.out.println("Error");
+            }
         }
     }
 
     // TODO: 05.06.2020 Interspecies mating
+
+    /**
+     * Builds the next generation from the old one. {@link #setFitness(double[])} has to be called first, otherwise the organisms chosen to reproduce are not unpredictable.
+     * The order of the organisms is unpredictable. The number and size of species is likely to change as well. The new generation is ready to be evaluated.
+     */
     public void nextGeneration() {
         List<Connection> currentMutations = new LinkedList<>();
         List<Organism> newPopulation = new ArrayList<>(configuration.getPopulationSize());
@@ -191,6 +236,7 @@ public class Neat implements Serializable {
                 if (!species.get(0).getMembers().contains(champ) && !species.get(1).getMembers().contains(champ)) {
                     newPopulation.add(champ);
                 }
+
                 species.forEach(species1 -> species1.setGenerationsSinceImprovement(0));
             }
         } else {
@@ -228,6 +274,7 @@ public class Neat implements Serializable {
             speciesSizes[speciesOfChamp]++;
             currentPopulationSize++;
         }
+
         // TODO: 31.08.2020 Maybe randomize, since it favors the first species
         for (i = 0; i < configuration.getPopulationSize() - currentPopulationSize; i++) {
             speciesSizes[i % species.size()]++;
@@ -258,14 +305,27 @@ public class Neat implements Serializable {
                 return;
             }
         }
-        species.add(new Species(organism, configuration));
+        try {
+            species.add(new Species(organism, configuration));
+        } catch (UnsupportedOperationException e) {
+            e.printStackTrace();
+        }
     }
 
+    /**
+     * Returns all current species. The order doesn't change during one generation.
+     * @return all current species.
+     */
     public List<Species> getSpecies() {
         return species;
     }
 
-
+    /**
+     * Returns the {@link Organism} with the highest fitness. Respectively it should only be called after {@link #setFitness(double[])}, otherwise the organisms chosen to reproduce are not unpredictable.
+     * In order to get the organisms every organism has to be compared with every other organism from its {@link Species} everytime, so with big population sizes it can be rather costly.
+     * @return the organism with the highest fitness.
+     * @throws IllegalStateException if {@link #firstGeneration()} hasn't been called yet.
+     */
     public Organism getChamp() throws IllegalStateException {
         try {
             return species.stream()
@@ -282,11 +342,13 @@ public class Neat implements Serializable {
         return organismsToCalculate;
     }
 
+    @Serial
     private void readObject(ObjectInputStream objectInputStream) throws ClassNotFoundException, IOException {
         objectInputStream.defaultReadObject();
         initializeThreads();
     }
 
+    @Serial
     private void writeObject(ObjectOutputStream objectOutputStream) throws IOException {
         species = new LinkedList<>(species);
         objectOutputStream.defaultWriteObject();

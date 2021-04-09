@@ -18,33 +18,113 @@ import java.io.Serializable;
 import java.util.LinkedList;
 import java.util.List;
 
+/**
+ * Configuration for {@link Neat}. All the setters follow the builder pattern for ease in use.
+ */
 public class NeatConfiguration implements Serializable {
+    /**
+     * The number of all {@link Organism}s together.
+     */
     private int populationSize = 150;
+    /**
+     * The number of generations without overall improvement, after which it is assumed the evolution ran into a dead end and all {@link Species} except for two and the champion are deleted.
+     */
     private int purgeAge = 15;
+    /**
+     * The number of generations without improvement a specific {@link Species} can have after which it is assumed the species ran into a dead end and is deleted.
+     */
     private int maxGenerationsWithoutImprovement = 20;
+    /**
+     * The threshold for the difference between two {@link Organism}s. If it is surpassed the organisms get sorted into different {@link Species}.
+     */
     private double speciationThreshhold = 3.0;
+    /**
+     * The chance for an {@link Organism} to mutate a new {@link Node}.
+     */
     private double mutateNodeRate = 0.03;
+    /**
+     * The chance for an {@link Organism} to mutate a new {@link Connection}.
+     */
     private double mutateConnectionRate = 0.05;
+    /**
+     * The chance for a {@link Connection} to mutate it's weight.
+     */
     private double mutateWeightRate = 0.8;
+    /**
+     * The chance for a {@link Connection} weight to get lightly perturbed. Otherwise the weight is reset completely reset.
+     */
     private double perturbRate = 0.9;
+    /**
+     * The chance for a {@link Connection} to get en- or disabled.
+     */
     private double mutationRateEnablement = 0.01;
+    /**
+     * The percentage of the maximal possible value of a {@link Connection} weight which is the maximum a the weight is perturbed.
+     */
     private double stepSize = 0.1;
+    /**
+     * ???
+     */
     private double disableRate = 0.75;
+    /**
+     * The chance for an {@link Organism} to mate with an organism from another {@link Species}.
+     */
     private double mateInterspeciesRate = 0.2;
+    /**
+     * The chance for an {@link Organism} to not mate and get to the next generation directly but mutated.
+     */
     private double mutateOnlyRate = 0.25; // => mateRate = 0.75
+    /**
+     * The percentage of {@link Organism}s which will be kept for reproduction into the new generation.
+     */
     private double survivalRate = 0.5;
+    /**
+     * The weight of the excess genes in the difference calculation between two {@link Organism}s.
+     */
     private double c1 = 1.0;
+    /**
+     * The weight of the disjoint genes in the difference calculation between two {@link Organism}s.
+     */
     private double c2 = 1.0;
+    /**
+     * The weight of the average weight difference of matching genes in the difference calculation between two {@link Organism}s.
+     */
     private double c3 = 0.4;
+    /**
+     * The number of {@link InputNode}s.
+     */
     private int inputCount;
+    /**
+     * The number of output {@link Node}s.
+     */
     private int outputCount;
+    /**
+     * If true every {@link Organism} has a {@link BiasNode}, which is a {@link Node} which has a {@link Connection} to every other node, except the input nodes and returns a constant value.
+     */
     private boolean biasNodeEnabled = true;
+    /**
+     * The maximal value the weight of an {@link Connection} can have.
+     */
     private double maxConnectionAbsoluteValue = 2.0;
+    /**
+     * The number of {@link Thread}s which are used to precalculate the {@link Node}s of the {@link Organism}s, which inputs have been set.
+     * Only relevant if {@link #precalculateNodes} is true.
+     */
     private int numberOfThreads = 4;
+    /**
+     * If true, every {@link Organism} which gets its inputs set gets added to a {@link List}. It is then taken and evaluated. If {@link Neat#getOutput()} is called later on the precalculated values can be just read and returned.
+     */
     private boolean precalculateNodes = true;
-
+    /**
+     * The {@link CreateStrategy} which is used by the {@link NodeFactory} to create new {@link Node}s.
+     */
     private CreateStrategy createStrategy = new DefaultCreateStrategy();
 
+    /**
+     * Constructs an instance of {@link NeatConfiguration} with the given input and output count and default values for every field, inspired by the original paper on which this implementation is based on.
+     * @param inputCount the number of {@link InputNode}s the {@link Organism}s will have.
+     * @param outputCount the number of output {@link Node}s the organisms will have.
+     */
     public NeatConfiguration(int inputCount, int outputCount) {
         this.inputCount = inputCount;
         this.outputCount = outputCount;
@@ -266,6 +346,10 @@ public class NeatConfiguration implements Serializable {
         return this;
     }
 
+    /**
+     * Validates all fields of the configuration to prevent strange behaviour and exceptions that would occur otherwise.
+     * @return a {@link List<Exception>} containing all errors that were found.
+     */
     public List<Exception> validate() {
         List<Exception> shitYouMadeWrong = new LinkedList<>();
         if (purgeAge > maxGenerationsWithoutImprovement) {
