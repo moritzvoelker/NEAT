@@ -232,6 +232,7 @@ public class Neat implements Serializable {
                         species.set(1, species.get(i));
                     }
                 }
+                species.stream().skip(2).forEach(species1 -> species1.getMembers().clear());
                 species = species.subList(0, 2);
                 if (!species.get(0).getMembers().contains(champ) && !species.get(1).getMembers().contains(champ)) {
                     newPopulation.add(champ);
