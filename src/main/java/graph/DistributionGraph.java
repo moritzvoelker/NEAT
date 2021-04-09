@@ -22,15 +22,10 @@ import java.util.stream.Collectors;
 
 
 public class DistributionGraph extends Graph {
-    Species species;
-    public DistributionGraph(Color color, int linewidth, Species sp) {
+    public DistributionGraph(Color color, int linewidth) {
         super(color, linewidth);
-        species = sp;
     }
 
-    public Species getSpecies() {
-        return species;
-    }
 
     @Override
     public void paintComponent(Graphics g, Axis axis, int width, int height) {
@@ -38,9 +33,11 @@ public class DistributionGraph extends Graph {
         g.setColor(color);
 
         int[] x = Arrays.copyOfRange(content.stream().mapToInt(vector -> axis.XValue2XPixel(vector.getX(), width)).toArray(), 0, content.size() + 1);
-        x[x.length - 1] = width;
+        x[x.length - 1] = x.length > 1 ? x[x.length - 2] : 0;
         int[] y = Arrays.copyOfRange(content.stream().mapToInt(vector -> axis.YValue2YPixel(vector.getY(), height)).toArray(), 0, content.size() + 1);
         y[y.length - 1] = axis.YValue2YPixel(axis.getCenter().getY(), height);
         g.fillPolygon(x, y, content.size() + 1);
+        g.setColor(Color.BLACK);
+        g.drawPolygon(x, y, content.size() + 1);
     }
 }

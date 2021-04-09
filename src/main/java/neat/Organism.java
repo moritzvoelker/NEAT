@@ -334,6 +334,8 @@ public class Organism implements Serializable {
         } while (fatherIterator.hasNext() && motherIterator.hasNext());
 
         if (father.getFitness() == mother.getFitness()) {
+            List<Connection> biasConnections = new LinkedList<>();
+
             fatherIterator = father.getConnections().iterator();
             motherIterator = father.getConnections().iterator();
             fatherIterator.next();
@@ -356,7 +358,10 @@ public class Organism implements Serializable {
                         motherConnection.setInnovationNumber(Integer.MAX_VALUE);
                     }
                 } else if (fatherConnection.getInnovationNumber() < motherConnection.getInnovationNumber()) {
-                    if (Math.random() < 0.5) {
+                    // if the connection is a bias then add it later if the node is still there
+                    if (fatherConnection.getIn().getInnovationNumber() == 0) {
+                        biasConnections.add(fatherConnection);
+                    }else if (Math.random() < 0.5) {
                         Connection connection = child.cloneConnection(fatherConnection);
                         if (connection.getIn().isDependentOn(connection.getOut())) {
                             child.getConnections().remove(connection);
@@ -369,7 +374,9 @@ public class Organism implements Serializable {
                         fatherConnection.setInnovationNumber(Integer.MAX_VALUE);
                     }
                 } else {
-                    if (Math.random() < 0.5) {
+                    if (motherConnection.getIn().getInnovationNumber() == 0) {
+                        biasConnections.add(fatherConnection);
+                    } else if (Math.random() < 0.5) {
                         Connection connection = child.cloneConnection(motherConnection);
                         if (connection.getIn().isDependentOn(connection.getOut())) {
                             child.getConnections().remove(connection);
@@ -382,6 +389,15 @@ public class Organism implements Serializable {
                     }
                 }
             } while (fatherIterator.hasNext() || motherIterator.hasNext());
+
+            for (Connection con : biasConnections) {
+                for (Node node : child.getHiddenNodes()) {
+                    if (node.getInnovationNumber() == con.getOut().getInnovationNumber()) {
+                        child.cloneConnection(con);
+                        break;
+                    }
+                }
+            }
         } else {
             // Add excess and disjoint genes of father
             for (Connection connection : father.getConnections()) {

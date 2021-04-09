@@ -15,13 +15,14 @@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLI
 package gui;
 
 import graph.*;
+import graph.Vector;
 import neat.Organism;
 import neat.Species;
 import networkdisplay.Display;
 
 import javax.swing.*;
 import java.awt.*;
-import java.util.ArrayList;
+import java.util.*;
 import java.util.List;
 
 public class DefaultWidgetsPanel extends WidgetsPanel {
@@ -31,7 +32,8 @@ public class DefaultWidgetsPanel extends WidgetsPanel {
     private GraphPanel fitnessDistributionPanel;
     private JPanel champDisplay;
     private GraphPanel speciesDistributionPanel;
-    private JPanel organisms;
+    private LinkedHashMap<Species, DistributionGraph> speciesGraph;
+    private JPanel organismPanel;
     private JScrollPane scrollPane;
     private JPanel organismList;
     private Thread animationThread;
@@ -56,7 +58,9 @@ public class DefaultWidgetsPanel extends WidgetsPanel {
         speciesDistributionPanel = new GraphPanel();
         speciesDistributionPanel.getAxis().setResolutionY(50);
 
-        organisms = new JPanel(new GridBagLayout());
+        speciesGraph = new LinkedHashMap<>();
+
+        organismPanel = new JPanel(new GridBagLayout());
         scrollPane = new JScrollPane();
         scrollPane.setHorizontalScrollBarPolicy(ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
         scrollPane.getVerticalScrollBar().setUnitIncrement(166 / 2);
@@ -91,10 +95,12 @@ public class DefaultWidgetsPanel extends WidgetsPanel {
 
         speciesDistributionPanel.removeAllGraphs();
         speciesDistributionPanel.resetAxis();
+        speciesGraph.clear();
     }
 
     @Override
     public void update() {
+
         champDisplay.removeAll();
         champDisplay.add(new Display(testcase.getChamp()));
 
@@ -116,24 +122,46 @@ public class DefaultWidgetsPanel extends WidgetsPanel {
         }
 
         List<Species> speciesList = new ArrayList<>(testcase.getSpecies());
-        int i = 1;
+        List<Vector> newContent = new LinkedList<>();
         int value = testcase.getConfiguration().getPopulationSize();
-        for (Graph graph : speciesDistributionPanel.getGraphs()) {
-            speciesList.remove(((DistributionGraph) graph).getSpecies());
-            speciesDistributionPanel.addCoordinate(i - 1, testcase.getGeneration(), value);
-            value -= ((DistributionGraph) graph).getSpecies().getMembers().size();
-            i++;
+        // Handle all species that we already know
+        for (Iterator<Species> iterator = speciesGraph.keySet().iterator(); iterator.hasNext();) {
+            Species species = iterator.next();
+            // Add coordinate value to the graph of current species
+            System.out.println(species);
+            Vector vector = new Vector(testcase.getGeneration(), value);
+            newContent.add(vector);
+            speciesGraph.get(species).addCoordinate(vector);
+            if (!speciesList.remove(species)) {
+                // Since the list does not contain curr, the species should be empty and not necessary anymore --> remove from hashtable
+                iterator.remove();
+            } else {
+                // This is only necessary if curr is contained, since members should be empty otherwise
+                value -= species.getMembers().size();
+            }
         }
+        // Handle all species we did not know yet
         for (Species species : speciesList) {
-            speciesDistributionPanel.addGraph(new DistributionGraph(new Color((100 * i) % 256, (150 * i) % 256, (200 * i) % 256), 3, species));
-            speciesDistributionPanel.addCoordinate(i - 1, testcase.getGeneration() - 1, 0);
-            speciesDistributionPanel.addCoordinate(i - 1, testcase.getGeneration(), value);
+            System.out.println(species);
+            DistributionGraph dgraph = new DistributionGraph(new Color((50 * (speciesGraph.size()+1)) % 256, (100 * (speciesGraph.size()+1)) % 256, (75 * (speciesGraph.size()+1)) % 256), 3);
+            speciesGraph.put(species, dgraph);
+            speciesDistributionPanel.addGraph(dgraph);
+
+            Vector vector = new Vector(testcase.getGeneration() - 1, 0);
+            newContent.add(vector);
+            dgraph.addCoordinate(vector);
+
+            vector = new Vector(testcase.getGeneration(), value);
+            newContent.add(vector);
+            dgraph.addCoordinate(vector);
+
             value -= species.getMembers().size();
-            i++;
         }
+        // Update the axis of the GraphPanel with the new content we added to the graphs
+        speciesDistributionPanel.getAxis().update(newContent);
         speciesDistributionPanel.getAxis().setResolutionX(Math.ceil(testcase.getGeneration() / 10.0));
 
-        organisms.removeAll();
+        organismPanel.removeAll();
 
         GridBagConstraints gbc = new GridBagConstraints();
 //        gbc.gridwidth = GridBagConstraints.REMAINDER;
@@ -146,24 +174,16 @@ public class DefaultWidgetsPanel extends WidgetsPanel {
         gbc.gridx = 0;
         gbc.gridy = GridBagConstraints.RELATIVE;
         gbc.fill = GridBagConstraints.HORIZONTAL;
-        for (int j = 1, k = 0; j <= testcase.getSpecies().size(); j++) {
-            Color c;
-            while (!((DistributionGraph) speciesDistributionPanel.getGraph(k)).getSpecies().equals(testcase.getSpecies().get(j-1))) {
-                k++;
-            }
-
-            for (Organism organism : testcase.getSpecies().get(j - 1).getMembers()) {
+        for (int j = 0; j < testcase.getSpecies().size(); j++) {
+            for (Organism organism : testcase.getSpecies().get(j).getMembers()) {
                 Display display = new Display(organism);
                 display.setPreferredSize(new Dimension(50, 166));
-                display.setBackground(speciesDistributionPanel.getGraph(k).getColor());
-
-                organisms.add(display, gbc);
-
+                display.setBackground(speciesGraph.get(testcase.getSpecies().get(j)).getColor());
+                organismPanel.add(display, gbc);
             }
         }
 
-
-        scrollPane.setViewportView(organisms);
+        scrollPane.setViewportView(organismPanel);
     }
 
     @Override

@@ -14,6 +14,7 @@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLI
 
 package graph;
 
+import java.util.List;
 import java.awt.*;
 import java.text.NumberFormat;
 
@@ -116,16 +117,37 @@ public class Axis {
     }
 
 
-    Vector value2Pixel(Vector c, int width, int height) {
+    public Vector value2Pixel(Vector c, int width, int height) {
         return new Vector(((c.getX() - minX) / (maxX - minX)) * width, (1.0 - (c.getY() - (minY - paddingY)) / (maxY - minY + 2 * paddingY)) * height);
     }
 
-    int XValue2XPixel(double x, int width) {
+    public int XValue2XPixel(double x, int width) {
         return (int) (((x - minX) / (maxX - minX)) * width);
     }
 
-    int YValue2YPixel(double y, int height) {
+    public int YValue2YPixel(double y, int height) {
         return (int) ((1.0 - (y - (minY - paddingY)) / (maxY - minY + 2 * paddingY)) * height);
+    }
+
+    public void update(List<Vector> newContent) {
+        for (Vector vector : newContent) {
+            update(vector);
+        }
+    }
+
+    public void update(Vector newContent) {
+            if (getMaxX() < newContent.getX()) {
+                setMaxX(newContent.getX());
+            }
+            if (getMinX() > newContent.getX()) {
+                setMinX(newContent.getX());
+            }
+            if (getMaxY() < newContent.getY()) {
+                setMaxY(newContent.getY());
+            }
+            if (getMinY() > newContent.getY()) {
+                setMinY(newContent.getY());
+            }
     }
 
     public double getMinX() {
