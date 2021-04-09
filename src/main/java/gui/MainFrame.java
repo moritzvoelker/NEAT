@@ -102,6 +102,7 @@ public class MainFrame extends JFrame {
         calculationThread.start();
 
 
+        setTitle("NEAT");
         setSize(1000, 800);
         setVisible(true);
     }

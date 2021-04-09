@@ -48,11 +48,7 @@ public class Neat implements Serializable {
     public void setInput(List<double[]> input) throws IllegalArgumentException {
         int offset = 0;
         for (Species currentSpecies : species) {
-            try {
-                currentSpecies.setInput(input, offset);
-            } catch (IndexOutOfBoundsException e) {
-                e.printStackTrace();
-            }
+            currentSpecies.setInput(input, offset);
             offset += currentSpecies.getMembers().size();
             if (configuration.isPrecalculateNodes()) {
                 synchronized (this) {
@@ -88,7 +84,16 @@ public class Neat implements Serializable {
         return output;
     }
 
-    public void setFitness(double[] fitness) {
+    /**
+     * Sets the fitness for each {@link Organism} in the same order as the inputs and outputs are set and gotten. The fitness should directly correspond to how well an organism did in the designated task, because it is preferred for reproduction into the next generation.
+     *
+     * @param fitness an array containing the fitness for each organism in the same order as the inputs and outputs are set and gotten.
+     * @throws IllegalArgumentException  when the array doesn't have the same length as there are organisms.
+     */
+    public void setFitness(double[] fitness) throws IllegalArgumentException {
+        if (fitness.length != configuration.getPopulationSize()) {
+            throw new IllegalArgumentException("Input size doesn't match population size. Expected: " + configuration.getPopulationSize() + "; provided: " + fitness.length);
+        }
         int offset = 0;
         for (Species currentSpecies : species) {
             currentSpecies.setFitness(fitness, offset);
