@@ -128,7 +128,7 @@ public class Neat implements Serializable {
                 Connection connection = new Connection(in, out, Math.random() * configuration.getMaxConnectionAbsoluteValue() * 2 - configuration.getMaxConnectionAbsoluteValue());
                 out.getIn().add(connection);
                 if (configuration.isBiasNodeEnabled()) {
-                    Connection biasConnection = new Connection(organism.getBias(), out, configuration.getMaxConnectionAbsoluteValue() * 2 - configuration.getMaxConnectionAbsoluteValue());
+                    Connection biasConnection = new Connection(organism.getBias(), out, Math.random() * configuration.getMaxConnectionAbsoluteValue() * 2 - configuration.getMaxConnectionAbsoluteValue());
                     out.getIn().add(biasConnection);
                     organism.getConnections().add(biasConnection);
                     globalInnovationNumber = biasConnection.setInnovationNumber(globalInnovationNumber, addedConnections);
