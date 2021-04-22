@@ -188,7 +188,7 @@ public class DefaultWidgetsPanel extends WidgetsPanel {
 
     @Override
     public void startAnimations() {
-        animationThread = new Thread(testcase.getAnimationPanel());
+        animationThread = new Thread(testcase.getAnimationPanel(), "Animation Thread");
         animationThread.start();
     }
 

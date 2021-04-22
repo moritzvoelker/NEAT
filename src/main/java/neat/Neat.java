@@ -47,7 +47,7 @@ public class Neat implements Serializable {
             organismsToCalculate = new Vector<>();
             threads = new ArrayList<>(configuration.getNumberOfThreads());
             for (int i = 0; i < configuration.getNumberOfThreads(); i++) {
-                threads.add(new Thread(new NodePreCalculator(this), "Thread " + i));
+                threads.add(new Thread(new NodePreCalculator(this), "Precalculator-Thread " + i));
                 threads.get(i).start();
             }
         }

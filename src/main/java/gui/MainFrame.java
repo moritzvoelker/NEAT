@@ -98,7 +98,7 @@ public class MainFrame extends JFrame {
                 times.add(endingTime - startingTime);
                 System.out.println("Took on average: " + times.stream().mapToLong(Long::longValue).average());
             }
-        });
+        }, "Calculation Thread");
         calculationThread.start();
 
 
