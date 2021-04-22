@@ -186,7 +186,7 @@ public class Neat implements Serializable {
             for (InputNode node : organism.getInputNodes()) {
                 if (node.getIn().isEmpty()) {
                     Node out = organism.getOutputNodes().get((int) (Math.random() * configuration.getOutputCount()));
-                    Connection connection = new Connection(node, out, configuration.getMaxConnectionAbsoluteValue() * 2 - configuration.getMaxConnectionAbsoluteValue());
+                    Connection connection = new Connection(node, out, Math.random() * configuration.getMaxConnectionAbsoluteValue() * 2 - configuration.getMaxConnectionAbsoluteValue());
                     out.getIn().add(connection);
                     globalInnovationNumber = connection.setInnovationNumber(globalInnovationNumber, addedConnections);
                     organism.getConnections().add(connection);
@@ -195,7 +195,7 @@ public class Neat implements Serializable {
                 }
             }
             specify(organism);
-            if (organism.getConnections().stream().noneMatch(connection -> connection.getWeight() == 2.0)) {
+            if (!organism.getConnections().stream().noneMatch(connection -> connection.getWeight() == 2.0)) {
                 System.out.println("Error");
             }
         }
@@ -228,10 +228,12 @@ public class Neat implements Serializable {
                     if (species.get(i).getAverageFitness() > species.get(0).getAverageFitness()) {
                         species.set(i, species.set(1, species.set(0, species.get(i))));
                     } else if (species.get(i).getAverageFitness() > species.get(1).getAverageFitness()) {
-                        species.set(i, species.set(1, species.get(i)));
+                        species.get(1).getMembers().clear();
+                        species.set(1, species.get(i));
+                    } else {
+                        species.get(i).getMembers().clear();
                     }
                 }
-                species.stream().skip(2).forEach(species1 -> species1.getMembers().clear());
                 species = species.subList(0, 2);
                 if (!species.get(0).getMembers().contains(champ) && !species.get(1).getMembers().contains(champ)) {
                     newPopulation.add(champ);
