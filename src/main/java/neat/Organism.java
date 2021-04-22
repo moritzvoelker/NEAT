@@ -307,52 +307,42 @@ public class Organism implements Serializable {
         Organism child = new Organism(configuration);
 
 
-        Iterator<Connection> fatherIterator = father.getConnections().iterator();
-        Iterator<Connection> motherIterator = father.getConnections().iterator();
-        Connection fatherConnection = fatherIterator.next();
-        Connection motherConnection = motherIterator.next();
+        Connection fatherConnection;
+        Connection motherConnection;
 
         // Add joint genes
-        do {
+        for (int i = 0, j = 0; i < father.getConnections().size() && j < mother.getConnections().size();) {
+            fatherConnection = father.getConnections().get(i);
+            motherConnection = mother.getConnections().get(j);
             if (fatherConnection.getInnovationNumber() == motherConnection.getInnovationNumber()) {
                 child.cloneConnection(Math.random() < 0.5 ? fatherConnection : motherConnection);
-                if (fatherIterator.hasNext()) {
-                    fatherConnection = fatherIterator.next();
-                }
-                if (motherIterator.hasNext()) {
-                    motherConnection = motherIterator.next();
-                }
+                i++;
+                j++;
             } else if (fatherConnection.getInnovationNumber() < motherConnection.getInnovationNumber()) {
-                if (fatherIterator.hasNext()) {
-                    fatherConnection = fatherIterator.next();
-                }
+                i++;
             } else {
-                if (motherIterator.hasNext()) {
-                    motherConnection = motherIterator.next();
-                }
+                j++;
             }
-        } while (fatherIterator.hasNext() && motherIterator.hasNext());
+        }
 
         if (father.getFitness() == mother.getFitness()) {
             List<Connection> biasConnections = new LinkedList<>();
-
-            fatherIterator = father.getConnections().iterator();
-            motherIterator = father.getConnections().iterator();
-            fatherIterator.next();
-            motherIterator.next();
+            fatherConnection = father.getConnections().get(0);
+            motherConnection = mother.getConnections().get(0);
 
             // Add disjoint and excess genes of both parents
-            do {
+            for (int i = 0, j = 0; i < father.getConnections().size() || j < mother.getConnections().size();) {
+
                 // Joined genes are already copied
                 if (fatherConnection.getInnovationNumber() == motherConnection.getInnovationNumber()) {
-                    if (fatherIterator.hasNext()) {
-                        fatherConnection = fatherIterator.next();
+                    if (++i < father.getConnections().size()) {
+                        fatherConnection = father.getConnections().get(i);
                     } else {
                         fatherConnection = new Connection(null, null, 0.0);
                         fatherConnection.setInnovationNumber(Integer.MAX_VALUE);
                     }
-                    if (motherIterator.hasNext()) {
-                        motherConnection = motherIterator.next();
+                    if (++j < mother.getConnections().size()) {
+                        motherConnection = mother.getConnections().get(j);
                     } else {
                         motherConnection = new Connection(null, null, 0.0);
                         motherConnection.setInnovationNumber(Integer.MAX_VALUE);
@@ -367,31 +357,38 @@ public class Organism implements Serializable {
                             child.getConnections().remove(connection);
                         }
                     }
-                    if (fatherIterator.hasNext()) {
-                        fatherConnection = fatherIterator.next();
+                    if (++i < father.getConnections().size()) {
+                        fatherConnection = father.getConnections().get(i);
                     } else {
                         fatherConnection = new Connection(null, null, 0.0);
                         fatherConnection.setInnovationNumber(Integer.MAX_VALUE);
                     }
                 } else {
                     if (motherConnection.getIn().getInnovationNumber() == 0) {
-                        biasConnections.add(fatherConnection);
+                        biasConnections.add(motherConnection);
                     } else if (Math.random() < 0.5) {
                         Connection connection = child.cloneConnection(motherConnection);
                         if (connection.getIn().isDependentOn(connection.getOut())) {
                             child.getConnections().remove(connection);
                         }
                     }
-                    if (motherIterator.hasNext()) {
-                        motherConnection = motherIterator.next();
+                    if (++j < mother.getConnections().size()) {
+                        motherConnection = mother.getConnections().get(j);
                     } else {
                         motherConnection = new Connection(null, null, 0.0);
+                        motherConnection.setInnovationNumber(Integer.MAX_VALUE);
                     }
                 }
-            } while (fatherIterator.hasNext() || motherIterator.hasNext());
+            }
 
             for (Connection con : biasConnections) {
                 for (Node node : child.getHiddenNodes()) {
+                    if (node.getInnovationNumber() == con.getOut().getInnovationNumber()) {
+                        child.cloneConnection(con);
+                        break;
+                    }
+                }
+                for (Node node : child.getOutputNodes()) {
                     if (node.getInnovationNumber() == con.getOut().getInnovationNumber()) {
                         child.cloneConnection(con);
                         break;
