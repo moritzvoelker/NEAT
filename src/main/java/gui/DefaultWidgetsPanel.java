@@ -128,7 +128,6 @@ public class DefaultWidgetsPanel extends WidgetsPanel {
         for (Iterator<Species> iterator = speciesGraph.keySet().iterator(); iterator.hasNext();) {
             Species species = iterator.next();
             // Add coordinate value to the graph of current species
-            System.out.println(species);
             Vector vector = new Vector(testcase.getGeneration(), value);
             newContent.add(vector);
             speciesGraph.get(species).addCoordinate(vector);
@@ -142,7 +141,6 @@ public class DefaultWidgetsPanel extends WidgetsPanel {
         }
         // Handle all species we did not know yet
         for (Species species : speciesList) {
-            System.out.println(species);
             DistributionGraph dgraph = new DistributionGraph(new Color((50 * (speciesGraph.size()+1)) % 256, (100 * (speciesGraph.size()+1)) % 256, (75 * (speciesGraph.size()+1)) % 256), 3);
             speciesGraph.put(species, dgraph);
             speciesDistributionPanel.addGraph(dgraph);
