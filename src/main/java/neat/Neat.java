@@ -258,7 +258,7 @@ public class Neat implements Serializable {
             }).collect(Collectors.toList());
         }
 
-        double overallFitness = species.stream().mapToDouble(Species::getAverageFitness).sum();
+        double overallFitness = species.stream().mapToDouble(Species::calculateAverageFitness).sum();
         int[] speciesSizes = new int[species.size()];
 
         int i = 0;
