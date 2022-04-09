@@ -98,7 +98,7 @@ public class Connection implements Serializable, Comparable<Connection> {
         }
         if (i == currentMutations.size()) {
             innovationNumber = currentInnovationNumber++;
-            currentMutations.add(this);
+            currentMutations.add(new Connection(this));
         }
         return currentInnovationNumber;
     }

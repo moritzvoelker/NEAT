@@ -201,7 +201,6 @@ public class Neat implements Serializable {
         }
     }
 
-    // TODO: 05.06.2020 Interspecies mating
 
     /**
      * Builds the next generation from the old one. {@link #setFitness(double[])} has to be called first, otherwise the organisms chosen to reproduce are not unpredictable.
@@ -218,6 +217,8 @@ public class Neat implements Serializable {
             System.out.println("Too few species");
         }
 
+
+
         if (lastChamp != null && champ.getFitness() <= lastChamp.getFitness()) {
             if (++generationsSinceLastImprovement > configuration.getPurgeAge() && species.size() > 1) {
                 if (species.get(1).getAverageFitness() > species.get(0).getAverageFitness()) {
@@ -225,11 +226,9 @@ public class Neat implements Serializable {
                 }
                 for (int i = 2; i < species.size(); i++) {
                     if (species.get(i).getAverageFitness() > species.get(0).getAverageFitness()) {
-                        species.get(1).getMembers().clear();
-                        species.set(1, species.set(0, species.get(i)));
+                        species.set(i, species.set(1, species.set(0, species.get(i))));
                     } else if (species.get(i).getAverageFitness() > species.get(1).getAverageFitness()) {
-                        species.get(1).getMembers().clear();
-                        species.set(1, species.get(i));
+                        species.set(i, species.set(1, species.get(i)));
                     }
                 }
                 species.stream().skip(2).forEach(species1 -> species1.getMembers().clear());
@@ -244,6 +243,7 @@ public class Neat implements Serializable {
             generationsSinceLastImprovement = 0;
             lastChamp = champ;
         }
+
 
         if (species.size() > 2) {
             species = species.stream().filter(species1 -> {

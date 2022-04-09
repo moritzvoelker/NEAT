@@ -157,9 +157,10 @@ public class Organism implements Serializable {
 
         connection.getOut().addInput(connection);
 
+        // Wir fügen eine Referenz auf connection in currentMutations ein. => wenn die Connection in mutateNode verändert wird, wird auch die Connection in CurrentMutations verändert. ==> Füge eine Kopie der Connection in currentMutations ein.
+        // New Fix: Erstelle immer eine Kopie wenn man in currentMutations einfügt.
         currentInnovationNumber = connection.setInnovationNumber(currentInnovationNumber, currentMutations);
-        // Problem: in der Liste von Mutationen ist dieselbe Verbindung. Kann zu Problem in mutateNode führen --> Entweder so, oder nur eins von beiden pro Organismus in einer Generation (mutateNode/Connection)
-        connections.add(new Connection(connection));
+        connections.add(connection);
 
         return currentInnovationNumber;
     }
@@ -182,6 +183,8 @@ public class Organism implements Serializable {
         int i;
         for (i = 0; i < currentMutations.size(); i++) {
             if (connection.equals(currentMutations.get(i)) && !currentMutations.get(i).isEnabled()) {
+                // Wir nutzen aus, dass MutateNode für jede Node die neuste Topologische Änderung sein muss ==> neuste Connection von getIn() muss von dem neu eingefügten Knoten ausgehen
+                // Könnte versimpelt werden, wenn man die innovationnumber von node in der connection speichert, da diese für den Vergleich nicht benötigt wird.
                 node.setInnovationNumber(currentMutations.get(i).getOut().getIn().get(currentMutations.get(i).getOut().getIn().size() - 1).getIn().getInnovationNumber());
                 in.setInnovationNumber(node.getInnovationNumber() + 1);
                 out.setInnovationNumber(node.getInnovationNumber() + 2);
@@ -193,7 +196,7 @@ public class Organism implements Serializable {
             node.setInnovationNumber(currentInnovationNumber++);
             in.setInnovationNumber(currentInnovationNumber++);
             out.setInnovationNumber(currentInnovationNumber++);
-            currentMutations.add(connection);
+            currentMutations.add(new Connection(connection));
         }
 
         connections.add(in);
@@ -202,7 +205,8 @@ public class Organism implements Serializable {
         if (bias != null && !in.getIn().equals(bias)) {
             connection = new Connection(bias, node, Math.random() * configuration.getMaxConnectionAbsoluteValue() * 2 - configuration.getMaxConnectionAbsoluteValue());
             node.getIn().add(connection);
-            if (i == currentMutations.size()) {
+            // Wir fügen in diesem Fall eine Mutation zu currentMutations dazu ==> i wäre currentMutations.size()-1
+            if (i == currentMutations.size()-1) {
                 connection.setInnovationNumber(currentInnovationNumber++);
             } else {
                 connection.setInnovationNumber(node.getInnovationNumber() + 3);
@@ -354,6 +358,7 @@ public class Organism implements Serializable {
                     }else if (Math.random() < 0.5) {
                         Connection connection = child.cloneConnection(fatherConnection);
                         if (connection.getIn().isDependentOn(connection.getOut())) {
+                            connection.getOut().getIn().remove(connection);
                             child.getConnections().remove(connection);
                         }
                     }
@@ -369,6 +374,7 @@ public class Organism implements Serializable {
                     } else if (Math.random() < 0.5) {
                         Connection connection = child.cloneConnection(motherConnection);
                         if (connection.getIn().isDependentOn(connection.getOut())) {
+                            connection.getOut().getIn().remove(connection);
                             child.getConnections().remove(connection);
                         }
                     }
@@ -382,16 +388,19 @@ public class Organism implements Serializable {
             }
 
             for (Connection con : biasConnections) {
-                for (Node node : child.getHiddenNodes()) {
-                    if (node.getInnovationNumber() == con.getOut().getInnovationNumber()) {
-                        child.cloneConnection(con);
-                        break;
+                if (con.getOut().getNodePurpose() == NodePurpose.Hidden) {
+                    for (Node node : child.getHiddenNodes()) {
+                        if (node.getInnovationNumber() == con.getOut().getInnovationNumber()) {
+                            child.cloneConnection(con);
+                            break;
+                        }
                     }
-                }
-                for (Node node : child.getOutputNodes()) {
-                    if (node.getInnovationNumber() == con.getOut().getInnovationNumber()) {
-                        child.cloneConnection(con);
-                        break;
+                } else {
+                    for (Node node : child.getOutputNodes()) {
+                        if (node.getInnovationNumber() == con.getOut().getInnovationNumber()) {
+                            child.cloneConnection(con);
+                            break;
+                        }
                     }
                 }
             }
@@ -403,6 +412,7 @@ public class Organism implements Serializable {
                 }
             }
         }
+
 
         return child;
     }
