@@ -152,7 +152,7 @@ public class MetaXOR implements Testcase {
                 .setPopulationSize(Math.abs((int) (outputs[0] * 100)) + 1)
                 .setPurgeAge(Math.abs((int) (outputs[1] * 10)))
                 .setMaxGenerationsWithoutImprovement((int) (Math.max(Math.abs(outputs[1]), Math.abs(outputs[2])) * 10) + 1)
-                .setSpeciationThreshhold(outputs[3])
+                .setSpeciationThreshhold(Math.abs(outputs[3]))
                 .setMutateNodeRate(ensureIsPercentage(outputs[4]))
                 .setMutateConnectionRate(ensureIsPercentage(outputs[5]))
                 .setMutateWeightRate(ensureIsPercentage(outputs[6]))
