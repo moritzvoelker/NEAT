@@ -131,7 +131,7 @@ public class FlappyBirds implements Testcase {
 
     @Override
     public boolean hasWorkingOrganism() {
-        return neat.getChamp().getFitness() >= 10.0;
+        return neat.getChamp().getFitness() >= 100.0;
     }
 
     private void updateAnimationPanel() {
@@ -146,37 +146,49 @@ public class FlappyBirds implements Testcase {
     // Inputs: Player y, Player velocity, distance to next pillar, y of hole of next pillar
     private boolean evaluateGeneration() {
         seed++;
-        Game game = new Game(neatConfiguration.getPopulationSize(), seed);
+        Game game;
         List<double[]> inputs = new ArrayList<>(neatConfiguration.getPopulationSize());
         List<double[]> outputs;
-        do {
-            for (int i = 0; i < neatConfiguration.getPopulationSize(); i++) {
-                double[] input = new double[4];
-                input[0] = game.getPlayers().get(i).getY();
-                input[1] = game.getPlayers().get(i).getVy();
-                input[2] = game.getX() + Game.PILLAR_DISTANCE * game.getCurrentPillar() + Pillar.WIDTH - Game.PLAYER_X + Player.RADIUS;
-                input[3] = game.getPillars().get(game.getCurrentPillar()).getHoleY();
-
-                inputs.add(input);
-            }
-            neat.setInput(inputs);
-            inputs.clear();
-
-            outputs = neat.getOutput();
-            for (int i = 0; i < neatConfiguration.getPopulationSize(); i++) {
-                if (outputs.get(i)[0] > 0.5) {
-                    game.jump(i);
-                }
-            }
-            if (game.getPillarsPassed() > 1000) {
-                game.getActivePlayers().forEach(player -> player.setScore(1000.0));
-                break;
-            }
-        } while(game.iterate());
 
         double[] fitness = new double[neatConfiguration.getPopulationSize()];
-        for (int i = 0; i < neatConfiguration.getPopulationSize(); i++) {
-            fitness[i] = game.getPlayers().get(i).getScore();
+//        for (int p = 0; p < neatConfiguration.getPopulationSize()) {
+//            fitness[p] = 0.0;
+//        }
+        int num_samples = 50;
+
+        for (int p = 0; p < num_samples; p++) {
+            game = new Game(neatConfiguration.getPopulationSize(), seed);
+            do {
+                for (int i = 0; i < neatConfiguration.getPopulationSize(); i++) {
+                    double[] input = new double[4];
+                    input[0] = game.getPlayers().get(i).getY();
+                    input[1] = game.getPlayers().get(i).getVy();
+                    input[2] = game.getX() + Game.PILLAR_DISTANCE * game.getCurrentPillar() + Pillar.WIDTH - Game.PLAYER_X + Player.RADIUS;
+                    input[3] = game.getPillars().get(game.getCurrentPillar()).getHoleY();
+
+                    inputs.add(input);
+                }
+                neat.setInput(inputs);
+                inputs.clear();
+
+                outputs = neat.getOutput();
+                for (int i = 0; i < neatConfiguration.getPopulationSize(); i++) {
+                    if (outputs.get(i)[0] > 0.5) {
+                        game.jump(i);
+                    }
+                }
+                if (game.getPillarsPassed() > 1000) {
+                    game.getActivePlayers().forEach(player -> player.setScore(1000.0));
+                    break;
+                }
+            } while (game.iterate());
+
+            for (int i = 0; i < neatConfiguration.getPopulationSize(); i++) {
+                fitness[i] += Math.pow(game.getPlayers().get(i).getScore(), 1);
+            }
+        }
+        for (int p = 0; p < neatConfiguration.getPopulationSize(); p++) {
+            fitness[p] /= num_samples;
         }
         neat.setFitness(fitness);
 
