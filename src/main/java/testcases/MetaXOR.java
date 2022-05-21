@@ -33,7 +33,10 @@ public class MetaXOR implements Testcase {
     public MetaXOR() {
         configuration = new NeatConfiguration(1, 19)
                 .setCreateStrategy(new LinearNodeCreateStrategy())
-                .setBiasNodeEnabled(false);
+                .setBiasNodeEnabled(false)
+                .setPopulationSize(50)
+                .setMutateNodeRate(0)
+                .setMutateConnectionRate(0);
         neat = new Neat(configuration);
         xors = new XOR[configuration.getPopulationSize()];
         for (int i = 0; i < configuration.getPopulationSize(); i++) {
