@@ -9,9 +9,6 @@ import neat.*;
 
 import javax.swing.*;
 import java.awt.*;
-import java.awt.event.KeyAdapter;
-import java.awt.event.KeyEvent;
-import java.awt.image.BufferStrategy;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
@@ -22,14 +19,17 @@ public class CarRace implements Testcase {
     private Neat neat;
     private GameAnimationPanel animationPanel;
     private Game game;
+    private GameConfiguration gameConfiguration;
     private boolean hasAlreadyWorked;
     private int generation;
     private long seed;
 
     public CarRace() {
-        neatConfiguration = new NeatConfiguration(5, 2).setPrecalculateNodes(true).setSpeciationThreshhold(8.0);
-        neatConfiguration.setSpeciationThreshhold(1.0).setSurvivalRate(1.0);
+        gameConfiguration = new GameConfiguration().setLength(50).setSizex(25).setSizey(25);
+
+        neatConfiguration = new NeatConfiguration(gameConfiguration.getNumRays(), 2).setPrecalculateNodes(true).setSpeciationThreshhold(2.0).setMutateNodeRate(0.15).setPopulationSize(10);
         animationPanel = new GameAnimationPanel();
+
 
         neat = new Neat(neatConfiguration);
         seed = new Random().nextLong();
@@ -117,16 +117,23 @@ public class CarRace implements Testcase {
 
     @Override
     public boolean hasWorkingOrganism() {
-        return false;
+        return neat.getChamp().getFitness() >= 101;
     }
 
     private void updateAnimationPanel() {
-        ArrayList<Organism> players = new ArrayList<>(neat.getSpecies().size());
+////        ArrayList<Organism> players = new ArrayList<>(neat.getSpecies().size());
+//        for (Species species : neat.getSpecies()) {
+//            players.add(species.getChamp());
+//        }
+        ArrayList<Organism> players = new ArrayList<>(neatConfiguration.getPopulationSize());
         for (Species species : neat.getSpecies()) {
-            players.add(species.getChamp());
+            for (Organism organism : species.getMembers()) {
+                players.add(organism);
+            }
         }
-        animationPanel.setPlayers(players);
+        animationPanel.setControllers(players);
         animationPanel.setSeed(seed);
+        animationPanel.startGame();
     }
 
     // Inputs: Player y, Player velocity, distance to next pillar, y of hole of next pillar
@@ -140,40 +147,44 @@ public class CarRace implements Testcase {
 //        for (int p = 0; p < neatConfiguration.getPopulationSize()) {
 //            fitness[p] = 0.0;
 //        }
-        int num_samples = 50;
+        int num_samples = 100;
+
+        List<Organism> organisms = new ArrayList<>(neatConfiguration.getPopulationSize());
+        for (Species specie : neat.getSpecies()) {
+            organisms.addAll(specie.getMembers());
+        }
+
+        game = new Game(neatConfiguration.getPopulationSize(), seed);
+
+
+        List<Player> players = game.getPlayers();
+        List<NNController> controllers = new ArrayList<>(neatConfiguration.getPopulationSize());
+        for (int i = 0; i < neatConfiguration.getPopulationSize(); i++) {
+            controllers.add(new NNController(players.get(i), organisms.get(i), gameConfiguration));
+        }
+
+        OrganismPreCalculator calculator = new OrganismPreCalculator(8);
 
         for (int p = 0; p < num_samples; p++) {
-            List<Organism> organisms = new ArrayList<>(neatConfiguration.getPopulationSize());
-            for (Species specie : neat.getSpecies()) {
-                for (Organism organism : specie.getMembers()) {
-                    organisms.add(organism);
-                }
-            }
-            game = new Game(organisms, seed);
-            game.startGame(10, 10, 8);
+            game.startGame(gameConfiguration);
             do {
-                for (int i = 0; i < neatConfiguration.getPopulationSize(); i++) {
-                    double[] input = new double[5];
-                    input[0] = game.getPlayers().get(i).getX();
-                    input[1] = game.getPlayers().get(i).getY();
-                    input[2] = game.getRaceTrack().checkOffCourse(game.getPlayers().get(i).getX() + Player.getLength() * Math.cos(game.getPlayers().get(i).getOrientation()), game.getPlayers().get(i).getY() + (Player.getLength() * Math.sin(game.getPlayers().get(i).getOrientation()))) ? 1.0 : 0.0;
-                    input[3] = game.getRaceTrack().checkOffCourse(game.getPlayers().get(i).getX() + Player.getLength() * Math.cos(game.getPlayers().get(i).getOrientation() + Math.PI / 6), game.getPlayers().get(i).getY() + (Player.getLength() * Math.sin(game.getPlayers().get(i).getOrientation() + Math.PI / 6))) ? 1.0 : 0.0;
-                    input[3] = game.getRaceTrack().checkOffCourse(game.getPlayers().get(i).getX() + Player.getLength() * Math.cos(game.getPlayers().get(i).getOrientation() - Math.PI / 6), game.getPlayers().get(i).getY() + (Player.getLength() * Math.sin(game.getPlayers().get(i).getOrientation() - Math.PI / 6))) ? 1.0 : 0.0;
-
-                    inputs.add(input);
+                for (NNController controller : controllers) {
+                    controller.extractInput(game, calculator);
                 }
-                neat.setInput(inputs);
-                inputs.clear();
+                for (NNController controller : controllers) {
+                    controller.controlPlayer();
+                }
 
             } while (game.iterate());
 
             for (int i = 0; i < neatConfiguration.getPopulationSize(); i++) {
-                fitness[i] += Math.pow(game.getPlayers().get(i).getScore(), 1);
+                fitness[i] += Math.pow(players.get(i).getScore() / gameConfiguration.getLength(), 2) * 100 + 1;
             }
         }
         for (int p = 0; p < neatConfiguration.getPopulationSize(); p++) {
             fitness[p] /= num_samples;
         }
+//        fitness[0] = 1.0;
         neat.setFitness(fitness);
 
 
@@ -185,7 +196,8 @@ public class CarRace implements Testcase {
         JFrame jFrame = new JFrame();
 
         carRace.animationPanel.setLayout(new BorderLayout());
-        carRace.animationPanel.getGame().addManuelPlayer(new ManuelController(jFrame));
+
+        Controller controller = new ManuelController(jFrame, carRace.animationPanel.getGame().addPlayer());
 
 
         jFrame.setContentPane(carRace.animationPanel);
@@ -194,14 +206,16 @@ public class CarRace implements Testcase {
 
         jFrame.setVisible(true);
         carRace.animationPanel.getGame().startGame(5, 5, 8);
+        controller.controlPlayer();
         long lasttime = System.currentTimeMillis();
         while (true) {
             long curtime = System.currentTimeMillis() - lasttime;
-            if (curtime > 100) {
+            if (curtime > 1000 / 30) {
                 if (!carRace.animationPanel.getGame().iterate()) {
                     carRace.animationPanel.getGame().startGame(5, 5, 8);
                 }
                 lasttime = System.currentTimeMillis();
+                controller.controlPlayer();
                 carRace.animationPanel.repaint();
             }
 

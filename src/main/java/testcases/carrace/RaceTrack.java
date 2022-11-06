@@ -1,7 +1,5 @@
 package testcases.carrace;
 
-import java.awt.*;
-import java.awt.geom.AffineTransform;
 import java.util.Random;
 
 public class RaceTrack{
@@ -30,6 +28,7 @@ public class RaceTrack{
     }
 
     TILE_TYPE[][] board;
+    int[][] board_steps;
 
     int sizex, sizey;
 
@@ -39,22 +38,35 @@ public class RaceTrack{
 
 
         board = new TILE_TYPE[sizex][sizey];
-        while (!this.generateRandomTrack2(len));
+        board_steps = new int[sizex][sizey];
+        Random generator = new Random();
+        while (!this.generateRandomTrack2(len, generator));
     }
 
-    boolean generateRandomTrack2(int len) {
-        Random r = new Random();
-        Position cur = new Position(r.nextInt(sizex), r.nextInt(sizey));
-        Position next = new Position(r.nextInt(sizex), r.nextInt(sizey));
+    RaceTrack(int sizex, int sizey, int len, Random generator) {
+        this.sizex = sizex;
+        this.sizey = sizey;
+
+
+        board = new TILE_TYPE[sizex][sizey];
+        board_steps = new int[sizex][sizey];
+        while (!this.generateRandomTrack2(len, generator));
+    }
+
+    boolean generateRandomTrack2(int len, Random generator) {
+        Position cur = new Position(generator.nextInt(sizex), generator.nextInt(sizey));
+        Position next = new Position(generator.nextInt(sizex), generator.nextInt(sizey));
         for (int i = 0; i < sizex; i++) {
             for (int j = 0; j < sizey; j++) {
                 board[i][j] = TILE_TYPE.Empty;
+                board_steps[i][j] = -1;
             }
         }
         board[(int)cur.x][(int)cur.y] = TILE_TYPE.Start;
+        board_steps[(int)cur.x][(int)cur.y] = 0;
         int i;
         for (i = 0; i < len; i++) {
-            int dir = r.nextInt(4);
+            int dir = generator.nextInt(4);
             int z;
             for (z = 0; z < 4; z++) {
                 next.x = cur.x;
@@ -85,6 +97,7 @@ public class RaceTrack{
 
                 if (num_track <= 1) {
                     board[(int)next.x][(int)next.y] = i == len-1 ? TILE_TYPE.Goal : TILE_TYPE.Track;
+                    board_steps[(int)next.x][(int)next.y] = i+1;
                     break;
                 }
             }
@@ -121,10 +134,10 @@ public class RaceTrack{
             dx = factorLength * Player.getLength() / 2 * Math.cos(player.getOrientation()) - factorWidth * Player.getWidth() / 2 * Math.sin(player.getOrientation());
             dy = factorLength * Player.getLength() / 2 * Math.sin(player.getOrientation()) + factorWidth * Player.getWidth() / 2 * Math.cos(player.getOrientation());
             Position corner = new Position(player.getX() + dx, player.getY() + dy);
-                if ((int) corner.x < 0 || (int) corner.x >= sizex || (int) corner.y < 0 || (int) corner.y >= sizey || board[(int) corner.x][(int) corner.y] == TILE_TYPE.Empty) {
-                    return -1;
-                } else if (board[(int) corner.x][(int) corner.y] == TILE_TYPE.Goal)
-                    touch_goal = true;
+            if (checkOffCourse(corner.x, corner.y)) {
+                return -1;
+            } else
+                touch_goal = board[(int) corner.x][(int) corner.y] == TILE_TYPE.Goal;
         }
         if (touch_goal)
             return 1;
@@ -134,6 +147,60 @@ public class RaceTrack{
 
     public boolean checkOffCourse(double x, double y) {
         return x < 0 || x >= sizex || y < 0 || y >= sizey || board[(int) x][(int) y] == TILE_TYPE.Empty;
+    }
+
+    public double distanceOffCourse(double x, double y, double dx, double dy) {
+        double testX = x;
+        double testY = y;
+        double distance = 0.0;
+        double norm = Math.sqrt(dx*dx+dy*dy);
+        dx /= norm;
+        dy /= norm;
+        double stepsize = 0.05;
+        int numSteps = 0;
+
+        while (!checkOffCourse(testX, testY)) {
+            testX += stepsize * dx;
+            testY += stepsize * dy;
+            numSteps++;
+        }
+        distance = numSteps * stepsize;
+        return distance;
+    }
+
+    public Position getPos(int steps) {
+        Position ret;
+        for (int i = 0; i < sizex; i++) {
+            for (int j = 0;  j < sizey; j++) {
+                if (board_steps[i][j] == steps) {
+                    ret = new Position(i, j);
+                    return ret;
+                }
+            }
+        }
+        ret = new Position(-1, -1);
+        return ret;
+    }
+
+    public double checkScore(double x, double y) {
+        if (x < 0 || x >= sizex || y < 0 || y >= sizey) {
+            return 0;
+        }
+
+        return board_steps[(int) x][(int)y];
+//        for (prevX = 0; prevX < sizex; prevX++) {
+//            for (prevY = 0; prevY < sizey; prevY++) {
+//                if (board_steps[prevX][prevY] == board_steps[(int) x][(int) y] - 1)
+//                    break;
+//            }
+//            if (prevY != sizey)
+//                break;
+//        }
+//        if (prevX == sizex) {
+//            prevX = (int)x;
+//            prevY = (int)y;
+//        }
+//        return board_steps[(int) x][(int) y] + Math.sqrt(Math.pow(x - (double)(prevX) - 0.5, 2) + Math.pow(y - (double)(prevY) - 0.5, 2)) - 0.5;
     }
 
 

@@ -1,16 +1,20 @@
 package testcases.carrace;
 
+import neat.OrganismPreCalculator;
+
 import javax.swing.*;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 
 public class ManuelController implements Controller {
-    int vel;
-    int turn;
+    private int vel;
+    private int turn;
+    private Player player;
 
-    ManuelController(JFrame context) {
+    ManuelController(JFrame context, Player player) {
         this.vel = 0;
         this.turn = 0;
+        this.player = player;
 
         context.addKeyListener(new KeyListener() {
             @Override
@@ -40,8 +44,13 @@ public class ManuelController implements Controller {
     }
 
     @Override
-    public void controlPlayer(Player player) {
+    public void controlPlayer() {
         player.setAngleVel(turn);
         player.setVel(vel);
+    }
+
+    @Override
+    public double getScore() {
+        return player.getScore();
     }
 }

@@ -15,8 +15,6 @@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLI
 package testcases.carrace;
 
 public class Player {
-    Controller controller;
-
     private final double baseVel = 0.05;
     private final double baseAngleVel = 0.1;
     private static final double length = 0.25;
@@ -27,10 +25,9 @@ public class Player {
     private double vel;
     private double orientation;
     private double angleVel;
-    private int score;
+    private double score;
 
-    public Player(Controller controller) {
-        this.controller = controller;
+    public Player() {
         this.x = 10;
         this.y = 10;
         this.vel = 0;
@@ -40,8 +37,6 @@ public class Player {
     }
 
     public void applyVelocity() {
-        controller.controlPlayer(this);
-
         orientation += angleVel;
         x += vel * Math.cos(orientation);
         y += vel * Math.sin(orientation);
@@ -96,11 +91,11 @@ public class Player {
         return width;
     }
 
-    public int getScore() {
+    public double getScore() {
         return score;
     }
 
-    public void setScore(int score) {
+    public void setScore(double score) {
         this.score = score;
     }
 }

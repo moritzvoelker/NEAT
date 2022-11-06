@@ -19,6 +19,7 @@ import neat.Organism;
 
 import java.awt.*;
 import java.awt.geom.AffineTransform;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
 import java.util.Vector;
@@ -32,71 +33,86 @@ public class Game {
     private RaceTrack raceTrack;
 
     private int currentScore;
+    private int iterations;
 
 
     public Game(long seed) {
         players = new Vector<>(0);
         activePlayers = new Vector<>(0);
+        generator = new Random(seed);
     }
 
-    public Game(List<Organism> organisms) {
-        players = new Vector<>(organisms.size());
-        for (Organism organism : organisms) {
-            players.add(new Player(new NNController(organism)));
-        }
-        activePlayers = new Vector<>(organisms.size());
+    public Game(int numPlayers) {
+        players = new Vector<>(numPlayers);
+        activePlayers = new Vector<>(numPlayers);
+        addPlayers(numPlayers);
 
+        generator = new Random();
+    }
+
+    public Game(int numPlayers, long seed) {
+
+        players = new Vector<>(numPlayers);
+        activePlayers = new Vector<>(numPlayers);
+        addPlayers(numPlayers);
+
+        generator = new Random(seed);
 
     }
 
-    public Game(List<Organism> organisms, long seed) {
-        players = new Vector<>(organisms.size());
-        for (Organism organism : organisms) {
-            players.add(new Player(new NNController(organism)));
-        }
-        activePlayers = new Vector<>(organisms.size());
+    public Player addPlayer() {
+        Player player = new Player();
+        players.add(player);
+        return player;
+    }
 
+    public List<Player> addPlayers(int num) {
+        if (num <= 0)
+            return new ArrayList<>(0);
+
+        List<Player> ret = new ArrayList<>(num);
+        for (int i = 0; i < num; i++)
+            ret.add(new Player());
+
+        players.addAll(ret);
+        return ret;
+    }
+
+    public void startGame(GameConfiguration gameConfiguration) {
+        raceTrack = new RaceTrack(gameConfiguration.getSizex(), gameConfiguration.getSizey(), gameConfiguration.getLength(), generator);
+        startGame(raceTrack);
     }
 
     public void startGame(int sizex, int sizey, int length) {
-        raceTrack = new RaceTrack(sizex, sizey, length);
-        activePlayers.addAll(players);
-        RaceTrack.Position start = raceTrack.getStart();
-        for (Player player : activePlayers) {
-            player.setX(start.x);
-            player.setY(start.y);
-        }
-        this.currentScore = 0;
+        raceTrack = new RaceTrack(sizex, sizey, length, generator);
+        startGame(raceTrack);
     }
 
     public void startGame(RaceTrack raceTrack) {
         this.raceTrack = raceTrack;
+        activePlayers.clear();
         activePlayers.addAll(players);
         RaceTrack.Position start = this.raceTrack.getStart();
         for (Player player : activePlayers) {
             player.setX(start.x);
             player.setY(start.y);
+            player.setScore(0.0);
+            RaceTrack.Position next = this.raceTrack.getPos(1);
+            player.setOrientation(Math.atan2(next.y - start.y, next.x - start.x));
         }
+        this.iterations = 0;
         this.currentScore = 0;
-    }
-
-    public void addManuelPlayer(Controller manuel) {
-        Player player = new Player(manuel);
-        players.add(player);
-    }
-
-    public void setVelocity(int i, int dir) {
-        players.get(i).setVel(dir * 5);
-    }
-
-    public void setSteeringAngle(int i, int dir) {
-        players.get(i).setAngleVel(dir * 3.14 / 4);
     }
 
     public boolean iterate() {
         activePlayers.forEach(Player::applyVelocity);
         activePlayers.removeIf(this::collisionAndScoring);
-        currentScore++;
+        if (++iterations > 30 *  1) {
+            System.out.println("Kill all with score lower than " + currentScore);
+            currentScore++;
+            iterations = 0;
+        }
+
         return activePlayers.size() > 0;
     }
 
@@ -104,15 +120,14 @@ public class Game {
 
     private boolean collisionAndScoring(Player player) {
         int collision_type = raceTrack.checkCollision(player);
-        if (collision_type == -1) {
-            player.setScore(currentScore);
+        if (collision_type == -1 || collision_type == 1)
             return true;
-        } else if (collision_type == 1) {
-            player.setScore(currentScore + 1000);
-            return true;
-        }
 
-        return false;
+        double score = raceTrack.checkScore(player.getX(), player.getY());
+        if (player.getScore() < score)
+            player.setScore(score);
+
+        return score < currentScore;
     }
 
 
@@ -129,6 +144,15 @@ public class Game {
 
 
         paintPlayers(g, segmentSize);
+        double max_score = 0;
+        for (Player player : players) {
+            if (player.getScore() > max_score) {
+                max_score = player.getScore();
+            }
+        }
+        g.drawString("Best: " + max_score, width- 40, 10);
+        g.setColor(Color.BLUE);
+        g.drawString("Kill: " + currentScore, width- 40, 20);
 
     }
 
@@ -160,6 +184,8 @@ public class Game {
 
                 g2d.translate(i * segmentSize, j * segmentSize);
                 g2d.fill(rect);
+                g2d.setColor(Color.BLACK);
+                g2d.drawString("" + this.raceTrack.board_steps[i][j], segmentSize / 2, segmentSize / 2);
                 g2d.setTransform(old);
 
             }
@@ -198,5 +224,9 @@ public class Game {
 
     public RaceTrack getRaceTrack() {
         return raceTrack;
+    }
+
+    public void setSeed(long seed) {
+        generator.setSeed(seed);
     }
 }

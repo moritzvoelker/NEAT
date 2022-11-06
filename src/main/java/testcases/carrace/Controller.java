@@ -1,13 +1,14 @@
 package testcases.carrace;
 
 import neat.Organism;
+import neat.OrganismPreCalculator;
 
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 
 public interface Controller {
-
-    void controlPlayer(Player player);
+    void controlPlayer();
+    double getScore();
 
 //    Organism controller;
 //    int accelerate;
